@@ -1,7 +1,7 @@
 /**
  * DataSanitizationMatchers are regex matchers to test against field names in data.
  *
- * They need to be global and case insensitive to ensure all fields that matcher
+ * They need to be global and case insensitive to ensure all fields that match
  * the given field patterns are caught.
  */
 type DataSanitizationMatcher = (pattern: string) => RegExp;
