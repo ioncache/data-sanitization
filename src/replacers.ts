@@ -16,10 +16,7 @@ import defaultMatchers from '~/matchers';
  * @param data Data string to be sanitized
  * @param options
  */
-const stringReplacer: DataSanitizationReplacer = (
-  data,
-  options = {},
-): string => {
+const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
     customMatchers,
     customPatterns,
