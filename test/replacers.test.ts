@@ -14,7 +14,7 @@ describe('DataSanitizationReplacers', () => {
       const testData = JSON.stringify(testObject);
 
       // Act
-      const replacedData = stringReplacer(testData);
+      const replacedData = stringReplacer(testData) as string;
       const replacedObject = JSON.parse(replacedData);
 
       // Assert
@@ -33,11 +33,9 @@ describe('DataSanitizationReplacers', () => {
       const testData = JSON.stringify(testObject);
 
       // Act
-      const replacedData = stringReplacer(testData, { removeMatches: true });
-      console.log(
-        '🚀 ~ file: replacers.test.ts ~ line 37 ~ it ~ replacedData',
-        replacedData,
-      );
+      const replacedData = stringReplacer(testData, {
+        removeMatches: true,
+      }) as string;
       const replacedObject = JSON.parse(replacedData);
 
       // Assert

@@ -40,9 +40,9 @@ interface DataSanitizationReplacerOptions {
  * and replace or remove sensitive information
  */
 type DataSanitizationReplacer = (
-  data: string,
+  data: string | Record<string, unknown>,
   options?: DataSanitizationReplacerOptions,
-) => string;
+) => string | Record<string, unknown>;
 
 export {
   DataSanitizationMatcher,
