@@ -4,7 +4,12 @@
   "description": "Sanitization library for obfuscating/removing/securing data.",
   "main": "./src/index.ts",
   "author": "Mark Jubenville <ioncache@gmail.com>",
-  "license": "ISC",
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://www.opensource.org/licenses/mit-license.php"
+    }
+  ],
   "scripts": {
     "build": "tsc --build --clean && tsc",
     "format": "prettier --write \"src/**/*.ts\"",
