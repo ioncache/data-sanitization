@@ -1,0 +1,5 @@
+{
+  "**/*.(js|ts)": ["npx prettier --write", "npx eslint --fix"],
+  "!**/*.(js|ts)": ["npx prettier --write --ignore-unknown"],
+  "**/*.sh": ["./scripts/shell_lint.sh"]
+}
