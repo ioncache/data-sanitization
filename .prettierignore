@@ -1,0 +1,9 @@
+# files
+*.yaml
+*.yml
+package-lock.json
+yarn.lock
+
+# folders
+dist
+node_modules
