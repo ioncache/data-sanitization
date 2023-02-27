@@ -1,7 +1,9 @@
-import type { Config } from '@jest/types';
+import { pathsToModuleNameMapper } from 'ts-jest';
+import { compilerOptions } from './tsconfig.json';
+import type { JestConfigWithTsJest } from 'ts-jest';
 
 // Sync object
-const config: Config.InitialOptions = {
+const config: JestConfigWithTsJest = {
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.ts'],
   coveragePathIgnorePatterns: ['src/constants\\.ts$'],
@@ -16,11 +18,13 @@ const config: Config.InitialOptions = {
 
   moduleDirectories: ['node_modules'],
   moduleFileExtensions: ['js', 'ts'],
-  moduleNameMapper: {
-    '^~/(.*)': '<rootDir>/src/$1',
-  },
+  moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths, {
+    prefix: '<rootDir>/',
+  }),
+  modulePaths: [compilerOptions.baseUrl],
   modulePathIgnorePatterns: ['<rootDir>/dist/', '<rootDir>/tmp/'],
   preset: 'ts-jest',
+  roots: ['<rootDir>'],
   transform: {
     '^.+\\.ts$': 'ts-jest',
   },
