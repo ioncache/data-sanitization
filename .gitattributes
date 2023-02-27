@@ -1,2 +1,2 @@
-package-lock.json -diff
-.vscode/extensions.json linguist-language=JSON-with-Comments
+yarn.lock -diff
+.vscode/*.json linguist-language=JSON-with-comments

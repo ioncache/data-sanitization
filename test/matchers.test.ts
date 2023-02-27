@@ -2,7 +2,7 @@
 import queryString from 'query-string';
 
 /* local imports */
-import { formEncodedMatcher, jsonMatcher } from '~/matchers';
+import { formEncodedMatcher, jsonMatcher } from '../src/matchers';
 
 describe('DataSanitizationMatchers', () => {
   describe('formEncodedMatcher', () => {
