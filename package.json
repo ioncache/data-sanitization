@@ -33,7 +33,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "lint-staged": "^13.1.2",
     "pinst": "^3.0.0",
-    "prettier": "^2.8.4",
+    "prettier": "^3.0.0",
     "query-string": "^8.1.0",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
