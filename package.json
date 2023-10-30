@@ -21,7 +21,7 @@
     "test:watch": "jest --config jest.config.ts --watch"
   },
   "devDependencies": {
-    "@tsconfig/node16": "^16.1.0",
+    "@tsconfig/node16": "^16.1.1",
     "@types/jest": "^29.5.4",
     "@types/node": "^20.8.7",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
