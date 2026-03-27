@@ -1,114 +1,165 @@
 # data-sanitization
 
-## Overview
+Pattern-based sanitization for sensitive data in objects and strings. Masks or removes fields matching configurable patterns, making data safe for logging or external exposure.
 
-This package takes a pattern based approach to matching field names in data and then replacing the associated fields by either masking the field value or removing the field.
-
-Objects are first converted to strings via `JSON.stringify`. This is done to have a consistent interface for text and non-text data.
-
-NOTE: Since `JSON.stringify` might not be performant on large data sets, or when being run repeatedly, `v2` might take a different approach for non-string data.
-
-After the pattern replacement, the new string is either returned or is converted back into an object via `JSON.parse` and then returned.
-
-In any case where the data cannot be parsed, an error object is thrown.
+Works with both JavaScript and TypeScript — ships with compiled JS, TypeScript declarations, and source maps.
 
 ## Table of Contents
 
 - [data-sanitization](#data-sanitization)
-  - [Overview](#overview)
   - [Table of Contents](#table-of-contents)
-  - [Development](#development)
-  - [Build](#build)
-  - [Testing](#testing)
-  - [Commit Policy](#commit-policy)
-  - [Release Process](#release-process)
-  - [Documentation](#documentation)
-  - [TODO: Version 2](#todo-version-2)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Sanitize an object](#sanitize-an-object)
+    - [Sanitize a string](#sanitize-a-string)
+    - [Remove fields instead of masking](#remove-fields-instead-of-masking)
+  - [Options](#options)
+  - [Default patterns](#default-patterns)
+  - [Default matchers](#default-matchers)
+  - [Custom patterns and matchers](#custom-patterns-and-matchers)
+  - [Error handling](#error-handling)
+  - [How it works](#how-it-works)
+  - [Contributing](#contributing)
+  - [License](#license)
 
-## Development
-
-This repository uses Yarn and Husky hooks.
-
-```bash
-yarn install
-```
-
-Common commands:
+## Installation
 
 ```bash
-yarn format
-yarn format:check
-yarn lint
-yarn test
-yarn test:coverage
+npm install data-sanitization
 ```
-
-## Build
-
-Build artifacts are emitted to `dist/`:
 
 ```bash
-yarn build
+yarn add data-sanitization
 ```
 
-`prepack` runs the build automatically to ensure published packages use compiled output.
+## Usage
 
-## Testing
+### Sanitize an object
 
-Tests are run with Vitest. Coverage thresholds are enforced at 100% for statements,
-branches, functions, and lines.
+```typescript
+import { sanitizeData } from 'data-sanitization';
 
-```bash
-yarn test
-yarn test:coverage
+const input = {
+  username: 'mark',
+  password: 'super-secret',
+  api_key: 'sk_live_abc123',
+};
+
+const result = sanitizeData(input);
+// => { username: 'mark', password: '**********', api_key: '**********' }
 ```
 
-## Commit Policy
+### Sanitize a string
 
-Commit messages are validated with commitlint using conventional commits.
+Works with JSON strings and form-encoded strings:
 
-- `pre-commit`: runs `lint-staged`
-- `commit-msg`: runs `commitlint`
+```typescript
+sanitizeData('{"password":"secret","username":"mark"}');
+// => '{"password":"**********","username":"mark"}'
 
-Examples:
-
-- `feat: add custom sanitizer option`
-- `fix: handle non-string input safely`
-- `chore: upgrade lint dependencies`
-
-## Release Process
-
-Releases are script-driven and modeled after the reference repository workflow.
-
-Dry run:
-
-```bash
-yarn release --bump patch --dry-run
+sanitizeData('password=secret&username=mark');
+// => 'password=**********&username=mark'
 ```
 
-Live release:
+### Remove fields instead of masking
 
-```bash
-yarn release --bump patch
+```typescript
+sanitizeData(
+  { password: 'secret', token: 'abc', username: 'mark' },
+  { removeMatches: true },
+);
+// => { username: 'mark' }
 ```
 
-Supported bump values: `major`, `minor`, `patch`.
+## Options
 
-Live release behavior:
+| Option               | Type                        | Default      | Description                                       |
+| -------------------- | --------------------------- | ------------ | ------------------------------------------------- |
+| `patternMask`        | `string`                    | `**********` | String used to replace matched field values       |
+| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking |
+| `customPatterns`     | `string[]`                  |              | Additional field name patterns to match           |
+| `customMatchers`     | `DataSanitizationMatcher[]` |              | Additional regex matchers for custom data formats |
+| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns  |
+| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers  |
 
-1. Generates release notes from conventional commits.
-2. Bumps version in `package.json`.
-3. Commits release metadata and creates an annotated tag.
-4. Pushes `main` and tags.
-5. Creates a GitHub Release with generated notes.
+## Default patterns
 
-## Documentation
+The following field name patterns are matched by default (case-insensitive, substring match):
 
-TODO
+- `apikey`
+- `api_key`
+- `password`
+- `secret`
+- `token`
 
-## TODO: Version 2
+A field named `db_password` or `client_secret_key` would also match because
+these patterns match as substrings.
 
-Possibly take a different approach to data parsing for version 2.
+## Default matchers
 
-- take an approach where instead of first converting all data to strings with `JSON.stringify`, instead attempt to convert all data to objects if it isn't already
-- use `cloneDeepWith` from `lodash` to copy the object and modify/remove strings within the data
+Two matchers are included by default:
+
+- **JSON matcher** — matches `"fieldName":"value"` patterns in JSON and JSON-like strings
+- **Form-encoded matcher** — matches `fieldName=value` and `fieldName:value` patterns in URL-encoded and similarly delimited strings
+
+## Custom patterns and matchers
+
+```typescript
+import { sanitizeData } from 'data-sanitization';
+
+// Add a custom pattern alongside defaults
+sanitizeData(data, {
+  customPatterns: ['ssn', 'credit_card'],
+});
+
+// Use only custom patterns, no defaults
+sanitizeData(data, {
+  customPatterns: ['ssn'],
+  useDefaultPatterns: false,
+});
+
+// Use a custom mask
+sanitizeData(data, {
+  patternMask: '[REDACTED]',
+});
+```
+
+For custom data formats, provide a `DataSanitizationMatcher` — a function that
+takes a pattern string and returns a global, case-insensitive `RegExp`. The
+regex must use capture groups `$1` and `$2` to preserve the field name and
+trailing delimiter while replacing the value.
+
+## Error handling
+
+`sanitizeData` throws a `DataSanitizationError` when:
+
+- The input is not a `string` or `object` (e.g., `number`, `boolean`, `undefined`)
+- An unexpected error occurs during sanitization (e.g., malformed JSON that cannot be re-parsed)
+
+```typescript
+import { sanitizeData } from 'data-sanitization';
+import { DataSanitizationError } from 'data-sanitization/errors';
+
+try {
+  sanitizeData(123 as any);
+} catch (error) {
+  if (error instanceof DataSanitizationError) {
+    console.error(error.message); // 'Invalid data type'
+    console.error(error.details); // { originalData: 123 }
+  }
+}
+```
+
+## How it works
+
+1. **String input** is sanitized directly via regex replacement.
+2. **Object input** is converted to a JSON string via `JSON.stringify`, sanitized, then parsed back with `JSON.parse`.
+3. Each configured pattern is tested against each matcher to produce regex instances that find and replace sensitive field values.
+
+## Contributing
+
+For development setup, testing, and release process, see [docs/development.md](docs/development.md).
+
+## License
+
+[MIT](LICENSE)
