@@ -7,8 +7,6 @@
     "baseUrl": "./",
     "declaration": true,
     "declarationMap": false,
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
     "incremental": true,
     "noEmit": true,
     "noImplicitAny": true,
