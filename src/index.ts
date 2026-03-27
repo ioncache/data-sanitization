@@ -37,9 +37,9 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
       originalData: data,
     });
   } catch (error) {
-    // if some sort of uncaught error occurred when attempting to sanitize
-    // the data, we throw an error message instead as we can't be sure
-    // that the data was safe
+    if (error instanceof DataSanitizationError) {
+      throw error;
+    }
     throw new DataSanitizationError('Error parsing data', {
       error,
       originalData: data,

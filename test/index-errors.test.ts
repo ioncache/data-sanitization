@@ -123,7 +123,7 @@ describe('DataSanitizationIndexAndErrors', () => {
 
       // Assert
       expect(act).toThrowError(DataSanitizationError);
-      expect(act).toThrowError('Error parsing data');
+      expect(act).toThrowError('Invalid data type');
     });
 
     it('should throw DataSanitizationError for boolean input', () => {
