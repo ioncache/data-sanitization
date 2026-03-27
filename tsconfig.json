@@ -1,5 +1,5 @@
 {
-  "extends": "@tsconfig/node16/tsconfig.json",
+  "extends": "@tsconfig/node20/tsconfig.json",
   "include": ["./src/**/*", "./test/**/*"],
   "compilerOptions": {
     "allowJs": false,
@@ -10,6 +10,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "incremental": true,
+    "noEmit": true,
     "noImplicitAny": true,
     "outDir": "./dist",
     "paths": {
@@ -19,6 +20,7 @@
     "resolveJsonModule": true,
     "sourceMap": true,
     "strictNullChecks": true,
+    "types": ["node", "vitest/globals"],
     "typeRoots": ["./node_modules/@types"]
   }
 }

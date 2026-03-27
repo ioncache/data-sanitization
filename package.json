@@ -2,7 +2,22 @@
   "name": "data-sanitization",
   "version": "0.0.1",
   "description": "Sanitization library for obfuscating/removing/securing data.",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "author": "Mark Jubenville <ioncache@gmail.com>",
   "licenses": [
     {
@@ -11,36 +26,57 @@
     }
   ],
   "scripts": {
-    "build": "tsc --build --clean && tsc",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "eslint",
-    "postinstall": "husky install",
-    "postpack": "pinst --enable",
-    "prepack": "pinst --disable",
-    "test": "jest --config jest.config.ts",
-    "test:watch": "jest --config jest.config.ts --watch"
+    "build": "yarn clean && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist coverage",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "prepare": "husky",
+    "prepack": "yarn build",
+    "release": "node scripts/release.mjs",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "lint-staged": {
+    "*.{ts,js,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.md": [
+      "prettier --write"
+    ],
+    "*.{json,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.sh": [
+      "./scripts/shell_lint.sh"
+    ]
   },
   "devDependencies": {
-    "@tsconfig/node16": "^16.1.1",
-    "@types/jest": "^29.5.11",
-    "@types/node": "^20.12.7",
-    "@typescript-eslint/eslint-plugin": "^5.62.0",
-    "@typescript-eslint/parser": "^5.62.0",
-    "eslint": "^8.56.0",
-    "eslint-config-prettier": "^9.1.0",
-    "husky": "^8.0.3",
-    "jest": "^29.7.0",
-    "jest-watch-typeahead": "^2.2.2",
-    "lint-staged": "^15.2.0",
-    "pinst": "^3.0.0",
-    "prettier": "^3.2.5",
+    "@commitlint/cli": "^19.8.1",
+    "@commitlint/config-conventional": "^19.8.1",
+    "@eslint/js": "^9.22.0",
+    "@tsconfig/node20": "^20.1.4",
+    "@types/node": "^22.13.10",
+    "@vitest/coverage-v8": "^4.1.0",
+    "conventional-changelog": "^7.1.0",
+    "eslint": "^9.22.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^16.0.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.0.0",
+    "prettier": "^3.5.3",
     "query-string": "^8.1.0",
-    "ts-jest": "^29.1.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.8.2",
+    "typescript-eslint": "^8.26.1",
+    "vitest": "^4.1.0",
+    "yargs": "^18.0.0"
   },
   "volta": {
-    "node": "16.16.0",
+    "node": "20.19.0",
     "yarn": "1.22.19"
   }
 }
