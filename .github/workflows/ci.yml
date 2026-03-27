@@ -1,32 +1,32 @@
 name: CI
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        node-version: [22, 24]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: yarn
-      - run: |
-          git config --global user.name "CI"
-          git config --global user.email "ci@localhost"
-          git config --global init.defaultBranch main
-      - run: yarn install --frozen-lockfile
-      - run: yarn format:check
-      - run: yarn lint
-      - run: yarn test
+    ci:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                node-version: [22, 24]
+        steps:
+            - uses: actions/checkout@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: yarn
+            - run: |
+                  git config --global user.name "CI"
+                  git config --global user.email "ci@localhost"
+                  git config --global init.defaultBranch main
+            - run: yarn install --frozen-lockfile
+            - run: yarn format:check
+            - run: yarn lint
+            - run: yarn test
