@@ -43,17 +43,17 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
     patterns = [...patterns, ...customPatterns];
   }
 
+  let matchers: DataSanitizationMatcher[] = [];
+
+  if (useDefaultMatchers) {
+    matchers = [...defaultMatchers];
+  }
+
+  if (Array.isArray(customMatchers)) {
+    matchers = [...matchers, ...customMatchers];
+  }
+
   for (const pattern of patterns) {
-    let matchers: DataSanitizationMatcher[] = [];
-
-    if (useDefaultMatchers) {
-      matchers = [...defaultMatchers];
-    }
-
-    if (Array.isArray(customMatchers)) {
-      matchers = [...matchers, ...customMatchers];
-    }
-
     for (const matcher of matchers) {
       const matchInstance = matcher(pattern, removeMatches);
 
