@@ -19,12 +19,7 @@
     "node": ">=20.19.0"
   },
   "author": "Mark Jubenville <ioncache@gmail.com>",
-  "licenses": [
-    {
-      "type": "MIT",
-      "url": "https://www.opensource.org/licenses/mit-license.php"
-    }
-  ],
+  "license": "MIT",
   "scripts": {
     "build": "yarn clean && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist coverage",
