@@ -1,5 +1,8 @@
 import { DataSanitizationMatcher } from '~/types';
 
+const escapePattern = (pattern: string): string =>
+  pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /**
  * Matches field names in url form encoded data, or other types of
  * data similarly character delimited
@@ -34,8 +37,10 @@ import { DataSanitizationMatcher } from '~/types';
  *
  * @param pattern A pattern in url form encoded like data used to match against field names
  */
-const formEncodedMatcher: DataSanitizationMatcher = (pattern) =>
-  new RegExp(`(\\w*${pattern}\\w*[=:])(?:\\W?.*?)([\\W]|$)`, 'gi');
+const formEncodedMatcher: DataSanitizationMatcher = (pattern) => {
+  const escaped = escapePattern(pattern);
+  return new RegExp(`(\\w*${escaped}\\w*[=:])(?:\\W?.*?)([\\W]|$)`, 'gi');
+};
 
 /**
  * Matches field names in json/json-like structured data
@@ -66,11 +71,13 @@ const formEncodedMatcher: DataSanitizationMatcher = (pattern) =>
  *
  * @param pattern A pattern in json-like data used to match against field names
  */
-const jsonMatcher: DataSanitizationMatcher = (pattern) =>
-  new RegExp(`("\\w*${pattern}\\w*"?:\\s*").+?(")`, 'gi');
+const jsonMatcher: DataSanitizationMatcher = (pattern) => {
+  const escaped = escapePattern(pattern);
+  return new RegExp(`("\\w*${escaped}\\w*"?:\\s*").+?(")`, 'gi');
+};
 
 const defaultMatchers = [formEncodedMatcher, jsonMatcher];
 
-export { defaultMatchers, formEncodedMatcher, jsonMatcher };
+export { defaultMatchers, escapePattern, formEncodedMatcher, jsonMatcher };
 
 export default defaultMatchers;
