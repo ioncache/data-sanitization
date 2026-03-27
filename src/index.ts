@@ -18,6 +18,21 @@ import { DataSanitizationReplacer } from '~/types';
  *
  * @param data Data to be sanitized
  * @param options
+ *
+ * @example
+ * // Sanitize a JSON string
+ * sanitizeData('{"password":"secret","username":"mark"}')
+ * // => '{"password":"**********","username":"mark"}'
+ *
+ * @example
+ * // Sanitize an object
+ * sanitizeData({ password: 'secret', username: 'mark' })
+ * // => { password: '**********', username: 'mark' }
+ *
+ * @example
+ * // Sanitize with a custom mask
+ * sanitizeData({ token: 'abc123' }, { patternMask: '[REDACTED]' })
+ * // => { token: '[REDACTED]' }
  */
 const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
   try {
