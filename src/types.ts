@@ -4,7 +4,7 @@
  * They need to be global and case insensitive to ensure all fields that match
  * the given field patterns are caught.
  */
-type DataSanitizationMatcher = (pattern: string) => RegExp;
+type DataSanitizationMatcher = (pattern: string, remove?: boolean) => RegExp;
 
 interface DataSanitizationReplacerOptions {
   /**

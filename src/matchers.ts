@@ -37,8 +37,17 @@ const escapePattern = (pattern: string): string =>
  *
  * @param pattern A pattern in url form encoded like data used to match against field names
  */
-const formEncodedMatcher: DataSanitizationMatcher = (pattern) => {
+const formEncodedMatcher: DataSanitizationMatcher = (
+  pattern,
+  remove = false,
+) => {
   const escaped = escapePattern(pattern);
+  if (remove) {
+    return new RegExp(
+      `&\\w*${escaped}\\w*[=:][^&]*|\\w*${escaped}\\w*[=:][^&]*&?`,
+      'gi',
+    );
+  }
   return new RegExp(`(\\w*${escaped}\\w*[=:])(?:\\W?.*?)([\\W]|$)`, 'gi');
 };
 
@@ -71,8 +80,14 @@ const formEncodedMatcher: DataSanitizationMatcher = (pattern) => {
  *
  * @param pattern A pattern in json-like data used to match against field names
  */
-const jsonMatcher: DataSanitizationMatcher = (pattern) => {
+const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   const escaped = escapePattern(pattern);
+  if (remove) {
+    return new RegExp(
+      `,\\s*"\\w*${escaped}\\w*"\\s*:\\s*"[^"]*"|"\\w*${escaped}\\w*"\\s*:\\s*"[^"]*"\\s*,?`,
+      'gi',
+    );
+  }
   return new RegExp(`("\\w*${escaped}\\w*"?:\\s*").+?(")`, 'gi');
 };
 

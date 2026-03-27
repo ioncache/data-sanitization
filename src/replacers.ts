@@ -55,10 +55,9 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
     }
 
     for (const matcher of matchers) {
-      const matchInstance = matcher(pattern);
+      const matchInstance = matcher(pattern, removeMatches);
 
       if (removeMatches) {
-        // FIXME: the remove option is not currently working
         data = data.replace(matchInstance, '');
       } else {
         data = data.replace(matchInstance, '$1' + mask + '$2');
