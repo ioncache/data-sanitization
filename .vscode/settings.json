@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.jsonc": "jsonc",
+    ".markdownlint.jsonc": "jsonc",
+    ".markdownlint-cli2.jsonc": "jsonc"
+  }
+}
