@@ -59,7 +59,7 @@
     "conventional-changelog": "^7.1.0",
     "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.1",
-    "globals": "^16.0.0",
+    "globals": "^17.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.0.0",
     "prettier": "^3.5.3",
