@@ -62,6 +62,6 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
   }
 };
 
-export { sanitizeData };
+export { sanitizeData, DataSanitizationError };
 
 export default sanitizeData;

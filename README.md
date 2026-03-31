@@ -97,9 +97,10 @@ these patterns match as substrings.
 
 ## Default matchers
 
-Two matchers are included by default:
+Three matchers are included by default:
 
 - **JSON matcher** — matches `"fieldName":"value"` patterns in JSON and JSON-like strings
+- **Escaped JSON matcher** — matches `\"fieldName\":\"value\"` patterns in JSON embedded inside JSON string values
 - **Form-encoded matcher** — matches `fieldName=value` and `fieldName:value` patterns in URL-encoded and similarly delimited strings
 
 ## Custom patterns and matchers
@@ -137,8 +138,7 @@ trailing delimiter while replacing the value.
 - An unexpected error occurs during sanitization (e.g., malformed JSON that cannot be re-parsed)
 
 ```typescript
-import { sanitizeData } from 'data-sanitization';
-import { DataSanitizationError } from 'data-sanitization/errors';
+import { sanitizeData, DataSanitizationError } from 'data-sanitization';
 
 try {
   sanitizeData(123 as any);
