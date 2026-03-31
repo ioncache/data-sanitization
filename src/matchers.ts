@@ -91,8 +91,45 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   return new RegExp(`("\\w*${escaped}\\w*"?:\\s*").+?(")`, 'gi');
 };
 
-const defaultMatchers = [formEncodedMatcher, jsonMatcher];
+/**
+ * Matches field names in escaped JSON data, where quotes are
+ * backslash-escaped (e.g. JSON embedded inside a JSON string value)
+ *
+ * @example
+ * // when masked: '\"password\":\"mask\"'
+ * escapedJsonMatcher('\"password\":\"foo\"')
+ *
+ * @example
+ * // when masked: '\"db_password\":\"mask\"'
+ * escapedJsonMatcher('\"db_password\":\"foo\"')
+ *
+ * @param pattern A pattern in escaped json data used to match against field names
+ */
+const escapedJsonMatcher: DataSanitizationMatcher = (
+  pattern,
+  remove = false,
+) => {
+  const escaped = escapePattern(pattern);
+  if (remove) {
+    return new RegExp(
+      `,\\s*\\\\"\\w*${escaped}\\w*\\\\"\\s*:\\s*\\\\"[^\\\\"]*\\\\"|\\\\"\\w*${escaped}\\w*\\\\"\\s*:\\s*\\\\"[^\\\\"]*\\\\"\\s*,?`,
+      'gi',
+    );
+  }
+  return new RegExp(
+    `(\\\\"\\w*${escaped}\\w*\\\\"\\s*:\\s*\\\\").+?(\\\\")`,
+    'gi',
+  );
+};
 
-export { defaultMatchers, escapePattern, formEncodedMatcher, jsonMatcher };
+const defaultMatchers = [formEncodedMatcher, jsonMatcher, escapedJsonMatcher];
+
+export {
+  defaultMatchers,
+  escapedJsonMatcher,
+  escapePattern,
+  formEncodedMatcher,
+  jsonMatcher,
+};
 
 export default defaultMatchers;
