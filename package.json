@@ -1,6 +1,6 @@
 {
   "name": "data-sanitization",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Sanitization library for obfuscating/removing/securing data.",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
