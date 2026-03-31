@@ -1,4 +1,4 @@
-import { DataSanitizationMatcher } from '~/types';
+import { DataSanitizationMatcher } from './types';
 
 const escapePattern = (pattern: string): string =>
   pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
