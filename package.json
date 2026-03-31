@@ -57,7 +57,7 @@
     "@types/node": "^22.13.10",
     "@vitest/coverage-v8": "^4.1.0",
     "conventional-changelog": "^7.1.0",
-    "eslint": "^9.22.0",
+    "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.1",
     "globals": "^16.0.0",
     "husky": "^9.1.7",
