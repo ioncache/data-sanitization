@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 /* local imports */
 import {
+  escapedJsonMatcher,
   escapePattern,
   formEncodedMatcher,
   jsonMatcher,
@@ -253,6 +254,96 @@ describe('DataSanitizationMatchers', () => {
 
       // Assert
       expect(JSON.parse(result)).toEqual({});
+    });
+  });
+
+  describe('escapedJsonMatcher', () => {
+    it('should find fields that have names that match the pattern', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const testData =
+        '{"level":30,"msg":"{\\"password\\":\\"secret\\",\\"username\\":\\"mark\\"}"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toEqual('\\"password\\":\\"secret\\"');
+    });
+
+    it('should match fields with the pattern as a substring', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"db_password\\":\\"baz\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toEqual('\\"db_password\\":\\"baz\\"');
+    });
+
+    it('should match case-insensitively', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('token');
+      const testData = '\\"TOKEN\\":\\"abc\\",\\"Token\\":\\"def\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(2);
+    });
+
+    it('should not match fields that do not contain the pattern', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"username\\":\\"foo\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should capture groups suitable for mask replacement', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"password\\":\\"secret\\"';
+      const mask = '**********';
+
+      // Act
+      const result = testData.replace(matcher, '$1' + mask + '$2');
+
+      // Assert
+      expect(result).toBe('\\"password\\":\\"**********\\"');
+    });
+
+    it('should produce a removal regex that cleanly removes matched fields', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password', true);
+      const testData = '\\"username\\":\\"bar\\",\\"password\\":\\"foo\\"';
+
+      // Act
+      const result = testData.replace(matcher, '');
+
+      // Assert
+      expect(result).toBe('\\"username\\":\\"bar\\"');
+    });
+
+    it('should produce a removal regex that removes the only field', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password', true);
+      const testData = '\\"password\\":\\"foo\\"';
+
+      // Act
+      const result = testData.replace(matcher, '');
+
+      // Assert
+      expect(result).toBe('');
     });
   });
 

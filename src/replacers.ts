@@ -1,7 +1,7 @@
 /* local imports */
-import { DataSanitizationMatcher, DataSanitizationReplacer } from '~/types';
-import { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK } from '~/constants';
-import defaultMatchers from '~/matchers';
+import { DataSanitizationMatcher, DataSanitizationReplacer } from './types';
+import { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK } from './constants';
+import defaultMatchers from './matchers';
 
 /**
  * Sanitizes a string by masking or removing sensitive data.

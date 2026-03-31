@@ -11,9 +11,6 @@
     "noEmit": true,
     "noImplicitAny": true,
     "outDir": "./dist",
-    "paths": {
-      "~/*": ["./src/*"]
-    },
     "removeComments": false,
     "resolveJsonModule": true,
     "sourceMap": true,

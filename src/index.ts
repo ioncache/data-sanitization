@@ -1,7 +1,7 @@
 /* local imports */
-import { DataSanitizationError } from '~/errors';
-import { stringReplacer } from '~/replacers';
-import { DataSanitizationReplacer } from '~/types';
+import { DataSanitizationError } from './errors';
+import { stringReplacer } from './replacers';
+import { DataSanitizationReplacer } from './types';
 
 /**
  * Sanitizes data in an object/string to make it safe for logging
