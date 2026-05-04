@@ -4,7 +4,6 @@
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
-    "baseUrl": "./",
     "declaration": true,
     "declarationMap": false,
     "incremental": true,
