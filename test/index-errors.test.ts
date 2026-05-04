@@ -151,6 +151,21 @@ describe('DataSanitizationIndexAndErrors', () => {
       // Assert
       expect(act).toThrowError(DataSanitizationError);
     });
+
+    it('should wrap non-DataSanitizationError in DataSanitizationError', () => {
+      // Arrange
+      const input: Record<string, unknown> = {};
+      input.self = input;
+
+      // Act
+      const act = (): void => {
+        sanitizeData(input);
+      };
+
+      // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
+    });
   });
 
   describe('DataSanitizationError', () => {
