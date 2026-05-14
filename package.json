@@ -16,7 +16,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=20.19.0"
+    "node": ">=22.22.1"
   },
   "author": "Mark Jubenville <ioncache@gmail.com>",
   "license": "MIT",
@@ -71,7 +71,7 @@
     "yargs": "^18.0.0"
   },
   "volta": {
-    "node": "20.19.0",
+    "node": "22.22.3",
     "yarn": "1.22.19"
   }
 }
