@@ -18,10 +18,6 @@ const escapePattern = (pattern: string): string =>
  * Matches field names in url form encoded data, or other types of
  * data similarly character delimited
  *
- * NOTE: this can partially fail if a non-word character is found
- *       before the end of the value is reached, but in that case
- *       it will still partially mask the value
- *
  * @example
  * // when masked: 'password=mask'
  * formEncodedMatcher('password=foo')
@@ -62,7 +58,7 @@ const formEncodedMatcher: DataSanitizationMatcher = (
       'gi',
     );
   }
-  return new RegExp(`(\\w*${escaped}\\w*[=:])(?:\\W?.*?)([\\W]|$)`, 'gi');
+  return new RegExp(`(\\w*${escaped}\\w*[=:])[^&]*(&|$)`, 'gi');
 };
 
 /**

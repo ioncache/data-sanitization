@@ -49,6 +49,21 @@ describe('DataSanitizationMatchers', () => {
       expect(allMatches[0]?.[1]).toEqual('password:');
     });
 
+    it('should match form values containing non-delimiter punctuation', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password');
+      const testData = 'password=abc-123%2Ba/b.c:z+q&username=mark';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toEqual('password=abc-123%2Ba/b.c:z+q&');
+      expect(allMatches[0]?.[1]).toEqual('password=');
+      expect(allMatches[0]?.[2]).toEqual('&');
+    });
+
     it('should match case-insensitively', () => {
       // Arrange
       const matcher = formEncodedMatcher('password');
@@ -108,6 +123,18 @@ describe('DataSanitizationMatchers', () => {
 
       // Assert
       expect(result).toBe('');
+    });
+
+    it('should produce a removal regex that removes punctuated values', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password', true);
+      const testData = 'password=abc-123%2Ba/b.c:z+q&username=mark';
+
+      // Act
+      const result = testData.replace(matcher, '');
+
+      // Assert
+      expect(result).toBe('username=mark');
     });
   });
 
