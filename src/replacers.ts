@@ -139,7 +139,7 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
     }
 
     if (seen.has(value)) {
-      throw new TypeError('Converting circular structure to JSON');
+      throw new TypeError('Circular reference detected in object structure');
     }
 
     seen.add(value);
