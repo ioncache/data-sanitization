@@ -15,6 +15,7 @@ import defaultMatchers from './matchers';
  * @param data - Data string to be sanitized.
  * @param options - Matcher, pattern, masking, and removal options.
  * @returns Sanitized string data, or the original non-string data for runtime safety.
+ * @throws {Error} If a matcher fails while creating a regular expression for a pattern.
  *
  * @example
  * stringReplacer('password=secret&username=mark')
