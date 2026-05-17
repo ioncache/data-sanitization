@@ -58,7 +58,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(nested.safe).toEqual('visible');
     });
 
-    it('should sanitize objects containing arrays', () => {
+    it('should mask array-valued sensitive object keys', () => {
       // Arrange
       const input = {
         tokens: ['a', 'b'],
