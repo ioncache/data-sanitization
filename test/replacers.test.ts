@@ -131,6 +131,21 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('bar');
       });
 
+      it('should mask unicode sensitive values', () => {
+        // Arrange
+        const testData = JSON.stringify({
+          password: 'paß🔐word',
+          username: 'márk',
+        });
+
+        // Act
+        const result = JSON.parse(stringReplacer(testData) as string);
+
+        // Assert
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('márk');
+      });
+
       it('should fully mask form values containing non-delimiter punctuation', () => {
         // Arrange
         const testData =
@@ -326,6 +341,116 @@ describe('DataSanitizationReplacers', () => {
 
         // Revert: no cleanup required
       });
+
+      it('should mask repeated sensitive keys at multiple depths', () => {
+        // Arrange
+        const testData = {
+          password: 'top-level',
+          profile: {
+            password: 'nested',
+            sessions: [
+              { token: 'session-token', username: 'mark' },
+              { metadata: { api_key: 'nested-key' } },
+            ],
+          },
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({
+          password: DEFAULT_PATTERN_MASK,
+          profile: {
+            password: DEFAULT_PATTERN_MASK,
+            sessions: [
+              { token: DEFAULT_PATTERN_MASK, username: 'mark' },
+              { metadata: { api_key: DEFAULT_PATTERN_MASK } },
+            ],
+          },
+        });
+      });
+
+      it('should mask sensitive keys in deeply nested objects', () => {
+        // Arrange
+        const testData = {
+          level1: {
+            level2: {
+              level3: {
+                level4: {
+                  level5: {
+                    level6: {
+                      password: 'deep-secret',
+                      visible: 'safe',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({
+          level1: {
+            level2: {
+              level3: {
+                level4: {
+                  level5: {
+                    level6: {
+                      password: DEFAULT_PATTERN_MASK,
+                      visible: 'safe',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+      });
+
+      it('should mask sensitive keys in larger arrays', () => {
+        // Arrange
+        const testData = Array.from({ length: 150 }, (_unused, index) => ({
+          index,
+          token: `token-${index}`,
+          username: `user-${index}`,
+        }));
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>[];
+
+        // Assert
+        expect(result).toHaveLength(150);
+        expect(result[0]).toEqual({
+          index: 0,
+          token: DEFAULT_PATTERN_MASK,
+          username: 'user-0',
+        });
+        expect(result[149]).toEqual({
+          index: 149,
+          token: DEFAULT_PATTERN_MASK,
+          username: 'user-149',
+        });
+      });
+
+      it('should mask unicode sensitive object values', () => {
+        // Arrange
+        const testData = {
+          password: 'paß🔐word',
+          username: 'márk',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('márk');
+      });
     });
 
     describe('removal', () => {
@@ -410,8 +535,49 @@ describe('DataSanitizationReplacers', () => {
         expect(result.createdAt).toBe(date);
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('mark');
-
         // Revert: no cleanup required
+      });
+
+      it('should preserve nested non-plain object instances', () => {
+        // Arrange
+        class SessionRecord {
+          token = 'class-token';
+        }
+
+        const permissions = new Map([['token', 'map-token']]);
+        const labels = new Set(['secret-label']);
+        const session = new SessionRecord();
+        const testData = {
+          permissions,
+          labels,
+          session,
+          password: 'plain-secret',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.permissions).toBe(permissions);
+        expect(result.labels).toBe(labels);
+        expect(result.session).toBe(session);
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+      });
+
+      it('should omit symbol-keyed properties from sanitized object clones', () => {
+        // Arrange
+        const tokenSymbol = Symbol('token');
+        const testData = {
+          username: 'mark',
+          [tokenSymbol]: 'symbol-secret',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({ username: 'mark' });
+        expect(Object.getOwnPropertySymbols(result)).toHaveLength(0);
       });
     });
   });
