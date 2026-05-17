@@ -130,6 +130,20 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('bar');
       });
+
+      it('should fully mask form values containing non-delimiter punctuation', () => {
+        // Arrange
+        const testData =
+          'password=abc-123&token=a%2Bb%2Fc&secret=a.b:c+z/9&username=mark';
+
+        // Act
+        const result = stringReplacer(testData) as string;
+
+        // Assert
+        expect(result).toBe(
+          `password=${DEFAULT_PATTERN_MASK}&token=${DEFAULT_PATTERN_MASK}&secret=${DEFAULT_PATTERN_MASK}&username=mark`,
+        );
+      });
     });
 
     describe('removal', () => {
@@ -187,6 +201,20 @@ describe('DataSanitizationReplacers', () => {
 
         // Assert
         expect(result).toBe('');
+      });
+
+      it('should remove complete form values containing non-delimiter punctuation', () => {
+        // Arrange
+        const testData =
+          'password=abc-123&token=a%2Bb%2Fc&secret=a.b:c+z/9&username=mark';
+
+        // Act
+        const result = stringReplacer(testData, {
+          removeMatches: true,
+        }) as string;
+
+        // Assert
+        expect(result).toBe('username=mark');
       });
     });
 
