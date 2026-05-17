@@ -338,8 +338,6 @@ describe('DataSanitizationReplacers', () => {
         expect(result.api_key).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.apikey).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('safe');
-
-        // Revert: no cleanup required
       });
 
       it('should mask repeated sensitive keys at multiple depths', () => {
@@ -472,8 +470,6 @@ describe('DataSanitizationReplacers', () => {
 
         // Assert
         expect(result).toEqual({ username: 'safe' });
-
-        // Revert: no cleanup required
       });
     });
 
@@ -490,8 +486,6 @@ describe('DataSanitizationReplacers', () => {
 
         // Assert
         expect(result).toBe(nonObjectInput);
-
-        // Revert: no cleanup required
       });
 
       it('should support custom patterns when default patterns are disabled', () => {
@@ -515,8 +509,6 @@ describe('DataSanitizationReplacers', () => {
           ssn: '[MASKED]',
           username: 'safe',
         });
-
-        // Revert: no cleanup required
       });
 
       it('should preserve non-plain objects without corrupting their type', () => {
@@ -535,7 +527,6 @@ describe('DataSanitizationReplacers', () => {
         expect(result.createdAt).toBe(date);
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('mark');
-        // Revert: no cleanup required
       });
 
       it('should preserve nested non-plain object instances', () => {
