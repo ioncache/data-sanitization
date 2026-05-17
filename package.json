@@ -22,7 +22,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn clean && tsc -p tsconfig.build.json",
-    "clean": "rm -rf dist coverage",
+    "clean": "rm -rf dist coverage *.tsbuildinfo",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "lint": "eslint .",
