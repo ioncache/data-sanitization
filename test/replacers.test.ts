@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 /* local imports */
-import { stringReplacer } from '../src/replacers';
+import { objectReplacer, stringReplacer } from '../src/replacers';
 import { DEFAULT_PATTERN_MASK } from '../src/constants';
 
 describe('DataSanitizationReplacers', () => {
@@ -268,6 +268,55 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.ssn).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('bar');
+      });
+    });
+  });
+
+  describe('objectReplacer', () => {
+    describe('masking', () => {
+      it('should mask sensitive object keys with non-string values', () => {
+        // Arrange
+        const testData = {
+          password: 123,
+          secret: false,
+          token: null,
+          api_key: ['a', 'b'],
+          apikey: { nested: true },
+          username: 'safe',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.secret).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.token).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.api_key).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.apikey).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('safe');
+      });
+    });
+
+    describe('removal', () => {
+      it('should remove sensitive object keys with non-string values', () => {
+        // Arrange
+        const testData = {
+          password: 123,
+          secret: false,
+          token: null,
+          api_key: ['a', 'b'],
+          apikey: { nested: true },
+          username: 'safe',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          removeMatches: true,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({ username: 'safe' });
       });
     });
   });

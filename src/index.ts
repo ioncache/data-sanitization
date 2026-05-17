@@ -1,5 +1,5 @@
 import { DataSanitizationError } from './errors';
-import { stringReplacer } from './replacers';
+import { objectReplacer, stringReplacer } from './replacers';
 import { DataSanitizationReplacer } from './types';
 
 /**
@@ -93,9 +93,16 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
     }
 
     if (typeof data === 'object') {
-      const stringifiedData = JSON.stringify(data);
-      const sanitizedData = stringReplacer(stringifiedData, options) as string;
-      return JSON.parse(sanitizedData);
+      if (data === null) {
+        const stringifiedData = JSON.stringify(data);
+        const sanitizedData = stringReplacer(
+          stringifiedData,
+          options,
+        ) as string;
+        return JSON.parse(sanitizedData);
+      }
+
+      return objectReplacer(data, options);
     }
 
     throw new DataSanitizationError('Invalid data type', {

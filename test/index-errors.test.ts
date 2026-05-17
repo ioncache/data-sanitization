@@ -61,7 +61,7 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should sanitize objects containing arrays', () => {
       // Arrange
       const input = {
-        tokens: ['a', 'b'],
+        items: ['a', 'b'],
         username: 'bar',
         password: 'secret',
       };
@@ -71,8 +71,51 @@ describe('DataSanitizationIndexAndErrors', () => {
 
       // Assert
       expect(output.password).toEqual(DEFAULT_PATTERN_MASK);
-      expect(output.tokens).toEqual(['a', 'b']);
+      expect(output.items).toEqual(['a', 'b']);
       expect(output.username).toEqual('bar');
+    });
+
+    it('should sanitize sensitive keys with non-string object values', () => {
+      // Arrange
+      const input = {
+        password: 123456,
+        secret: false,
+        token: null,
+        api_key: ['a', 'b'],
+        apikey: { nested: true },
+        username: 'bar',
+      };
+
+      // Act
+      const output = sanitizeData(input) as Record<string, unknown>;
+
+      // Assert
+      expect(output.password).toEqual(DEFAULT_PATTERN_MASK);
+      expect(output.secret).toEqual(DEFAULT_PATTERN_MASK);
+      expect(output.token).toEqual(DEFAULT_PATTERN_MASK);
+      expect(output.api_key).toEqual(DEFAULT_PATTERN_MASK);
+      expect(output.apikey).toEqual(DEFAULT_PATTERN_MASK);
+      expect(output.username).toEqual('bar');
+    });
+
+    it('should remove sensitive keys with non-string object values', () => {
+      // Arrange
+      const input = {
+        password: 123456,
+        secret: false,
+        token: null,
+        api_key: ['a', 'b'],
+        apikey: { nested: true },
+        username: 'bar',
+      };
+
+      // Act
+      const output = sanitizeData(input, {
+        removeMatches: true,
+      }) as Record<string, unknown>;
+
+      // Assert
+      expect(output).toEqual({ username: 'bar' });
     });
 
     it('should sanitize an empty object without error', () => {
@@ -245,43 +288,21 @@ describe('DataSanitizationIndexAndErrors', () => {
       });
     });
 
-    it('should not expose sensitive object input in parse error details', () => {
+    it('should sanitize object values with embedded quotes without parse errors', () => {
       // Arrange
       const input = {
         password: 'abc"def',
         username: 'mark',
       };
-      let thrownError: unknown;
 
       // Act
-      const act = (): void => {
-        try {
-          sanitizeData(input);
-        } catch (error) {
-          thrownError = error;
-          throw error;
-        }
-      };
+      const output = sanitizeData(input) as Record<string, unknown>;
 
       // Assert
-      expect(act).toThrowError(DataSanitizationError);
-      expect(act).toThrowError('Error parsing data');
-      expect(thrownError).toBeInstanceOf(DataSanitizationError);
-
-      const details = (thrownError as DataSanitizationError).details as Record<
-        string,
-        unknown
-      >;
-      const serializedDetails = JSON.stringify(details);
-
-      expect(details).toEqual({
-        errorName: 'SyntaxError',
-        inputType: 'object',
+      expect(output).toEqual({
+        password: DEFAULT_PATTERN_MASK,
+        username: 'mark',
       });
-      expect(details).not.toHaveProperty('originalData');
-      expect(details).not.toHaveProperty('error');
-      expect(serializedDetails).not.toContain(input.password);
-      expect(serializedDetails).not.toContain(input.username);
     });
   });
 
