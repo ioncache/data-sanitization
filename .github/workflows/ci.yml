@@ -12,6 +12,9 @@ env:
 jobs:
     ci:
         runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            pull-requests: write
         strategy:
             fail-fast: false
             matrix:
@@ -29,4 +32,23 @@ jobs:
             - run: yarn install --frozen-lockfile
             - run: yarn format:check
             - run: yarn lint
-            - run: yarn test
+            - run: yarn test:coverage
+            - name: Report coverage
+              if: matrix.node-version == 24
+              uses: davelosert/vitest-coverage-report-action@v2
+            - name: Extract coverage percentage
+              id: coverage
+              if: matrix.node-version == 24 && github.event_name == 'push'
+              run: echo "percentage=$(jq '.total.lines.pct' coverage/coverage-summary.json)" >> $GITHUB_OUTPUT
+            - name: Update coverage badge
+              if: matrix.node-version == 24 && github.event_name == 'push'
+              uses: schneegans/dynamic-badges-action@v1.8.0
+              with:
+                  auth: ${{ secrets.GIST_SECRET }}
+                  gistID: ${{ vars.COVERAGE_GIST_ID }}
+                  filename: coverage.json
+                  label: coverage
+                  message: ${{ steps.coverage.outputs.percentage }}%
+                  valColorRange: ${{ steps.coverage.outputs.percentage }}
+                  maxColorRange: 100
+                  minColorRange: 0
