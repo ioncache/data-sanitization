@@ -7,6 +7,12 @@
  * @param pattern - Field-name pattern used to create the matcher.
  * @param remove - Whether the matcher should support removal instead of masking.
  * @returns A regular expression that matches sensitive fields for the pattern.
+ * @throws {Error} If the matcher cannot create a regular expression for the pattern.
+ *
+ * @example
+ * const matcher: DataSanitizationMatcher = (pattern) => new RegExp(pattern, 'gi');
+ * matcher('password').test('password=secret');
+ * // => true
  */
 type DataSanitizationMatcher = (pattern: string, remove?: boolean) => RegExp;
 
@@ -46,6 +52,12 @@ interface DataSanitizationReplacerOptions {
  * @param data - String or object data to sanitize.
  * @param options - Matcher, pattern, masking, and removal options.
  * @returns Sanitized string or object data.
+ * @throws {Error} If sanitization fails while matching or serializing data.
+ *
+ * @example
+ * const replacer: DataSanitizationReplacer = (data) => data;
+ * replacer('password=secret');
+ * // => 'password=secret'
  */
 type DataSanitizationReplacer = (
   data: string | Record<string, unknown>,
