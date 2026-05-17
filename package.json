@@ -2,6 +2,10 @@
   "name": "data-sanitization",
   "version": "0.6.0",
   "description": "Sanitization library for obfuscating/removing/securing data.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioncache/data-sanitization.git"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
