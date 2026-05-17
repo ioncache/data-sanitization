@@ -1,5 +1,16 @@
 import { DataSanitizationMatcher } from './types';
 
+/**
+ * Escapes regular expression metacharacters in a pattern string.
+ *
+ * @param pattern - Pattern text to treat literally inside a regular expression.
+ * @returns Pattern text with regular expression metacharacters escaped.
+ * @throws {TypeError} If pattern is not a string.
+ *
+ * @example
+ * escapePattern('pass.*word')
+ * // => 'pass\\.\\*word'
+ */
 const escapePattern = (pattern: string): string =>
   pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -23,7 +34,7 @@ const escapePattern = (pattern: string): string =>
  * // when masked: 'db_password=mask'
  * formEncodedMatcher('db_password=foo')
  *
- * * @example
+ * @example
  * // when masked: 'db_password=mask&password=mask'
  * formEncodedMatcher('db_password=foo&password=bar')
  *
@@ -35,7 +46,10 @@ const escapePattern = (pattern: string): string =>
  * // when masked: 'password:mask'
  * formEncodedMatcher('password:bar')
  *
- * @param pattern A pattern in url form encoded like data used to match against field names
+ * @param pattern - Pattern in url form encoded like data used to match against field names.
+ * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
+ * @returns A global, case-insensitive regular expression for matching form-like fields.
+ * @throws {TypeError} If pattern is not a string.
  */
 const formEncodedMatcher: DataSanitizationMatcher = (
   pattern,
@@ -78,7 +92,10 @@ const formEncodedMatcher: DataSanitizationMatcher = (
  * // when masked: '"This_Is_a_Password_Field":"mask"'
  * jsonMatch('"This_Is_a_Password_Field":"foo"')
  *
- * @param pattern A pattern in json-like data used to match against field names
+ * @param pattern - Pattern in json-like data used to match against field names.
+ * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
+ * @returns A global, case-insensitive regular expression for matching JSON-like fields.
+ * @throws {TypeError} If pattern is not a string.
  */
 const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   const escaped = escapePattern(pattern);
@@ -103,7 +120,10 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
  * // when masked: '\"db_password\":\"mask\"'
  * escapedJsonMatcher('\"db_password\":\"foo\"')
  *
- * @param pattern A pattern in escaped json data used to match against field names
+ * @param pattern - Pattern in escaped json data used to match against field names.
+ * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
+ * @returns A global, case-insensitive regular expression for matching escaped JSON fields.
+ * @throws {TypeError} If pattern is not a string.
  */
 const escapedJsonMatcher: DataSanitizationMatcher = (
   pattern,

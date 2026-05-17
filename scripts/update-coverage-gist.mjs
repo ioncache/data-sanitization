@@ -83,7 +83,11 @@ function buildMarkdown(totals) {
  * @param {string} token - GitHub PAT with gist scope
  * @param {string} content - Markdown content to write
  * @returns {Promise<void>}
- * @throws {Error} When the GitHub API request times out or returns a non-OK status
+ * @throws {Error} When the GitHub API request times out
+ * @throws {Error} When the GitHub API request fails or returns a non-OK status
+ *
+ * @example
+ * await updateGist('abc123', process.env.GIST_SECRET, markdown)
  */
 async function updateGist(gistId, token, content) {
   const controller = new AbortController();

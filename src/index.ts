@@ -1,4 +1,3 @@
-/* local imports */
 import { DataSanitizationError } from './errors';
 import { stringReplacer } from './replacers';
 import { DataSanitizationReplacer } from './types';
@@ -16,8 +15,11 @@ import { DataSanitizationReplacer } from './types';
  * When this fails the data may be returned as a string that has been
  * sanitized, or as an object containing an error message.
  *
- * @param data Data to be sanitized
- * @param options
+ * @param data - String or object data to be sanitized.
+ * @param options - Matcher, pattern, masking, and removal options.
+ * @returns Sanitized data converted back to the original supported input type when possible.
+ * @throws {DataSanitizationError} When the input data type cannot be sanitized.
+ * @throws {DataSanitizationError} When sanitized object data cannot be parsed back to JSON.
  *
  * @example
  * // Sanitize a JSON string
@@ -46,8 +48,6 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
       return JSON.parse(sanitizedData);
     }
 
-    // for data types other than string or object we throw
-    // an error since we cannot sanitize it
     throw new DataSanitizationError('Invalid data type', {
       originalData: data,
     });
