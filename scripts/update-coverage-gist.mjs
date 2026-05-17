@@ -83,23 +83,40 @@ function buildMarkdown(totals) {
  * @param {string} token - GitHub PAT with gist scope
  * @param {string} content - Markdown content to write
  * @returns {Promise<void>}
- * @throws {Error} When the GitHub API request returns a non-OK status
+ * @throws {Error} When the GitHub API request times out or returns a non-OK status
  */
 async function updateGist(gistId, token, content) {
-  const response = await fetch(`https://api.github.com/gists/${gistId}`, {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-      Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28',
-    },
-    body: JSON.stringify({
-      files: {
-        'coverage-report.md': { content },
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+  let response;
+
+  try {
+    response = await fetch(`https://api.github.com/gists/${gistId}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
       },
-    }),
-  });
+      body: JSON.stringify({
+        files: {
+          'coverage-report.md': { content },
+        },
+      }),
+      signal: controller.signal,
+    });
+  } catch (error) {
+    if (error?.name === 'AbortError') {
+      throw new Error('GitHub API request timed out after 15s', {
+        cause: error,
+      });
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const body = await response.text();
@@ -118,6 +135,18 @@ if (!gistId || !token) {
 const summary = JSON.parse(
   readFileSync('coverage/coverage-summary.json', 'utf8'),
 );
+
+if (
+  !summary?.total?.lines ||
+  !summary?.total?.statements ||
+  !summary?.total?.functions ||
+  !summary?.total?.branches
+) {
+  throw new Error(
+    'Invalid coverage/coverage-summary.json: missing total coverage metrics',
+  );
+}
+
 const markdown = buildMarkdown(summary.total);
 
 await updateGist(gistId, token, markdown);
