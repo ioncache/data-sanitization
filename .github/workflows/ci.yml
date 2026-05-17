@@ -52,3 +52,9 @@ jobs:
                   valColorRange: ${{ steps.coverage.outputs.percentage }}
                   maxColorRange: 100
                   minColorRange: 0
+            - name: Update coverage report in Gist
+              if: matrix.node-version == 24 && github.event_name == 'push'
+              env:
+                  COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
+                  GIST_SECRET: ${{ secrets.GIST_SECRET }}
+              run: node scripts/update-coverage-gist.mjs
