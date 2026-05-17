@@ -1,5 +1,7 @@
 # data-sanitization
 
+[![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml)
+
 Pattern-based sanitization for sensitive data in objects and strings. Masks or removes fields matching configurable patterns, making data safe for logging or external exposure.
 
 Works with both JavaScript and TypeScript — ships with compiled JS, TypeScript declarations, and source maps.
