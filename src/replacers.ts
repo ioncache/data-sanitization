@@ -1,4 +1,3 @@
-/* local imports */
 import { DataSanitizationMatcher, DataSanitizationReplacer } from './types';
 import { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK } from './constants';
 import defaultMatchers from './matchers';
@@ -13,8 +12,17 @@ import defaultMatchers from './matchers';
  *       care should still be taken in code to ensure only logging of
  *       safe data
  *
- * @param data Data string to be sanitized
- * @param options
+ * @param data - Data string to be sanitized.
+ * @param options - Matcher, pattern, masking, and removal options.
+ * @returns Sanitized string data, or the original non-string data for runtime safety.
+ *
+ * @example
+ * stringReplacer('password=secret&username=mark')
+ * // => 'password=**********&username=mark'
+ *
+ * @example
+ * stringReplacer('password=secret&username=mark', { removeMatches: true })
+ * // => 'username=mark'
  */
 const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
@@ -26,7 +34,6 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
     useDefaultPatterns = true,
   } = options;
 
-  // for safety in non-typescript environments
   if (typeof data !== 'string') {
     return data;
   }
