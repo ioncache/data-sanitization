@@ -321,27 +321,31 @@ describe('DataSanitizationReplacers', () => {
     });
 
     describe('options', () => {
-      it('should return non-object input unchanged for runtime safety', () => {
+      it('should return non-object input unchanged', () => {
         // Arrange
-        const testData = 'password=secret' as unknown as Record<string, unknown>;
+        const nonObjectInput = 'password=secret' as unknown as Record<
+          string,
+          unknown
+        >;
 
         // Act
-        const result = objectReplacer(testData);
+        const result = objectReplacer(nonObjectInput);
 
         // Assert
-        expect(result).toBe(testData);
+        expect(() => objectReplacer(nonObjectInput)).not.toThrow();
+        expect(result).toBe(nonObjectInput);
       });
 
       it('should support custom patterns when default patterns are disabled', () => {
         // Arrange
-        const testData = {
+        const dataWithCustomPattern = {
           password: 'keep-me',
           ssn: 123456789,
           username: 'safe',
         };
 
         // Act
-        const result = objectReplacer(testData, {
+        const result = objectReplacer(dataWithCustomPattern, {
           customPatterns: ['ssn'],
           patternMask: '[MASKED]',
           useDefaultPatterns: false,
