@@ -58,8 +58,9 @@ PR titles follow conventional commit format with the issue number in scope:
 
 Example: `chore(272): add plan documentation system`
 
-The PR body must include `Closes #<issue-number>` to auto-close the issue on
-merge.
+The PR body uses three sections — **Overview**, **Details**, and **Related
+Tickets and/or Pull Requests** — with issue/PR links under the tickets section
+(e.g. `Closes #N`, `Fixes #N`, `Relates to #N`).
 
 ## Commit Policy
 
