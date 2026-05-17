@@ -1,4 +1,4 @@
-# Coverage Tracking Workflow
+# Coverage Tracking
 
 ## Approach
 

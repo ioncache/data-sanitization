@@ -35,14 +35,14 @@ jobs:
             - run: yarn test:coverage
             - name: Report coverage
               if: matrix.node-version == 24
-              uses: davelosert/vitest-coverage-report-action@v2
+              uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
             - name: Extract coverage percentage
               id: coverage
               if: matrix.node-version == 24 && github.event_name == 'push'
               run: echo "percentage=$(jq '.total.lines.pct' coverage/coverage-summary.json)" >> $GITHUB_OUTPUT
             - name: Update coverage badge
               if: matrix.node-version == 24 && github.event_name == 'push'
-              uses: schneegans/dynamic-badges-action@v1.8.0
+              uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501 # v1.8.0
               with:
                   auth: ${{ secrets.GIST_SECRET }}
                   gistID: ${{ vars.COVERAGE_GIST_ID }}
