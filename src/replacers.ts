@@ -150,6 +150,12 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
       return nextArray;
     }
 
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      seen.delete(value);
+      return value;
+    }
+
     const nextObject: Record<string, unknown> = {};
 
     for (const [key, item] of Object.entries(

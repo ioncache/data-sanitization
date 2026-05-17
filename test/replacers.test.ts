@@ -295,6 +295,8 @@ describe('DataSanitizationReplacers', () => {
         expect(result.api_key).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.apikey).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('safe');
+
+        // Revert: no cleanup required
       });
     });
 
@@ -317,6 +319,8 @@ describe('DataSanitizationReplacers', () => {
 
         // Assert
         expect(result).toEqual({ username: 'safe' });
+
+        // Revert: no cleanup required
       });
     });
 
@@ -333,6 +337,8 @@ describe('DataSanitizationReplacers', () => {
 
         // Assert
         expect(result).toBe(nonObjectInput);
+
+        // Revert: no cleanup required
       });
 
       it('should support custom patterns when default patterns are disabled', () => {
@@ -356,6 +362,28 @@ describe('DataSanitizationReplacers', () => {
           ssn: '[MASKED]',
           username: 'safe',
         });
+
+        // Revert: no cleanup required
+      });
+
+      it('should preserve non-plain objects without corrupting their type', () => {
+        // Arrange
+        const date = new Date('2024-01-01');
+        const testData = {
+          createdAt: date,
+          password: 'secret',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.createdAt).toBe(date);
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('mark');
+
+        // Revert: no cleanup required
       });
     });
   });

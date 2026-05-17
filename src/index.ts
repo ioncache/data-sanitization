@@ -56,18 +56,14 @@ const createSafeErrorDetails = (
  * Sanitizes data in an object/string to make it safe for logging
  * or other purposes of a sensitive nature
  *
- * The approach taken is to always convert the incoming data to a
- * string and then perform sanitization on the string.
+ * Strings are sanitized via {@link stringReplacer}. Non-null objects and arrays
+ * are sanitized directly via {@link objectReplacer} without any string
+ * conversion. Null is JSON-stringified, sanitized via {@link stringReplacer},
+ * then parsed back.
  *
- * Whenever possible the data will be converted back to the original
- * type and returned.
- *
- * When this fails the data may be returned as a string that has been
- * sanitized, or as an object containing an error message.
- *
- * @param data - String or object data to be sanitized.
+ * @param data - String, null, or object data to be sanitized.
  * @param options - Matcher, pattern, masking, and removal options.
- * @returns Sanitized data converted back to the original supported input type when possible.
+ * @returns Sanitized data in the original supported input type when possible.
  * @throws {DataSanitizationError} When the input data type cannot be sanitized.
  * @throws {DataSanitizationError} When sanitized object data cannot be parsed back to JSON.
  *
