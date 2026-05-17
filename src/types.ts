@@ -46,12 +46,22 @@ interface DataSanitizationReplacerOptions {
 }
 
 /**
- * DataSanitizationReplacers are functions that take string data
- * and replace or remove sensitive information
+ * Data accepted by sanitization replacers.
+ */
+type DataSanitizationInput = string | object | null;
+
+/**
+ * Data returned by sanitization replacers.
+ */
+type DataSanitizationOutput = string | object | null;
+
+/**
+ * DataSanitizationReplacers are functions that take supported data
+ * and replace or remove sensitive information.
  *
- * @param data - String or object data to sanitize.
+ * @param data - String, object, array, or null data to sanitize.
  * @param options - Matcher, pattern, masking, and removal options.
- * @returns Sanitized string or object data.
+ * @returns Sanitized data in the original supported input type when possible.
  * @throws {Error} If sanitization fails while matching or serializing data.
  *
  * @example
@@ -60,12 +70,14 @@ interface DataSanitizationReplacerOptions {
  * // => 'password=secret'
  */
 type DataSanitizationReplacer = (
-  data: string | Record<string, unknown>,
+  data: DataSanitizationInput,
   options?: DataSanitizationReplacerOptions,
-) => string | Record<string, unknown>;
+) => DataSanitizationOutput;
 
 export {
+  DataSanitizationInput,
   DataSanitizationMatcher,
+  DataSanitizationOutput,
   DataSanitizationReplacer,
   DataSanitizationReplacerOptions,
 };

@@ -16,7 +16,7 @@ Create issue branch `fix/279/sanitization_error_details` for GitHub issue #279.
 
 1. Update `src/index.ts` to build safe error details for invalid input and
    wrapped failures.
-2. Update `test/index-errors.test.ts` with regression coverage for malformed
+2. Update `test/index.test.ts` with regression coverage for malformed
    sanitized JSON and sensitive payload values.
 3. Update `README.md` so the error handling example logs safe fields instead of
    raw details.
@@ -25,7 +25,7 @@ Create issue branch `fix/279/sanitization_error_details` for GitHub issue #279.
 
 - `docs/plans/003-sanitization-error-details.md` - new plan for issue #279.
 - `src/index.ts` - updated sanitizer error details.
-- `test/index-errors.test.ts` - updated regression coverage for safe error
+- `test/index.test.ts` - updated regression coverage for safe error
   details.
 - `README.md` - updated error handling guidance.
 
