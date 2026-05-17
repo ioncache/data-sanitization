@@ -52,7 +52,7 @@ To create a plan with Copilot, use the `plan-writing` skill in
 
 PR titles follow conventional commit format with the issue number in scope:
 
-```
+```text
 <type>(<issue-number>): <description>
 ```
 
