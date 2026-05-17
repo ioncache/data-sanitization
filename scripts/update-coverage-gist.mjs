@@ -1,79 +1,40 @@
 import { readFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+import yargs from 'yargs/yargs';
+import { hideBin } from 'yargs/helpers';
+import { buildMarkdown } from './coverage-report.mjs';
 
 /**
- * @typedef {Object} CoverageMetric
- * @property {number} total - Total count
- * @property {number} covered - Covered count
- * @property {number} skipped - Skipped count
- * @property {number} pct - Coverage percentage
+ * @typedef {Object} CoverageReportOptions
+ * @property {string} workspacePath - Absolute workspace path
+ * @property {string|undefined} repository - GitHub owner/repo name
+ * @property {string|undefined} commitSha - GitHub commit SHA
  */
 
 /**
- * @typedef {Object} CoverageTotals
- * @property {CoverageMetric} lines
- * @property {CoverageMetric} statements
- * @property {CoverageMetric} functions
- * @property {CoverageMetric} branches
+ * @typedef {Object} CliArguments
+ * @property {boolean} dryRun - Print markdown instead of updating the Gist
  */
 
 /**
- * Returns an emoji status icon based on coverage percentage.
+ * Parses command-line arguments.
  *
- * @param {number} pct - Coverage percentage (0–100)
- * @returns {string} Emoji status icon
+ * @param {string[]} args - Raw command-line arguments
+ * @returns {CliArguments} Parsed command-line arguments
  *
  * @example
- * statusIcon(100) // '🔵'
- * statusIcon(95)  // '🟢'
- * statusIcon(75)  // '🟡'
- * statusIcon(50)  // '🔴'
+ * parseArguments(['--dry-run'])
  */
-function statusIcon(pct) {
-  if (pct >= 100) return '🔵';
-  if (pct >= 90) return '🟢';
-  if (pct >= 70) return '🟡';
-  return '🔴';
-}
-
-/**
- * Formats a single coverage category as a GFM table row.
- *
- * @param {string} category - Category name (e.g. 'Lines')
- * @param {CoverageMetric} metric - Coverage metric data
- * @returns {string} Markdown table row
- *
- * @example
- * tableRow('Lines', { pct: 100, covered: 56, total: 56, skipped: 0 })
- * // '| 🔵 | Lines | 100% | 56 / 56 |'
- */
-function tableRow(category, metric) {
-  const { pct, covered, total } = metric;
-  return `| ${statusIcon(pct)} | ${category} | ${pct}% | ${covered} / ${total} |`;
-}
-
-/**
- * Builds a markdown coverage report table from coverage totals.
- *
- * @param {CoverageTotals} totals - Coverage summary totals
- * @returns {string} Formatted GFM markdown report
- *
- * @example
- * buildMarkdown(summary.total)
- * // '## Coverage Report\n\n| Status | Category | ...'
- */
-function buildMarkdown(totals) {
-  const lines = [
-    '## Coverage Report',
-    '',
-    '| Status | Category | Percentage | Covered / Total |',
-    '| :---: | :--- | ---: | ---: |',
-    tableRow('Lines', totals.lines),
-    tableRow('Statements', totals.statements),
-    tableRow('Functions', totals.functions),
-    tableRow('Branches', totals.branches),
-  ];
-
-  return lines.join('\n');
+function parseArguments(args) {
+  return yargs(args)
+    .usage('Usage: $0 [--dry-run]')
+    .option('dry-run', {
+      type: 'boolean',
+      default: false,
+      describe: 'Print the generated markdown without updating the Gist',
+    })
+    .strict()
+    .parseSync();
 }
 
 /**
@@ -128,30 +89,112 @@ async function updateGist(gistId, token, content) {
   }
 }
 
-const gistId = process.env.COVERAGE_GIST_ID;
-const token = process.env.GIST_SECRET;
-
-if (!gistId || !token) {
-  console.error('COVERAGE_GIST_ID and GIST_SECRET must be set');
-  process.exit(1);
+/**
+ * Reads a JSON file from disk.
+ *
+ * @param {string} filePath - Path to a JSON file
+ * @returns {unknown} Parsed JSON content
+ * @throws {SyntaxError} When the file is not valid JSON
+ *
+ * @example
+ * readJsonFile('coverage/coverage-summary.json')
+ */
+function readJsonFile(filePath) {
+  return JSON.parse(readFileSync(filePath, 'utf8'));
 }
 
-const summary = JSON.parse(
-  readFileSync('coverage/coverage-summary.json', 'utf8'),
-);
+/**
+ * Validates the coverage summary has required aggregate metrics.
+ *
+ * @param {unknown} summary - Parsed coverage summary JSON
+ * @returns {void}
+ * @throws {Error} When required total coverage metrics are missing
+ *
+ * @example
+ * assertValidSummary(summary)
+ */
+function assertValidSummary(summary) {
+  if (
+    summary?.total?.lines &&
+    summary?.total?.statements &&
+    summary?.total?.functions &&
+    summary?.total?.branches
+  ) {
+    return;
+  }
 
-if (
-  !summary?.total?.lines ||
-  !summary?.total?.statements ||
-  !summary?.total?.functions ||
-  !summary?.total?.branches
-) {
   throw new Error(
     'Invalid coverage/coverage-summary.json: missing total coverage metrics',
   );
 }
 
-const markdown = buildMarkdown(summary.total);
+/**
+ * Creates the coverage report from files on disk.
+ *
+ * @param {CoverageReportOptions} options - Coverage report options
+ * @returns {string} Formatted GitHub Markdown report
+ * @throws {SyntaxError} When coverage JSON files are not valid JSON
+ * @throws {Error} When coverage summary metrics are missing
+ *
+ * @example
+ * createCoverageReport({ workspacePath: process.cwd(), repository: 'owner/repo', commitSha: 'abc123' })
+ */
+function createCoverageReport({ workspacePath, repository, commitSha }) {
+  const summary = readJsonFile('coverage/coverage-summary.json');
+  const finalCoverage = readJsonFile('coverage/coverage-final.json');
 
-await updateGist(gistId, token, markdown);
-console.log('Coverage report updated in Gist.');
+  assertValidSummary(summary);
+
+  return buildMarkdown({
+    summary,
+    finalCoverage,
+    workspacePath,
+    repository,
+    commitSha,
+  });
+}
+
+/**
+ * Updates the configured Gist with the current coverage report.
+ *
+ * @returns {Promise<void>}
+ * @throws {Error} When Gist environment variables are missing
+ * @throws {Error} When the GitHub API request fails
+ * @throws {SyntaxError} When coverage JSON files are not valid JSON
+ *
+ * @example
+ * await main()
+ */
+async function main() {
+  const { dryRun } = parseArguments(hideBin(process.argv));
+
+  const markdown = createCoverageReport({
+    workspacePath: process.env.GITHUB_WORKSPACE ?? process.cwd(),
+    repository: process.env.GITHUB_REPOSITORY,
+    commitSha: process.env.GITHUB_SHA,
+  });
+
+  if (dryRun) {
+    console.log(markdown);
+    return;
+  }
+
+  const gistId = process.env.COVERAGE_GIST_ID;
+  const token = process.env.GIST_SECRET;
+
+  if (!gistId || !token) {
+    throw new Error('COVERAGE_GIST_ID and GIST_SECRET must be set');
+  }
+
+  await updateGist(gistId, token, markdown);
+  console.log('Coverage report updated in Gist.');
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+  await main();
+}
+
+export { createCoverageReport, updateGist };
