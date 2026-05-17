@@ -319,5 +319,41 @@ describe('DataSanitizationReplacers', () => {
         expect(result).toEqual({ username: 'safe' });
       });
     });
+
+    describe('options', () => {
+      it('should return non-object input unchanged for runtime safety', () => {
+        // Arrange
+        const testData = 'password=secret' as unknown as Record<string, unknown>;
+
+        // Act
+        const result = objectReplacer(testData);
+
+        // Assert
+        expect(result).toBe(testData);
+      });
+
+      it('should support custom patterns when default patterns are disabled', () => {
+        // Arrange
+        const testData = {
+          password: 'keep-me',
+          ssn: 123456789,
+          username: 'safe',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          customPatterns: ['ssn'],
+          patternMask: '[MASKED]',
+          useDefaultPatterns: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({
+          password: 'keep-me',
+          ssn: '[MASKED]',
+          username: 'safe',
+        });
+      });
+    });
   });
 });
