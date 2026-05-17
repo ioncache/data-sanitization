@@ -288,7 +288,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       });
     });
 
-    it('should sanitize object values with embedded quotes', () => {
+    it('should mask sensitive string values containing quotes', () => {
       // Arrange
       const input = {
         password: 'abc"def',
