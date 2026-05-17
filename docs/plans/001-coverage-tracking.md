@@ -11,7 +11,8 @@ accounts are required beyond GitHub.
 ## Pre-implementation
 
 - Create a public GitHub Gist with a file named `coverage.json`
-- Create a classic PAT with `gist` scope at https://github.com/settings/tokens
+- Create a classic PAT with `gist` scope at
+  [github.com/settings/tokens](https://github.com/settings/tokens)
 - Add the PAT as repository secret `GIST_SECRET`
 - Add the Gist ID as repository variable `COVERAGE_GIST_ID`
 - Create GitHub issue #274
