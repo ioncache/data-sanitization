@@ -61,7 +61,7 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should sanitize objects containing arrays', () => {
       // Arrange
       const input = {
-        items: ['a', 'b'],
+        tokens: ['a', 'b'],
         username: 'bar',
         password: 'secret',
       };
@@ -71,7 +71,7 @@ describe('DataSanitizationIndexAndErrors', () => {
 
       // Assert
       expect(output.password).toEqual(DEFAULT_PATTERN_MASK);
-      expect(output.items).toEqual(['a', 'b']);
+      expect(output.tokens).toEqual(DEFAULT_PATTERN_MASK);
       expect(output.username).toEqual('bar');
     });
 

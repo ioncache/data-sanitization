@@ -122,6 +122,17 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
   );
   const seen = new WeakSet<object>();
 
+  /**
+   * Recursively sanitizes nested object and array values by key name.
+   *
+   * @param value - Current value to sanitize.
+   * @returns Sanitized clone of the provided value.
+   * @throws {TypeError} If a circular reference is encountered.
+   *
+   * @example
+   * sanitizeValue({ password: 'secret' })
+   * // => { password: '**********' }
+   */
   const sanitizeValue = (value: unknown): unknown => {
     if (typeof value !== 'object' || value === null) {
       return value;
