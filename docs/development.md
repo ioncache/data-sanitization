@@ -38,6 +38,30 @@ yarn test
 yarn test:coverage
 ```
 
+## Planning
+
+Before starting any non-trivial change, write a plan document in `docs/plans/`.
+Plans are named sequentially (`NNN-short-description.md`) and committed
+alongside the implementation. See [docs/plans/README.md](plans/README.md) for
+the full convention.
+
+To create a plan with Copilot, use the `plan-writing` skill in
+`.github/skills/plan-writing/SKILL.md`.
+
+## Pull Requests
+
+PR titles follow conventional commit format with the issue number in scope:
+
+```text
+<type>(<issue-number>): <description>
+```
+
+Example: `chore(272): add plan documentation system`
+
+The PR body uses three sections — **Overview**, **Details**, and **Related
+Tickets and/or Pull Requests** — with issue/PR links under the tickets section
+(e.g. `Closes #N`, `Fixes #N`, `Relates to #N`).
+
 ## Commit Policy
 
 Commit messages are validated with commitlint using conventional commits.
