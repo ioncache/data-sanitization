@@ -2,15 +2,18 @@
 
 ## Setup
 
-This repository uses Yarn and Husky hooks.
+This repository uses Yarn, Husky hooks, and Volta-pinned tool versions. Install
+Volta or use compatible local versions of Node and Yarn before installing
+dependencies.
 
 ```bash
 yarn install
 ```
 
-Common commands:
+Common package scripts:
 
 ```bash
+yarn build
 yarn format
 yarn format:check
 yarn lint
@@ -26,7 +29,9 @@ Build artifacts are emitted to `dist/`:
 yarn build
 ```
 
-`prepack` runs the build automatically to ensure published packages use compiled output.
+The build emits compiled JavaScript, TypeScript declarations, and source maps.
+`prepack` runs the build automatically to ensure published packages use compiled
+output.
 
 ## Testing
 
@@ -92,6 +97,15 @@ yarn release --bump patch
 ```
 
 Supported bump values: `major`, `minor`, `patch`.
+
+Before publishing or cutting a release, run the local validation scripts:
+
+```bash
+yarn format:check
+yarn lint
+yarn build
+yarn test:coverage
+```
 
 Live release behavior:
 

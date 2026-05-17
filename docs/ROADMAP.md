@@ -13,8 +13,8 @@ on configurable patterns; ships TypeScript declarations; and avoids exposing
 input payloads in sanitizer error details.
 
 The project should continue to prioritize a small public API, predictable
-behavior, safe logging use cases, and low-friction adoption in JavaScript and
-TypeScript projects.
+behavior, sensitive-data sanitization for logging and debugging workflows, and
+low-friction adoption in JavaScript and TypeScript projects.
 
 ## Near-Term v1.x Work
 
