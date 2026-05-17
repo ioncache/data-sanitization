@@ -195,18 +195,23 @@ describe('DataSanitizationIndexAndErrors', () => {
       let thrownError: unknown;
 
       // Act
-      try {
-        sanitizeData(input, {
-          customMatchers: [failingMatcher],
-          customPatterns: ['password'],
-          useDefaultMatchers: false,
-          useDefaultPatterns: false,
-        });
-      } catch (error) {
-        thrownError = error;
-      }
+      const act = (): void => {
+        try {
+          sanitizeData(input, {
+            customMatchers: [failingMatcher],
+            customPatterns: ['password'],
+            useDefaultMatchers: false,
+            useDefaultPatterns: false,
+          });
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
+      };
 
       // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
       expect(thrownError).toBeInstanceOf(DataSanitizationError);
       expect((thrownError as DataSanitizationError).details).toEqual({
         errorName: 'Error',
@@ -221,13 +226,18 @@ describe('DataSanitizationIndexAndErrors', () => {
       let thrownError: unknown;
 
       // Act
-      try {
-        sanitizeData(input as unknown as Record<string, unknown>);
-      } catch (error) {
-        thrownError = error;
-      }
+      const act = (): void => {
+        try {
+          sanitizeData(input as unknown as Record<string, unknown>);
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
+      };
 
       // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
       expect(thrownError).toBeInstanceOf(DataSanitizationError);
       expect((thrownError as DataSanitizationError).details).toEqual({
         errorName: 'TypeError',
@@ -244,15 +254,19 @@ describe('DataSanitizationIndexAndErrors', () => {
       let thrownError: unknown;
 
       // Act
-      try {
-        sanitizeData(input);
-      } catch (error) {
-        thrownError = error;
-      }
+      const act = (): void => {
+        try {
+          sanitizeData(input);
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
+      };
 
       // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
       expect(thrownError).toBeInstanceOf(DataSanitizationError);
-      expect((thrownError as Error).message).toEqual('Error parsing data');
 
       const details = (thrownError as DataSanitizationError).details as Record<
         string,
