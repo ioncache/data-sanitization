@@ -158,9 +158,10 @@ original input payload.
 
 ## How it works
 
-1. **String input** is sanitized directly via regex replacement.
-2. **Object input** is converted to a JSON string via `JSON.stringify`, sanitized, then parsed back with `JSON.parse`.
-3. Each configured pattern is tested against each matcher to produce regex instances that find and replace sensitive field values.
+1. **String input** is sanitized directly via regex replacement with the configured matchers.
+2. **Object input** is sanitized recursively by key name without JSON serialization. Sensitive keys are masked or removed regardless of whether their values are strings, numbers, arrays, objects, or other primitives.
+3. **Plain nested objects and arrays** are cloned as they are sanitized. Non-plain object instances are preserved without modification to avoid corrupting their prototypes.
+4. Each configured pattern is matched case-insensitively against object keys. For string input, each configured pattern is tested against each matcher to produce regex instances that find and replace sensitive field values.
 
 ## Contributing
 
