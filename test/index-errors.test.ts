@@ -186,6 +186,55 @@ describe('DataSanitizationIndexAndErrors', () => {
       });
     });
 
+    it('should report null input type in wrapped error details', () => {
+      // Arrange
+      const input = null as unknown as Record<string, unknown>;
+      const failingMatcher = (): RegExp => {
+        throw new Error('matcher failed');
+      };
+      let thrownError: unknown;
+
+      // Act
+      try {
+        sanitizeData(input, {
+          customMatchers: [failingMatcher],
+          customPatterns: ['password'],
+          useDefaultMatchers: false,
+          useDefaultPatterns: false,
+        });
+      } catch (error) {
+        thrownError = error;
+      }
+
+      // Assert
+      expect(thrownError).toBeInstanceOf(DataSanitizationError);
+      expect((thrownError as DataSanitizationError).details).toEqual({
+        errorName: 'Error',
+        inputType: 'null',
+      });
+    });
+
+    it('should report array input type in wrapped error details', () => {
+      // Arrange
+      const input: unknown[] = [];
+      input.push(input);
+      let thrownError: unknown;
+
+      // Act
+      try {
+        sanitizeData(input as unknown as Record<string, unknown>);
+      } catch (error) {
+        thrownError = error;
+      }
+
+      // Assert
+      expect(thrownError).toBeInstanceOf(DataSanitizationError);
+      expect((thrownError as DataSanitizationError).details).toEqual({
+        errorName: 'TypeError',
+        inputType: 'array',
+      });
+    });
+
     it('should not expose sensitive object input in parse error details', () => {
       // Arrange
       const input = {
