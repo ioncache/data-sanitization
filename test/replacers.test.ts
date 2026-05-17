@@ -332,7 +332,6 @@ describe('DataSanitizationReplacers', () => {
         const result = objectReplacer(nonObjectInput);
 
         // Assert
-        expect(() => objectReplacer(nonObjectInput)).not.toThrow();
         expect(result).toBe(nonObjectInput);
       });
 
