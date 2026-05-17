@@ -1,6 +1,7 @@
 import { DataSanitizationMatcher, DataSanitizationReplacer } from './types';
 import { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK } from './constants';
 import defaultMatchers from './matchers';
+import { escapePattern } from './matchers';
 
 /**
  * Sanitizes a string by masking or removing sensitive data.
@@ -76,4 +77,107 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   return data;
 };
 
-export { stringReplacer };
+/**
+ * Sanitizes object fields by key name, masking or removing matched keys.
+ *
+ * @param data - Object or array data to sanitize.
+ * @param options - Pattern, masking, and removal options.
+ * @returns Sanitized object/array data, or the original non-object data for runtime safety.
+ * @throws {TypeError} If a circular reference is encountered.
+ *
+ * @example
+ * objectReplacer({ password: 'secret', username: 'mark' })
+ * // => { password: '**********', username: 'mark' }
+ *
+ * @example
+ * objectReplacer({ token: 123, username: 'mark' }, { removeMatches: true })
+ * // => { username: 'mark' }
+ */
+const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
+  const {
+    customPatterns,
+    patternMask,
+    removeMatches = false,
+    useDefaultPatterns = true,
+  } = options;
+
+  if (typeof data !== 'object' || data === null) {
+    return data;
+  }
+
+  const mask = patternMask ?? DEFAULT_PATTERN_MASK;
+
+  let patterns: string[] = [];
+
+  if (useDefaultPatterns) {
+    patterns = [...DEFAULT_FIELD_NAME_PATTERNS];
+  }
+
+  if (Array.isArray(customPatterns)) {
+    patterns = [...patterns, ...customPatterns];
+  }
+
+  const keyMatchers = patterns.map(
+    (pattern) => new RegExp(`\\w*${escapePattern(pattern)}\\w*`, 'i'),
+  );
+  const seen = new WeakSet<object>();
+
+  /**
+   * Recursively sanitizes nested object and array values by key name.
+   *
+   * @param value - Current value to sanitize.
+   * @returns Sanitized clone of the provided value.
+   * @throws {TypeError} If a circular reference is encountered.
+   *
+   * @example
+   * sanitizeValue({ password: 'secret' })
+   * // => { password: '**********' }
+   */
+  const sanitizeValue = (value: unknown): unknown => {
+    if (typeof value !== 'object' || value === null) {
+      return value;
+    }
+
+    if (seen.has(value)) {
+      throw new TypeError('Circular reference detected in object structure');
+    }
+
+    seen.add(value);
+
+    if (Array.isArray(value)) {
+      const nextArray = value.map((item) => sanitizeValue(item));
+      seen.delete(value);
+      return nextArray;
+    }
+
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      seen.delete(value);
+      return value;
+    }
+
+    const nextObject: Record<string, unknown> = {};
+
+    for (const [key, item] of Object.entries(
+      value as Record<string, unknown>,
+    )) {
+      const isSensitiveKey = keyMatchers.some((matcher) => matcher.test(key));
+
+      if (isSensitiveKey) {
+        if (!removeMatches) {
+          nextObject[key] = mask;
+        }
+        continue;
+      }
+
+      nextObject[key] = sanitizeValue(item);
+    }
+
+    seen.delete(value);
+    return nextObject;
+  };
+
+  return sanitizeValue(data) as Record<string, unknown>;
+};
+
+export { objectReplacer, stringReplacer };

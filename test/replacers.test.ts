@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 /* local imports */
-import { stringReplacer } from '../src/replacers';
+import { objectReplacer, stringReplacer } from '../src/replacers';
 import { DEFAULT_PATTERN_MASK } from '../src/constants';
 
 describe('DataSanitizationReplacers', () => {
@@ -268,6 +268,122 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.ssn).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('bar');
+      });
+    });
+  });
+
+  describe('objectReplacer', () => {
+    describe('masking', () => {
+      it('should mask sensitive object keys with non-string values', () => {
+        // Arrange
+        const testData = {
+          password: 123,
+          secret: false,
+          token: null,
+          api_key: ['a', 'b'],
+          apikey: { nested: true },
+          username: 'safe',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.secret).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.token).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.api_key).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.apikey).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('safe');
+
+        // Revert: no cleanup required
+      });
+    });
+
+    describe('removal', () => {
+      it('should remove sensitive object keys with non-string values', () => {
+        // Arrange
+        const testData = {
+          password: 123,
+          secret: false,
+          token: null,
+          api_key: ['a', 'b'],
+          apikey: { nested: true },
+          username: 'safe',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          removeMatches: true,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({ username: 'safe' });
+
+        // Revert: no cleanup required
+      });
+    });
+
+    describe('options', () => {
+      it('should return non-object input unchanged', () => {
+        // Arrange
+        const nonObjectInput = 'password=secret' as unknown as Record<
+          string,
+          unknown
+        >;
+
+        // Act
+        const result = objectReplacer(nonObjectInput);
+
+        // Assert
+        expect(result).toBe(nonObjectInput);
+
+        // Revert: no cleanup required
+      });
+
+      it('should support custom patterns when default patterns are disabled', () => {
+        // Arrange
+        const dataWithCustomPattern = {
+          password: 'keep-me',
+          ssn: 123456789,
+          username: 'safe',
+        };
+
+        // Act
+        const result = objectReplacer(dataWithCustomPattern, {
+          customPatterns: ['ssn'],
+          patternMask: '[MASKED]',
+          useDefaultPatterns: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result).toEqual({
+          password: 'keep-me',
+          ssn: '[MASKED]',
+          username: 'safe',
+        });
+
+        // Revert: no cleanup required
+      });
+
+      it('should preserve non-plain objects without corrupting their type', () => {
+        // Arrange
+        const date = new Date('2024-01-01');
+        const testData = {
+          createdAt: date,
+          password: 'secret',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.createdAt).toBe(date);
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('mark');
+
+        // Revert: no cleanup required
       });
     });
   });
