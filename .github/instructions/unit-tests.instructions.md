@@ -8,7 +8,8 @@ applyTo: '**/*.test.js,**/*.test.ts,**/*.test.jsx,**/*.test.tsx'
 
 ## Core Principles
 
-1. Use AAAR (Arrange, Act, Assert, Revert) comments for test clarity
+1. Use Arrange, Act, and Assert comments for non-trivial tests; add Revert only
+   when the test performs cleanup
 2. Aim for 100% coverage; use `/* istanbul ignore next */` with justification
 3. BDD format: `describe()` blocks + `it()` (never use `test()`)
 4. Test titles should start with `should` and describe behavior
@@ -84,14 +85,18 @@ describe('Calculator', () => {
 });
 ```
 
-## AAAR Comments
+## AAA and Revert Comments
 
 Use in every non-trivial test:
 
 - `// Arrange` — setup/given
 - `// Act` — when
 - `// Assert` — then
-- `// Revert` — cleanup (or use `afterEach`)
+
+Use only when cleanup is actually performed:
+
+- `// Revert` — cleanup local test state, mocks, timers, files, or other side
+  effects not handled by `afterEach`
 
 Simple tests with obvious steps may omit these.
 
@@ -145,6 +150,7 @@ describe('labResults.js', () => {
 
 - [ ] Tests use `describe()` and `it()`
 - [ ] Test titles start with `should`
-- [ ] AAAR comments are present in non-trivial tests
+- [ ] Arrange, Act, and Assert comments are present in non-trivial tests
+- [ ] Revert comments are present only when the test performs cleanup
 - [ ] Coverage exceptions include justification comments
 - [ ] Modified tests are run and passing
