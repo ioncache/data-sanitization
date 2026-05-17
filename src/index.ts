@@ -3,6 +3,56 @@ import { stringReplacer } from './replacers';
 import { DataSanitizationReplacer } from './types';
 
 /**
+ * Returns a safe type label for data passed to the sanitizer.
+ *
+ * @param data - Input value being sanitized.
+ * @returns A type label that does not expose the input value.
+ * @throws Does not throw.
+ *
+ * @example
+ * getInputType({ password: 'secret' })
+ * // => 'object'
+ */
+const getInputType = (data: unknown): string => {
+  if (data === null) {
+    return 'null';
+  }
+
+  if (Array.isArray(data)) {
+    return 'array';
+  }
+
+  return typeof data;
+};
+
+/**
+ * Builds public error details that do not include caller payloads.
+ *
+ * @param data - Input value being sanitized.
+ * @param error - Optional wrapped error from the failed operation.
+ * @returns Structured diagnostics safe for logging.
+ * @throws Does not throw.
+ *
+ * @example
+ * createSafeErrorDetails({ password: 'secret' }, new SyntaxError('Bad JSON'))
+ * // => { inputType: 'object', errorName: 'SyntaxError' }
+ */
+const createSafeErrorDetails = (
+  data: unknown,
+  error?: unknown,
+): Record<string, string> => {
+  const details: Record<string, string> = {
+    inputType: getInputType(data),
+  };
+
+  if (error instanceof Error) {
+    details.errorName = error.name;
+  }
+
+  return details;
+};
+
+/**
  * Sanitizes data in an object/string to make it safe for logging
  * or other purposes of a sensitive nature
  *
@@ -49,15 +99,14 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
     }
 
     throw new DataSanitizationError('Invalid data type', {
-      originalData: data,
+      ...createSafeErrorDetails(data),
     });
   } catch (error) {
     if (error instanceof DataSanitizationError) {
       throw error;
     }
     throw new DataSanitizationError('Error parsing data', {
-      error,
-      originalData: data,
+      ...createSafeErrorDetails(data, error),
     });
   }
 };

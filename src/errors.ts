@@ -4,7 +4,7 @@
  *
  * @example
  * const error = new DataSanitizationError('Invalid data type', {
- *   originalData: 123,
+ *   inputType: 'number',
  * });
  * error.name;
  * // => 'DataSanitizationError'
@@ -20,7 +20,7 @@ class DataSanitizationError extends Error {
    *
    * @example
    * const error = new DataSanitizationError('Invalid data type', {
-   *   originalData: 123,
+   *   inputType: 'number',
    * });
    */
   constructor(message: string, details: unknown = {}) {
