@@ -2,7 +2,7 @@
 
 ## Approach
 
-Bring existing JavaScript and TypeScript functions into alignment with the repository JSDoc standards without changing runtime behavior. The cleanup focuses on documenting current public and internal function contracts, including return values, examples, and thrown error conditions where applicable.
+Bring existing JavaScript and TypeScript functions into alignment with the repository JSDoc standards without changing runtime behavior. Document current public and internal function contracts, including return values, examples, and thrown error conditions where applicable.
 
 ## Steps
 
