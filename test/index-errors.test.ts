@@ -115,15 +115,24 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should throw DataSanitizationError for invalid data type', () => {
       // Arrange
       const input = 123 as unknown as Record<string, unknown>;
+      let thrownError: unknown;
 
       // Act
       const act = (): void => {
-        sanitizeData(input);
+        try {
+          sanitizeData(input);
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
       };
 
       // Assert
       expect(act).toThrowError(DataSanitizationError);
       expect(act).toThrowError('Invalid data type');
+      expect((thrownError as DataSanitizationError).details).toEqual({
+        inputType: 'number',
+      });
     });
 
     it('should throw DataSanitizationError for boolean input', () => {
@@ -156,15 +165,123 @@ describe('DataSanitizationIndexAndErrors', () => {
       // Arrange
       const input: Record<string, unknown> = {};
       input.self = input;
+      let thrownError: unknown;
 
       // Act
       const act = (): void => {
-        sanitizeData(input);
+        try {
+          sanitizeData(input);
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
       };
 
       // Assert
       expect(act).toThrowError(DataSanitizationError);
       expect(act).toThrowError('Error parsing data');
+      expect((thrownError as DataSanitizationError).details).toEqual({
+        errorName: 'TypeError',
+        inputType: 'object',
+      });
+    });
+
+    it('should report null input type in wrapped error details', () => {
+      // Arrange
+      const input = null as unknown as Record<string, unknown>;
+      const failingMatcher = (): RegExp => {
+        throw new Error('matcher failed');
+      };
+      let thrownError: unknown;
+
+      // Act
+      const act = (): void => {
+        try {
+          sanitizeData(input, {
+            customMatchers: [failingMatcher],
+            customPatterns: ['password'],
+            useDefaultMatchers: false,
+            useDefaultPatterns: false,
+          });
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
+      };
+
+      // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
+      expect(thrownError).toBeInstanceOf(DataSanitizationError);
+      expect((thrownError as DataSanitizationError).details).toEqual({
+        errorName: 'Error',
+        inputType: 'null',
+      });
+    });
+
+    it('should report array input type in wrapped error details', () => {
+      // Arrange
+      const input: unknown[] = [];
+      input.push(input);
+      let thrownError: unknown;
+
+      // Act
+      const act = (): void => {
+        try {
+          sanitizeData(input as unknown as Record<string, unknown>);
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
+      };
+
+      // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
+      expect(thrownError).toBeInstanceOf(DataSanitizationError);
+      expect((thrownError as DataSanitizationError).details).toEqual({
+        errorName: 'TypeError',
+        inputType: 'array',
+      });
+    });
+
+    it('should not expose sensitive object input in parse error details', () => {
+      // Arrange
+      const input = {
+        password: 'abc"def',
+        username: 'mark',
+      };
+      let thrownError: unknown;
+
+      // Act
+      const act = (): void => {
+        try {
+          sanitizeData(input);
+        } catch (error) {
+          thrownError = error;
+          throw error;
+        }
+      };
+
+      // Assert
+      expect(act).toThrowError(DataSanitizationError);
+      expect(act).toThrowError('Error parsing data');
+      expect(thrownError).toBeInstanceOf(DataSanitizationError);
+
+      const details = (thrownError as DataSanitizationError).details as Record<
+        string,
+        unknown
+      >;
+      const serializedDetails = JSON.stringify(details);
+
+      expect(details).toEqual({
+        errorName: 'SyntaxError',
+        inputType: 'object',
+      });
+      expect(details).not.toHaveProperty('originalData');
+      expect(details).not.toHaveProperty('error');
+      expect(serializedDetails).not.toContain(input.password);
+      expect(serializedDetails).not.toContain(input.username);
     });
   });
 

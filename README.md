@@ -148,10 +148,13 @@ try {
 } catch (error) {
   if (error instanceof DataSanitizationError) {
     console.error(error.message); // 'Invalid data type'
-    console.error(error.details); // { originalData: 123 }
+    console.error(error.details); // { inputType: 'number' }
   }
 }
 ```
+
+Error details are limited to safe diagnostic metadata and do not include the
+original input payload.
 
 ## How it works
 
