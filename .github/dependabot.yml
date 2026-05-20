@@ -15,13 +15,10 @@ updates:
       include: "scope"
 
     groups:
-      eslint:
+      oxlint:
         patterns:
-          - "eslint"
-          - "@eslint/*"
-          - "typescript-eslint"
-          - "@typescript-eslint/*"
-          - "eslint-*"
+          - "oxlint"
+          - "oxlint-*"
         update-types:
           - "minor"
           - "patch"
@@ -36,7 +33,8 @@ updates:
 
       formatting:
         patterns:
-          - "prettier"
+          - "oxfmt"
+          - "@oxfmt/*"
         update-types:
           - "minor"
           - "patch"

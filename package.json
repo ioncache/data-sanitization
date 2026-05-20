@@ -46,10 +46,10 @@
   "scripts": {
     "build": "yarn clean && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist coverage *.tsbuildinfo",
-    "format": "prettier . --write",
-    "format:check": "prettier . --check",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
     "prepare": "husky",
     "prepack": "yarn build",
     "release": "node scripts/release.mjs",
@@ -59,14 +59,14 @@
   },
   "lint-staged": {
     "*.{ts,js,mjs,cjs}": [
-      "eslint --fix",
-      "prettier --write"
+      "oxlint --fix",
+      "oxfmt"
     ],
     "*.md": [
-      "prettier --write"
+      "oxfmt"
     ],
     "*.{json,yml,yaml}": [
-      "prettier --write"
+      "oxfmt"
     ],
     "*.sh": [
       "./scripts/shell_lint.sh"
@@ -75,21 +75,17 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.0",
-    "@eslint/js": "^10.0.1",
     "@tsconfig/node20": "^20.1.4",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "conventional-changelog": "^7.1.0",
-    "eslint": "^10.4.0",
-    "eslint-config-prettier": "^10.1.1",
-    "globals": "^17.4.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
-    "prettier": "^3.5.3",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
     "query-string": "^9.3.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.4",
     "vitest": "^4.1.6",
     "yargs": "^18.0.0"
   },
