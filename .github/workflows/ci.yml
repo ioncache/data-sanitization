@@ -1,61 +1,61 @@
 name: CI
 
 on:
-    push:
-        branches: [main]
-    pull_request:
-        branches: [main]
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 env:
-    FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-    ci:
-        runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            pull-requests: write
-        strategy:
-            fail-fast: false
-            matrix:
-                node-version: [22, 24]
-        steps:
-            - uses: actions/checkout@v6
-            - uses: actions/setup-node@v6
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: yarn
-            - run: corepack enable
-            - run: |
-                  git config --global user.name "CI"
-                  git config --global user.email "ci@localhost"
-                  git config --global init.defaultBranch main
-            - run: yarn install --immutable
-            - run: yarn format:check
-            - run: yarn lint --format=github
-            - run: yarn test:coverage
-            - name: Report coverage
-              if: matrix.node-version == 24
-              uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
-            - name: Extract coverage percentage
-              id: coverage
-              if: matrix.node-version == 24 && github.event_name == 'push'
-              run: echo "percentage=$(jq '.total.lines.pct' coverage/coverage-summary.json)" >> $GITHUB_OUTPUT
-            - name: Update coverage badge
-              if: matrix.node-version == 24 && github.event_name == 'push'
-              uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501 # v1.8.0
-              with:
-                  auth: ${{ secrets.GIST_SECRET }}
-                  gistID: ${{ vars.COVERAGE_GIST_ID }}
-                  filename: coverage.json
-                  label: coverage
-                  message: ${{ steps.coverage.outputs.percentage }}%
-                  valColorRange: ${{ steps.coverage.outputs.percentage }}
-                  maxColorRange: 100
-                  minColorRange: 0
-            - name: Update coverage report in Gist
-              if: matrix.node-version == 24 && github.event_name == 'push'
-              env:
-                  COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
-                  GIST_SECRET: ${{ secrets.GIST_SECRET }}
-              run: node scripts/update-coverage-gist.mjs
+  ci:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [22, 24]
+    steps:
+      - uses: actions/checkout@v6
+      - run: corepack enable
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: yarn
+      - run: |
+          git config --global user.name "CI"
+          git config --global user.email "ci@localhost"
+          git config --global init.defaultBranch main
+      - run: yarn install --immutable
+      - run: yarn format:check
+      - run: yarn lint --format=github
+      - run: yarn test:coverage
+      - name: Report coverage
+        if: matrix.node-version == 24
+        uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
+      - name: Extract coverage percentage
+        id: coverage
+        if: matrix.node-version == 24 && github.event_name == 'push'
+        run: echo "percentage=$(jq '.total.lines.pct' coverage/coverage-summary.json)" >> "$GITHUB_OUTPUT"
+      - name: Update coverage badge
+        if: matrix.node-version == 24 && github.event_name == 'push'
+        uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501 # v1.8.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.COVERAGE_GIST_ID }}
+          filename: coverage.json
+          label: coverage
+          message: ${{ steps.coverage.outputs.percentage }}%
+          valColorRange: ${{ steps.coverage.outputs.percentage }}
+          maxColorRange: 100
+          minColorRange: 0
+      - name: Update coverage report in Gist
+        if: matrix.node-version == 24 && github.event_name == 'push'
+        env:
+          COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
+          GIST_SECRET: ${{ secrets.GIST_SECRET }}
+        run: node scripts/update-coverage-gist.mjs

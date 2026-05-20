@@ -9,8 +9,6 @@
   "useTabs": false,
   "sortPackageJson": false,
   "ignorePatterns": [
-    "*.yaml",
-    "*.yml",
     "package-lock.json",
     "yarn.lock",
     ".yarn/sdks",

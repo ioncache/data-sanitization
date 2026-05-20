@@ -18,14 +18,14 @@ Create the `chore/yarn-modern-migration` branch before changing package-manager 
 6. Update `.gitignore` so local Yarn install metadata stays untracked.
 7. Update `tsconfig.json` to avoid hard-coded `node_modules` type resolution.
 8. Generate Yarn's VS Code SDK files so editor TypeScript resolution uses the PnP-aware TypeScript wrapper.
-9. Update Oxlint, Oxfmt, and lint-staged configuration so generated Yarn SDK wrappers are not linted or formatted as source files.
+9. Update Oxlint, Oxfmt, actionlint, yamllint, and lint-staged configuration so generated Yarn SDK wrappers are not linted or formatted as source files and YAML files are both formatted and linted.
 10. Update `docs/development.md` with the new package-manager expectations and install command.
 11. Run the package scripts that validate formatting, linting, building, and tests.
 
 ## Relevant Files
 
 - `package.json` - Updated to declare Modern Yarn metadata and retain the Node pin.
-- `lint-staged.config.mjs` - New lint-staged configuration that skips generated Yarn SDK files before invoking source tools.
+- `lint-staged.config.mjs` - New lint-staged configuration that skips generated Yarn SDK files before invoking source tools and runs YAML/action linting for staged YAML files.
 - `.oxfmtrc.json` - Updated to exclude Yarn-generated SDK wrappers from formatting checks.
 - `.oxlintrc.json` - Updated to exclude Yarn-generated SDK wrappers from lint checks.
 - `.yarnrc.yml` - New Yarn configuration that enables Plug'n'Play and patches transitive peer metadata gaps.
@@ -41,7 +41,7 @@ Create the `chore/yarn-modern-migration` branch before changing package-manager 
 
 ## Verification
 
-Run `yarn --version`, `yarn install --immutable`, `yarn format:check`, `yarn lint --format=github`, `yarn build`, and `yarn test:coverage` after migration.
+Run `yarn --version`, `yarn install --immutable`, `yarn format:check`, `yarn lint:ci`, `yarn build`, and `yarn test:coverage` after migration.
 
 ## Decisions
 

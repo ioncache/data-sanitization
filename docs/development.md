@@ -106,7 +106,7 @@ Before publishing or cutting a release, run the local validation scripts:
 
 ```bash
 yarn format:check
-yarn lint --format=github
+yarn lint:ci
 yarn build
 yarn test:coverage
 ```
