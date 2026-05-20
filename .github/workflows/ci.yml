@@ -25,11 +25,12 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: yarn
+            - run: corepack enable
             - run: |
                   git config --global user.name "CI"
                   git config --global user.email "ci@localhost"
                   git config --global init.defaultBranch main
-            - run: yarn install --frozen-lockfile
+            - run: yarn install --immutable
             - run: yarn format:check
             - run: yarn lint --format=github
             - run: yarn test:coverage

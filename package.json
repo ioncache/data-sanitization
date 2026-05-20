@@ -45,7 +45,7 @@
   "license": "MIT",
   "scripts": {
     "build": "yarn clean && tsc -p tsconfig.build.json",
-    "clean": "rm -rf dist coverage *.tsbuildinfo",
+    "clean": "rm -rf dist coverage && find . -maxdepth 1 -name '*.tsbuildinfo' -delete",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint",
@@ -56,21 +56,6 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest"
-  },
-  "lint-staged": {
-    "*.{ts,js,mjs,cjs}": [
-      "oxlint --fix",
-      "oxfmt"
-    ],
-    "*.md": [
-      "oxfmt"
-    ],
-    "*.{json,yml,yaml}": [
-      "oxfmt"
-    ],
-    "*.sh": [
-      "./scripts/shell_lint.sh"
-    ]
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
@@ -91,6 +76,7 @@
   },
   "volta": {
     "node": "22.22.3",
-    "yarn": "1.22.22"
-  }
+    "yarn": "4.15.0"
+  },
+  "packageManager": "yarn@4.15.0"
 }
