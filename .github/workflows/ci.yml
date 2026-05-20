@@ -31,7 +31,7 @@ jobs:
                   git config --global init.defaultBranch main
             - run: yarn install --frozen-lockfile
             - run: yarn format:check
-            - run: yarn lint
+            - run: yarn lint --format=github
             - run: yarn test:coverage
             - name: Report coverage
               if: matrix.node-version == 24
