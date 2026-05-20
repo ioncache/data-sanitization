@@ -2,12 +2,16 @@
 
 ## Setup
 
-This repository uses Yarn, Husky hooks, and Volta-pinned tool versions. Install
-Volta or use compatible local versions of Node and Yarn before installing
-dependencies.
+This repository uses Yarn 4 Plug'n'Play, Husky hooks, and Volta-pinned tool versions.
+Install Volta or use a Corepack-compatible environment before installing
+dependencies. Yarn cache and install state are not committed, and generated PnP
+files such as `.pnp.cjs` are local.
+
+VS Code uses the Yarn-generated TypeScript SDK in `.yarn/sdks/` so editor
+diagnostics resolve dependencies the same way package scripts do.
 
 ```bash
-yarn install
+yarn install --immutable
 ```
 
 Common package scripts:
@@ -102,7 +106,7 @@ Before publishing or cutting a release, run the local validation scripts:
 
 ```bash
 yarn format:check
-yarn lint
+yarn lint:ci
 yarn build
 yarn test:coverage
 ```
