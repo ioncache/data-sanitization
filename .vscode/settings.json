@@ -3,5 +3,11 @@
     "*.jsonc": "jsonc",
     ".markdownlint.jsonc": "jsonc",
     ".markdownlint-cli2.jsonc": "jsonc"
-  }
+  },
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  },
+  "typescript.tsdk": ".yarn/sdks/typescript/lib",
+  "typescript.enablePromptUseWorkspaceTsdk": true
 }

@@ -1,70 +1,70 @@
 version: 2
 
 updates:
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "cron"
-      cronjob: "0 9 1-7 * 1"
-      timezone: "America/Toronto"
+      interval: 'cron'
+      cronjob: '0 9 1-7 * 1'
+      timezone: 'America/Toronto'
 
     open-pull-requests-limit: 3
 
     commit-message:
-      prefix: "chore"
-      include: "scope"
+      prefix: 'chore'
+      include: 'scope'
 
     groups:
       oxlint:
         patterns:
-          - "oxlint"
-          - "oxlint-*"
+          - 'oxlint'
+          - 'oxlint-*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
       test-tooling:
         patterns:
-          - "vitest"
-          - "@vitest/*"
+          - 'vitest'
+          - '@vitest/*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
       formatting:
         patterns:
-          - "oxfmt"
-          - "@oxfmt/*"
+          - 'oxfmt'
+          - '@oxfmt/*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
       npm-prod-minor-and-patch:
-        dependency-type: "production"
+        dependency-type: 'production'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
       npm-dev-minor-and-patch:
-        dependency-type: "development"
+        dependency-type: 'development'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
 
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "cron"
-      cronjob: "0 9 1-7 * 1"
-      timezone: "America/Toronto"
+      interval: 'cron'
+      cronjob: '0 9 1-7 * 1'
+      timezone: 'America/Toronto'
 
     open-pull-requests-limit: 2
 
     commit-message:
-      prefix: "ci"
-      include: "scope"
+      prefix: 'ci'
+      include: 'scope'
 
     groups:
       github-actions:
         patterns:
-          - "*"
+          - '*'
