@@ -46,9 +46,15 @@ import { fileCoverageTable } from './coverage-file-report.mjs';
  * statusIcon(100)
  */
 function statusIcon(pct) {
-  if (pct >= 100) return '🔵';
-  if (pct >= 90) return '🟢';
-  if (pct >= 70) return '🟡';
+  if (pct >= 100) {
+    return '🔵';
+  }
+  if (pct >= 90) {
+    return '🟢';
+  }
+  if (pct >= 70) {
+    return '🟡';
+  }
   return '🔴';
 }
 

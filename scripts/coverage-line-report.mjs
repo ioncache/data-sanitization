@@ -69,7 +69,9 @@ function escapeMarkdownUrl(value) {
  * uncoveredLineRanges(finalCoverage['/repo/src/index.ts'])
  */
 function uncoveredLineRanges(detail) {
-  if (!detail?.s || !detail?.statementMap) return [];
+  if (!detail?.s || !detail?.statementMap) {
+    return [];
+  }
 
   const ranges = [];
   let currentRange;
@@ -77,20 +79,24 @@ function uncoveredLineRanges(detail) {
   for (const key of Object.keys(detail.statementMap)) {
     const location = detail.statementMap[key];
     if (detail.s[key] > 0) {
-      if (currentRange) ranges.push(currentRange);
+      if (currentRange) {
+        ranges.push(currentRange);
+      }
       currentRange = undefined;
       continue;
     }
 
     if (!currentRange) {
-      currentRange = { start: location.start.line, end: location.end.line };
+      currentRange = { end: location.end.line, start: location.start.line };
       continue;
     }
 
     currentRange.end = location.end.line;
   }
 
-  if (currentRange) ranges.push(currentRange);
+  if (currentRange) {
+    ranges.push(currentRange);
+  }
   return ranges;
 }
 
@@ -104,7 +110,9 @@ function uncoveredLineRanges(detail) {
  * lineRangeText({ start: 2, end: 4 })
  */
 function lineRangeText(range) {
-  if (range.start === range.end) return `${range.start}`;
+  if (range.start === range.end) {
+    return `${range.start}`;
+  }
   return `${range.start}-${range.end}`;
 }
 
@@ -121,7 +129,9 @@ function uncoveredLineLinks(input) {
   return input.ranges
     .map((range) => {
       const label = lineRangeText(range);
-      if (!input.fileUrl) return escapeMarkdownCell(label);
+      if (!input.fileUrl) {
+        return escapeMarkdownCell(label);
+      }
 
       const hash =
         range.start === range.end

@@ -1,7 +1,22 @@
 import { DataSanitizationMatcher, DataSanitizationReplacer } from './types';
 import { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK } from './constants';
-import defaultMatchers from './matchers';
-import { escapePattern } from './matchers';
+import defaultMatchers, { escapePattern } from './matchers';
+
+const buildPatterns = (
+  useDefaultPatterns: boolean,
+  customPatterns?: string[],
+): string[] => {
+  const base = useDefaultPatterns ? [...DEFAULT_FIELD_NAME_PATTERNS] : [];
+  return Array.isArray(customPatterns) ? [...base, ...customPatterns] : base;
+};
+
+const buildMatchers = (
+  useDefaultMatchers: boolean,
+  customMatchers?: DataSanitizationMatcher[],
+): DataSanitizationMatcher[] => {
+  const base = useDefaultMatchers ? [...defaultMatchers] : [];
+  return Array.isArray(customMatchers) ? [...base, ...customMatchers] : base;
+};
 
 /**
  * Sanitizes a string by masking or removing sensitive data.
@@ -41,26 +56,8 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   }
 
   const mask = patternMask ?? DEFAULT_PATTERN_MASK;
-
-  let patterns: string[] = [];
-
-  if (useDefaultPatterns) {
-    patterns = [...DEFAULT_FIELD_NAME_PATTERNS];
-  }
-
-  if (Array.isArray(customPatterns)) {
-    patterns = [...patterns, ...customPatterns];
-  }
-
-  let matchers: DataSanitizationMatcher[] = [];
-
-  if (useDefaultMatchers) {
-    matchers = [...defaultMatchers];
-  }
-
-  if (Array.isArray(customMatchers)) {
-    matchers = [...matchers, ...customMatchers];
-  }
+  const patterns = buildPatterns(useDefaultPatterns, customPatterns);
+  const matchers = buildMatchers(useDefaultMatchers, customMatchers);
 
   for (const pattern of patterns) {
     for (const matcher of matchers) {
@@ -106,33 +103,12 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
   }
 
   const mask = patternMask ?? DEFAULT_PATTERN_MASK;
-
-  let patterns: string[] = [];
-
-  if (useDefaultPatterns) {
-    patterns = [...DEFAULT_FIELD_NAME_PATTERNS];
-  }
-
-  if (Array.isArray(customPatterns)) {
-    patterns = [...patterns, ...customPatterns];
-  }
-
+  const patterns = buildPatterns(useDefaultPatterns, customPatterns);
   const keyMatchers = patterns.map(
     (pattern) => new RegExp(`\\w*${escapePattern(pattern)}\\w*`, 'i'),
   );
   const seen = new WeakSet<object>();
 
-  /**
-   * Recursively sanitizes nested object and array values by key name.
-   *
-   * @param value - Current value to sanitize.
-   * @returns Sanitized clone of the provided value.
-   * @throws {TypeError} If a circular reference is encountered.
-   *
-   * @example
-   * sanitizeValue({ password: 'secret' })
-   * // => { password: '**********' }
-   */
   const sanitizeValue = (value: unknown): unknown => {
     if (typeof value !== 'object' || value === null) {
       return value;

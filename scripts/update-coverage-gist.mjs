@@ -29,9 +29,9 @@ function parseArguments(args) {
   return yargs(args)
     .usage('Usage: $0 [--dry-run]')
     .option('dry-run', {
-      type: 'boolean',
       default: false,
       describe: 'Print the generated markdown without updating the Gist',
+      type: 'boolean',
     })
     .strict()
     .parseSync();
@@ -58,18 +58,18 @@ async function updateGist(gistId, token, content) {
 
   try {
     response = await fetch(`https://api.github.com/gists/${gistId}`, {
-      method: 'PATCH',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/vnd.github+json',
-        'X-GitHub-Api-Version': '2022-11-28',
-      },
       body: JSON.stringify({
         files: {
           'coverage-report.md': { content },
         },
       }),
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      method: 'PATCH',
       signal: controller.signal,
     });
   } catch (error) {
@@ -146,11 +146,11 @@ function createCoverageReport({ workspacePath, repository, commitSha }) {
   assertValidSummary(summary);
 
   return buildMarkdown({
-    summary,
-    finalCoverage,
-    workspacePath,
-    repository,
     commitSha,
+    finalCoverage,
+    repository,
+    summary,
+    workspacePath,
   });
 }
 
@@ -169,9 +169,9 @@ async function main() {
   const { dryRun } = parseArguments(hideBin(process.argv));
 
   const markdown = createCoverageReport({
-    workspacePath: process.env.GITHUB_WORKSPACE ?? process.cwd(),
-    repository: process.env.GITHUB_REPOSITORY,
     commitSha: process.env.GITHUB_SHA,
+    repository: process.env.GITHUB_REPOSITORY,
+    workspacePath: process.env.GITHUB_WORKSPACE ?? process.cwd(),
   });
 
   if (dryRun) {
