@@ -10,8 +10,11 @@
 
 Follow the plan format rules in `.ai/instructions/plan-writing.md`.
 
-> **Claude Code:** `@.ai/instructions/plan-writing.md`
-> **GitHub Copilot:** `#file:../../.ai/instructions/plan-writing.md`
+When creating thin wrapper files that reference this instruction, use the
+appropriate syntax for each AI system:
+
+- **Claude Code** thin wrappers: `@.ai/instructions/plan-writing.md`
+- **GitHub Copilot** thin wrappers: `#file:../../.ai/instructions/plan-writing.md`
 
 ## Workflow
 
