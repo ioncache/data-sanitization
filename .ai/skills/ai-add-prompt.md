@@ -13,7 +13,7 @@ available in both Copilot and Claude Code.
 Before creating any files, check:
 
 - **Copilot prompts active**: `.github/prompts/` directory exists
-- **Claude active**: `CLAUDE.md` file exists (create in `.claude/commands/`)
+- **Claude active**: `CLAUDE.md` file exists (create in `.claude/skills/`)
 
 ## Steps
 
@@ -44,7 +44,7 @@ Before creating any files, check:
    #file:../../.ai/prompts/<name>.md
    ```
 
-4. **If Claude active** — Create `.claude/commands/<name>.md`:
+4. **If Claude active** — Create `.claude/skills/<name>.md`:
 
    ```text
    @.ai/prompts/<name>.md
