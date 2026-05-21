@@ -6,6 +6,10 @@ import sanitizeData from '../src/index';
 import { DataSanitizationError } from '../src/errors';
 import { DEFAULT_PATTERN_MASK } from '../src/constants';
 
+const failingMatcher = (): RegExp => {
+  throw new Error('matcher failed');
+};
+
 describe('DataSanitizationIndexAndErrors', () => {
   describe('sanitizeData', () => {
     it('should sanitize top-level object input', () => {
@@ -61,9 +65,9 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should mask array-valued sensitive object keys', () => {
       // Arrange
       const input = {
+        password: 'secret',
         tokens: ['a', 'b'],
         username: 'bar',
-        password: 'secret',
       };
 
       // Act
@@ -95,11 +99,11 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should sanitize sensitive keys with non-string object values', () => {
       // Arrange
       const input = {
+        api_key: ['a', 'b'],
+        apikey: { nested: true },
         password: 123456,
         secret: false,
         token: null,
-        api_key: ['a', 'b'],
-        apikey: { nested: true },
         username: 'bar',
       };
 
@@ -118,11 +122,11 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should remove sensitive keys with non-string object values', () => {
       // Arrange
       const input = {
+        api_key: ['a', 'b'],
+        apikey: { nested: true },
         password: 123456,
         secret: false,
         token: null,
-        api_key: ['a', 'b'],
-        apikey: { nested: true },
         username: 'bar',
       };
 
@@ -271,9 +275,6 @@ describe('DataSanitizationIndexAndErrors', () => {
     it('should report null input type in wrapped error details', () => {
       // Arrange
       const input = null as unknown as Record<string, unknown>;
-      const failingMatcher = (): RegExp => {
-        throw new Error('matcher failed');
-      };
       let thrownError: unknown;
 
       // Act

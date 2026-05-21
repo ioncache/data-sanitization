@@ -29,7 +29,7 @@ class DataSanitizationError extends Error {
     this.details = details;
   }
 
-  details: unknown = {};
+  details: unknown;
 }
 
 export { DataSanitizationError };

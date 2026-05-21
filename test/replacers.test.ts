@@ -30,8 +30,8 @@ describe('DataSanitizationReplacers', () => {
       it('should mask all default patterns in JSON data', () => {
         // Arrange
         const testData = JSON.stringify({
-          apikey: 'k1',
           api_key: 'k2',
+          apikey: 'k1',
           password: 'p1',
           secret: 's1',
           token: 't1',
@@ -103,8 +103,8 @@ describe('DataSanitizationReplacers', () => {
       it('should mask nested JSON objects', () => {
         // Arrange
         const testData = JSON.stringify({
-          user: 'mark',
           credentials: { password: 'secret', token: 'abc' },
+          user: 'mark',
         });
 
         // Act
@@ -251,11 +251,11 @@ describe('DataSanitizationReplacers', () => {
 
         // Act
         const replacedData = stringReplacer(testData, {
-          customPatterns: ['token'],
           customMatchers: [
             (pattern: string) =>
               new RegExp(`(\\w*${pattern}\\w*[=:])(?:\\W?.*?)([\\W]|$)`, 'gi'),
           ],
+          customPatterns: ['token'],
           patternMask: '[MASKED]',
           useDefaultMatchers: false,
           useDefaultPatterns: false,
@@ -320,11 +320,11 @@ describe('DataSanitizationReplacers', () => {
       it('should mask sensitive object keys with non-string values', () => {
         // Arrange
         const testData = {
+          api_key: ['a', 'b'],
+          apikey: { nested: true },
           password: 123,
           secret: false,
           token: null,
-          api_key: ['a', 'b'],
-          apikey: { nested: true },
           username: 'safe',
         };
 
@@ -455,11 +455,11 @@ describe('DataSanitizationReplacers', () => {
       it('should remove sensitive object keys with non-string values', () => {
         // Arrange
         const testData = {
+          api_key: ['a', 'b'],
+          apikey: { nested: true },
           password: 123,
           secret: false,
           token: null,
-          api_key: ['a', 'b'],
-          apikey: { nested: true },
           username: 'safe',
         };
 
@@ -539,10 +539,10 @@ describe('DataSanitizationReplacers', () => {
         const labels = new Set(['secret-label']);
         const session = new SessionRecord();
         const testData = {
-          permissions,
           labels,
-          session,
           password: 'plain-secret',
+          permissions,
+          session,
         };
 
         // Act

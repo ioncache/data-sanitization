@@ -95,7 +95,9 @@ function fileCoverageEntries(summary, workspacePath) {
       relativePath: relativeCoveragePath(filePath, workspacePath),
       totals,
     }))
-    .sort((left, right) => left.relativePath.localeCompare(right.relativePath));
+    .toSorted((left, right) =>
+      left.relativePath.localeCompare(right.relativePath),
+    );
 }
 
 /**
@@ -108,7 +110,9 @@ function fileCoverageEntries(summary, workspacePath) {
  * sourceFileUrl({ repository: 'owner/repo', commitSha: 'abc123', relativePath: 'src/index.ts' })
  */
 function sourceFileUrl(input) {
-  if (!input.repository || !input.commitSha) return undefined;
+  if (!input.repository || !input.commitSha) {
+    return undefined;
+  }
   return `https://github.com/${input.repository}/blob/${input.commitSha}/${encodeURI(input.relativePath)}`;
 }
 
@@ -124,7 +128,9 @@ function sourceFileUrl(input) {
  */
 function fileCell(entry, fileUrl) {
   const label = escapeMarkdownCell(entry.relativePath);
-  if (!fileUrl) return label;
+  if (!fileUrl) {
+    return label;
+  }
   return `[${label}](${escapeMarkdownUrl(fileUrl)})`;
 }
 
@@ -152,7 +158,7 @@ function metricCell(metric) {
  */
 function fileCoverageRow(input) {
   const ranges = uncoveredLineRanges(input.finalCoverage[input.entry.filePath]);
-  return `| ${fileCell(input.entry, input.fileUrl)} | ${metricCell(input.entry.totals.statements)} | ${metricCell(input.entry.totals.branches)} | ${metricCell(input.entry.totals.functions)} | ${metricCell(input.entry.totals.lines)} | ${uncoveredLineLinks({ ranges, fileUrl: input.fileUrl })} |`;
+  return `| ${fileCell(input.entry, input.fileUrl)} | ${metricCell(input.entry.totals.statements)} | ${metricCell(input.entry.totals.branches)} | ${metricCell(input.entry.totals.functions)} | ${metricCell(input.entry.totals.lines)} | ${uncoveredLineLinks({ fileUrl: input.fileUrl, ranges })} |`;
 }
 
 /**
@@ -169,12 +175,12 @@ function fileCoverageTable(input) {
     (entry) =>
       fileCoverageRow({
         entry,
-        finalCoverage: input.finalCoverage,
         fileUrl: sourceFileUrl({
-          repository: input.repository,
           commitSha: input.commitSha,
           relativePath: entry.relativePath,
+          repository: input.repository,
         }),
+        finalCoverage: input.finalCoverage,
       }),
   );
 

@@ -26,7 +26,9 @@ const runCommand =
   (filePaths) => {
     const targetPaths = filePaths.filter(includeFile);
 
-    if (targetPaths.length === 0) return [];
+    if (targetPaths.length === 0) {
+      return [];
+    }
 
     return `${command} ${targetPaths.map(quotePath).join(' ')}`;
   };
@@ -44,11 +46,11 @@ const runStructuredDataTasks = (filePaths) =>
   ]);
 
 export default {
+  '*.{json,yml,yaml}': runStructuredDataTasks,
   '*.{ts,js,mjs,cjs}': [
     runCommand({ command: 'oxlint --fix' }),
     runCommand({ command: 'oxfmt' }),
   ],
   '*.md': runCommand({ command: 'oxfmt' }),
-  '*.{json,yml,yaml}': runStructuredDataTasks,
   '*.sh': './scripts/shell_lint.sh',
 };

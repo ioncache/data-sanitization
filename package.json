@@ -3,28 +3,35 @@
   "version": "1.0.1",
   "description": "Sanitization library for masking or removing sensitive data.",
   "keywords": [
-    "sanitize",
-    "sanitization",
     "data-sanitization",
-    "redact",
-    "redaction",
+    "logging",
     "mask",
     "masking",
-    "sensitive-data",
-    "pii",
     "phi",
+    "pii",
+    "redact",
+    "redaction",
+    "sanitization",
+    "sanitize",
     "secrets",
-    "logging",
+    "sensitive-data",
     "typescript"
   ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ioncache/data-sanitization.git"
-  },
   "homepage": "https://github.com/ioncache/data-sanitization#readme",
   "bugs": {
     "url": "https://github.com/ioncache/data-sanitization/issues"
   },
+  "license": "MIT",
+  "author": "Mark Jubenville <ioncache@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioncache/data-sanitization.git"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -33,16 +40,6 @@
       "default": "./dist/index.js"
     }
   },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "engines": {
-    "node": ">=22.22.1"
-  },
-  "author": "Mark Jubenville <ioncache@gmail.com>",
-  "license": "MIT",
   "scripts": {
     "build": "yarn clean && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist coverage && find . -maxdepth 1 -name '*.tsbuildinfo' -delete",
@@ -64,7 +61,7 @@
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.0",
-    "@tsconfig/node20": "^20.1.4",
+    "@tsconfig/node22": "^22.0.5",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "conventional-changelog": "^7.1.0",
@@ -79,6 +76,9 @@
     "vitest": "^4.1.6",
     "yaml-lint": "^1.7.0",
     "yargs": "^18.0.0"
+  },
+  "engines": {
+    "node": ">=22.22.1"
   },
   "volta": {
     "node": "22.22.3",

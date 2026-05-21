@@ -8,15 +8,15 @@ const argv = yargs(hideBin(process.argv))
   .usage('Usage: $0 --bump <major|minor|patch> [--dry-run]')
   .option('bump', {
     alias: 'b',
-    type: 'string',
     choices: ['major', 'minor', 'patch'],
     demandOption: true,
     describe: 'Semver bump type',
+    type: 'string',
   })
   .option('dry-run', {
-    type: 'boolean',
     default: false,
     describe: 'Preview release notes without releasing',
+    type: 'boolean',
   })
   .strict()
   .parseSync();

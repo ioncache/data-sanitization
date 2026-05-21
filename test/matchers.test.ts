@@ -244,7 +244,7 @@ describe('DataSanitizationMatchers', () => {
       const result = testData.replace(matcher, '');
 
       // Assert
-      expect(JSON.parse(result)).toEqual({ username: 'bar', email: 'baz' });
+      expect(JSON.parse(result)).toEqual({ email: 'baz', username: 'bar' });
     });
 
     it('should produce a removal regex that cleanly removes the first field', () => {

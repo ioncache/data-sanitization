@@ -90,27 +90,25 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
 
     if (typeof data === 'object') {
       if (data === null) {
-        const stringifiedData = JSON.stringify(data);
-        const sanitizedData = stringReplacer(
-          stringifiedData,
-          options,
-        ) as string;
-        return JSON.parse(sanitizedData);
+        return JSON.parse(
+          stringReplacer(JSON.stringify(data), options) as string,
+        );
       }
-
       return objectReplacer(data, options);
     }
 
-    throw new DataSanitizationError('Invalid data type', {
-      ...createSafeErrorDetails(data),
-    });
+    throw new DataSanitizationError(
+      'Invalid data type',
+      createSafeErrorDetails(data),
+    );
   } catch (error) {
     if (error instanceof DataSanitizationError) {
       throw error;
     }
-    throw new DataSanitizationError('Error parsing data', {
-      ...createSafeErrorDetails(data, error),
-    });
+    throw new DataSanitizationError(
+      'Error parsing data',
+      createSafeErrorDetails(data, error),
+    );
   }
 };
 
