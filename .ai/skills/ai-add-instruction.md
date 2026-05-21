@@ -53,7 +53,7 @@ Before creating any files, check:
 
 4. **If Claude active** — Append to `CLAUDE.md`'s `## Conventions` section:
 
-   ```
+   ```text
    @.ai/instructions/<name>.md
    ```
 

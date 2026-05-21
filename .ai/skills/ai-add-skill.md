@@ -49,7 +49,7 @@ Before creating any files, check:
 
 4. **If Claude active** — Create `.claude/skills/<name>.md`:
 
-   ```
+   ```text
    @.ai/skills/<name>.md
    ```
 

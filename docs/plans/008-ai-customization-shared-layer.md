@@ -57,13 +57,13 @@ description: '...'
 
 **Claude skill** (`.claude/skills/<name>.md`) — no frontmatter:
 
-```
+```text
 @.ai/skills/<name>.md
 ```
 
 **Claude prompt** (`.claude/skills/<name>.md`) — no frontmatter:
 
-```
+```text
 @.ai/prompts/<name>.md
 ```
 
@@ -135,7 +135,7 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
 
 8. Create `.claude/skills/plan-writing.md` containing only:
 
-   ```
+   ```text
    @.ai/skills/plan-writing.md
    ```
 

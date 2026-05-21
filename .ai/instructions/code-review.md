@@ -59,11 +59,11 @@ Comments should be actionable and specific to what changed.
 
 ## Reference to Other Instruction Files
 
-Other instruction files (`code-complexity`, `comments`, `jsdoc`, `performance`,
-`security`, `unit-tests`) are primarily for coding agents implementing changes.
-Use them as guidelines during reviews, but apply standards only to new or
-modified code — don't flag pre-existing issues unless the change makes them
-worse.
+Other instruction files (`code-complexity`, `comments`, `jsdoc-tsdoc`,
+`plan-writing`, `security`, `unit-tests`) are primarily for coding agents
+implementing changes. Use them as guidelines during reviews, but apply standards
+only to new or modified code — don't flag pre-existing issues unless the change
+makes them worse.
 
 ## Handling Slight Regressions (Suggestion vs Requirement)
 
@@ -80,8 +80,8 @@ requirements unless the regression is serious:
   deferring.
 
 When in doubt, suggest rather than require. Explain why for requirements; offer
-examples for suggestions. Link to instruction files when relevant (`jsdoc`,
-`performance`, `code-complexity`).
+examples for suggestions. Link to instruction files when relevant (`jsdoc-tsdoc`,
+`code-complexity`).
 
 ## Checklist
 
