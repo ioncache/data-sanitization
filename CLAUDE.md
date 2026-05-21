@@ -30,5 +30,5 @@ This is a TypeScript library that sanitizes sensitive data in objects and string
 
 @.ai/instructions/code-complexity.md
 @.ai/instructions/comments.md
-@.ai/instructions/jsdoc.md
+@.ai/instructions/jsdoc-tsdoc.md
 @.ai/instructions/unit-tests.md

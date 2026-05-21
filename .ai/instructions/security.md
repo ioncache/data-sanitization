@@ -2,220 +2,147 @@
 
 ## Core Principles
 
-1. **Validate at the edge** — Validate request shape and value constraints on all external inputs.
-2. **Sanitize untrusted content** — Sanitize user-provided markup and normalize text input.
-3. **Verify signatures** — Verify signatures for all inbound webhooks or callbacks.
-4. **Use safe identifier conversion** — Parse and validate untrusted IDs with strict checks and try/catch.
-5. **Fail securely** — Log internal details server-side and return generic client errors.
-6. **Least privilege** — Restrict access with explicit authorization policies.
-7. **Secrets in environment only** — Validate required secrets at startup and never hardcode credentials.
+1. **Never expose data in errors** — Error messages must not contain the
+   original input payload. Use type labels or error categories only.
+2. **Validate inputs at library boundaries** — Check that inputs match expected
+   types before processing. Fail fast with a typed error.
+3. **Guard against ReDoS** — Regex patterns that process untrusted input must
+   avoid catastrophic backtracking. Test patterns against worst-case inputs.
+4. **Handle circular references safely** — When recursing into objects, track
+   visited nodes to prevent infinite loops and stack overflows.
+5. **Validate custom patterns** — User-provided pattern strings are untrusted
+   input. Validate or escape before passing to `RegExp`.
+6. **No hardcoded credentials** — Never commit tokens, keys, or secrets to
+   source. Read secrets from environment variables.
+7. **Minimal dependency surface** — Keep dependencies minimal. Audit for known
+   vulnerabilities regularly.
 
-## Input Validation
+## Data Safety in Errors
 
-**Every endpoint should validate request body, params, and query values:**
+**Never include the original value in thrown errors or error details:**
 
-```javascript
-// Good: Validate request before business logic
-const schema = {
-  type: 'object',
-  required: ['email', 'password'],
-  properties: {
-    email: { type: 'string', format: 'email' },
-    password: { type: 'string', minLength: 8 },
-  },
-};
+```typescript
+// Bad: exposes the payload
+throw new Error(`Cannot sanitize value: ${JSON.stringify(data)}`);
 
-function createUserHandler(request, response) {
-  const { valid, errors } = validate(schema, request.body);
-  if (!valid) {
-    return response.status(400).json({ error: 'Invalid request payload' });
-  }
+// Good: only exposes the type
+throw new DataSanitizationError(
+  `Cannot sanitize value of type: ${getInputType(data)}`,
+);
+```
 
-  const { email, password } = request.body;
-  return response.status(201).json({ email });
-}
+**Use type labels, not values, in all diagnostic output:**
 
-// Bad: No validation
-function createUserHandlerUnsafe(request, response) {
-  const { email, password } = request.body; // Unsafe
-  return response.status(201).json({ email, password });
+```typescript
+function getInputType(data: unknown): string {
+  if (data === null) return 'null';
+  if (Array.isArray(data)) return 'array';
+  return typeof data;
 }
 ```
 
-## Security Headers
+## Input Validation at Library Boundaries
 
-**Set defensive security headers for all HTTP responses:**
+**Check types before processing and throw typed errors early:**
 
-```javascript
-function applySecurityHeaders(response) {
-  response.setHeader('X-Content-Type-Options', 'nosniff');
-  response.setHeader('X-Frame-Options', 'DENY');
-  response.setHeader('Referrer-Policy', 'no-referrer');
-  response.setHeader('Content-Security-Policy', "default-src 'self'");
+```typescript
+// Good: validate before recursing
+function sanitizeObject(data: unknown): unknown {
+  if (data === null || typeof data !== 'object') {
+    throw new DataSanitizationError(
+      `Expected object, got ${getInputType(data)}`,
+    );
+  }
+  return processObject(data);
 }
 ```
 
-## Safe Identifier Handling
+## ReDoS Protection
 
-**Always validate identifier format before database access:**
+**Avoid patterns with nested quantifiers or overlapping alternations on
+untrusted input:**
 
-```javascript
-function parseStrictId(id) {
-  if (!/^[a-f0-9]{24}$/i.test(id)) {
-    throw new Error('Invalid ID format');
-  }
-  return id.toLowerCase();
-}
+```typescript
+// Risky: nested quantifiers can cause catastrophic backtracking
+const unsafe = /^(a+)+$/;
 
-function findById(id, repository) {
-  try {
-    const safeId = parseStrictId(id);
-    return repository.findOne({ id: safeId });
-  } catch {
-    return null;
+// Safe: linear patterns with clear boundaries
+const safe = /^a+$/;
+```
+
+**Test custom patterns against long repeated inputs before using them:**
+
+```typescript
+// Validate performance before accepting a user pattern
+function benchmarkPattern(pattern: RegExp, worstCase: string): void {
+  const start = Date.now();
+  pattern.test(worstCase);
+  if (Date.now() - start > 100) {
+    throw new Error('Pattern too slow on worst-case input');
   }
 }
 ```
 
-## Webhook Signature Verification
+## Circular Reference Safety
 
-**Always verify webhook signatures before processing payloads:**
+**Track visited nodes with a `WeakSet` when recursing into objects:**
 
-```javascript
-import crypto from 'node:crypto';
-
-function verifyWebhookSignature({ payload, signature, secret }) {
-  const expected = crypto
-    .createHmac('sha256', secret)
-    .update(payload)
-    .digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(expected),
-    Buffer.from(signature || ''),
-  );
-}
-
-function handleWebhook(request, response, secret) {
-  const signature = request.headers['x-signature'];
-  const valid = verifyWebhookSignature({
-    payload: request.rawBody,
-    signature,
-    secret,
-  });
-
-  if (!valid) {
-    return response.status(401).json({ error: 'Invalid signature' });
-  }
-
-  return response.status(200).json({ ok: true });
-}
-```
-
-## Authentication and Authorization
-
-**Protect private routes and authorize by capability/role:**
-
-```javascript
-function requireAuth(request) {
-  if (!request.user) {
-    throw new Error('Unauthorized');
+```typescript
+// Bad: unbounded recursion
+function recurse(obj: Record<string, unknown>): void {
+  for (const key of Object.keys(obj)) {
+    recurse(obj[key] as Record<string, unknown>);
   }
 }
 
-function requirePermission(user, permission) {
-  if (!user.permissions.includes(permission)) {
-    throw new Error('Forbidden');
-  }
-}
-
-function createAdminUser(request, response) {
-  requireAuth(request);
-  requirePermission(request.user, 'users:create');
-  return response.status(201).json({ ok: true });
-}
-```
-
-## Data Protection
-
-### Rate Limiting
-
-```javascript
-function createRateLimiter({ max, windowMs }) {
-  const hits = new Map();
-
-  return function allow(ip, now = Date.now()) {
-    const slot = hits.get(ip) || [];
-    const recent = slot.filter((ts) => now - ts < windowMs);
-    if (recent.length >= max) return false;
-    recent.push(now);
-    hits.set(ip, recent);
-    return true;
-  };
-}
-```
-
-### Input Sanitization
-
-**Sanitize untrusted user content before persistence or rendering:**
-
-```javascript
-function sanitizeInput(value) {
-  if (typeof value === 'string') {
-    return value.replace(/[<>]/g, '');
-  }
-  if (Array.isArray(value)) {
-    return value.map(sanitizeInput);
-  }
-  if (value && typeof value === 'object') {
-    const next = {};
-    for (const [key, item] of Object.entries(value)) {
-      next[key] = sanitizeInput(item);
-    }
-    return next;
-  }
-  return value;
-}
-```
-
-### Environment Variables and Secrets
-
-**Define and validate all required environment variables at startup:**
-
-```javascript
-const requiredEnv = ['JWT_SIGNING_KEY', 'WEBHOOK_SIGNING_SECRET'];
-
-function validateEnvironment(env = process.env) {
-  for (const key of requiredEnv) {
-    if (!env[key] || env[key].trim() === '') {
-      throw new Error(`Missing required environment variable: ${key}`);
+// Good: circular reference guard
+function recurse(obj: Record<string, unknown>, seen = new WeakSet()): void {
+  if (seen.has(obj)) return;
+  seen.add(obj);
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (val && typeof val === 'object') {
+      recurse(val as Record<string, unknown>, seen);
     }
   }
 }
 ```
 
-## Error Handling
+## Custom Pattern Validation
 
-**Never expose internal details to external clients:**
+**Treat user-provided pattern strings as untrusted. Validate before use:**
 
-```javascript
-try {
-  await riskyOperation();
-} catch (error) {
-  logger.error({ error }, 'Operation failed');
-  return response.status(500).json({ error: 'Internal server error' });
+```typescript
+// Bad: user string passed directly to RegExp
+const pattern = new RegExp(userInput);
+
+// Good: validate the pattern string first
+function validatePatternString(input: string): void {
+  if (!/^[a-z][a-z0-9_]*$/i.test(input)) {
+    throw new DataSanitizationError(`Invalid pattern: ${input}`);
+  }
 }
+```
+
+## Environment Variables and Secrets
+
+**Read secrets from environment variables. Never hardcode them:**
+
+```typescript
+// Bad: hardcoded secret
+const apiKey = 'sk-abc123';
+
+// Good: read from environment
+const apiKey = process.env.API_KEY;
+if (!apiKey) throw new Error('Missing required env var: API_KEY');
 ```
 
 ## Checklist
 
-- [ ] Input validation on all external inputs
-- [ ] Authentication and authorization on protected routes
-- [ ] Rate limiting on externally accessible APIs
-- [ ] Security headers configured
-- [ ] Error responses avoid internal details
-- [ ] Injection/XSS mitigations in place
-- [ ] Webhook signatures verified before processing
-- [ ] ID parsing and conversion wrapped in strict validation
-- [ ] Untrusted input sanitized before storage/rendering
-- [ ] Secrets loaded only from environment variables
-- [ ] No sensitive data in logs
+- [ ] No original data values in error messages or details
+- [ ] Inputs validated at library boundaries before processing
+- [ ] Regex patterns tested for ReDoS on worst-case inputs
+- [ ] Circular references handled with `WeakSet` guards
+- [ ] User-provided pattern strings validated before `RegExp` construction
+- [ ] No hardcoded tokens, keys, or secrets in source
+- [ ] Dependencies audited for known vulnerabilities
