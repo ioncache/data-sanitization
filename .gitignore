@@ -57,3 +57,7 @@ typings/
 .envrc
 dist/
 tmp/
+
+# claude
+.claude/settings.local.json
+.claude/worktrees/
