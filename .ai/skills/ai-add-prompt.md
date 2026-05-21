@@ -13,7 +13,7 @@ available in both Copilot and Claude Code.
 Before creating any files, check:
 
 - **Copilot prompts active**: `.github/prompts/` directory exists
-- **Claude active**: `CLAUDE.md` file exists (create in `.claude/skills/`)
+- **Claude active**: `CLAUDE.md` file exists (create in `.claude/skills/<name>/`)
 
 ## Steps
 
@@ -44,10 +44,17 @@ Before creating any files, check:
    #file:../../.ai/prompts/<name>.md
    ```
 
-4. **If Claude active** — Create `.claude/skills/<name>.md`:
+4. **If Claude active** — Create `.claude/skills/<name>/SKILL.md`:
 
-   ```text
-   @.ai/prompts/<name>.md
+   ```markdown
+   ---
+   description: '<description>'
+   disable-model-invocation: true
+   ---
+
+   $ARGUMENTS
+
+   @../../../.ai/prompts/<name>.md
    ```
 
 5. **Confirm** — Report which files were created.
