@@ -48,6 +48,7 @@ Before creating any files, check:
 
    ```markdown
    ---
+   name: <name>
    description: '<description>'
    disable-model-invocation: true
    ---
