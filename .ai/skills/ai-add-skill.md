@@ -13,7 +13,7 @@ Copilot and Claude Code.
 Before creating any files, check:
 
 - **Copilot skills active**: `.github/skills/` directory exists
-- **Claude active**: `CLAUDE.md` file exists (create in `.claude/skills/`)
+- **Claude active**: `CLAUDE.md` file exists (create in `.claude/skills/<name>/`)
 
 ## Steps
 
@@ -47,10 +47,18 @@ Before creating any files, check:
    #file:../../../.ai/skills/<name>.md
    ```
 
-4. **If Claude active** — Create `.claude/skills/<name>.md`:
+4. **If Claude active** — Create `.claude/skills/<name>/SKILL.md`:
 
-   ```text
-   @.ai/skills/<name>.md
+   ```markdown
+   ---
+   name: <name>
+   description: '<description>'
+   disable-model-invocation: true
+   ---
+
+   $ARGUMENTS
+
+   @../../../.ai/skills/<name>.md
    ```
 
 5. **Confirm** — Report which files were created.
