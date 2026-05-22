@@ -8,8 +8,9 @@ mask or remove fields before logging, debugging, or sending data to systems that
 should not receive sensitive values such as secrets, PII, PHI, credentials, or
 other private data.
 
-Works with JavaScript and TypeScript. The package ships compiled JavaScript,
-TypeScript declarations, and source maps.
+Works in Node.js and browsers with JavaScript and TypeScript. The package ships
+compiled JavaScript, TypeScript declarations, and source maps, with no runtime
+dependencies.
 
 ## Table of Contents
 
