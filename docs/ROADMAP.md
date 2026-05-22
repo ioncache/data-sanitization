@@ -78,7 +78,7 @@ These items extend behavior without breaking existing contracts.
       `numericMask` alongside `patternMask`.
 - [x] Update README with a `numericMask` example.
 
-### Performance Benchmarks
+### Performance Benchmarks — completed in #299
 
 Establish a performance baseline before the string-value scanning work lands,
 since that change will meaningfully increase per-object work. Benchmarks also
