@@ -94,7 +94,7 @@ document intended workload characteristics for library consumers.
 - [x] Note in the benchmarks that string-value scanning and parser-first JSON
       changes should each update the suite as part of their implementation.
 
-### String-Value Scanning in Object Traversal
+### String-Value Scanning in Object Traversal — completed in [#300](https://github.com/ioncache/data-sanitization/pull/300)
 
 `objectReplacer` currently matches by key name only. A field like
 `{ message: "api_key=hunter2" }` passes through untouched because `message` is
@@ -102,18 +102,18 @@ not a sensitive key, even though the string value contains sensitive content.
 Apply the string replacer to each string-typed field value whose key did not
 match the sensitive-key patterns.
 
-- [ ] Update `objectReplacer` to accept and build `customMatchers` and
+- [x] Update `objectReplacer` to accept and build `customMatchers` and
       `useDefaultMatchers` options (currently only consumed by `stringReplacer`).
-- [ ] In `objectReplacer`'s inner traversal, apply the built matchers to each
+- [x] In `objectReplacer`'s inner traversal, apply the built matchers to each
       string-typed field value that did not match a sensitive key pattern.
-- [ ] Add tests covering: embedded credentials in free-text fields, nested
+- [x] Add tests covering: embedded credentials in free-text fields, nested
       objects with embedded strings, arrays of strings, interaction with
       `removeMatches`, and custom matchers passed to the object path.
-- [ ] Update TSDoc on `objectReplacer` and `sanitizeData` to describe the
+- [x] Update TSDoc on `objectReplacer` and `sanitizeData` to describe the
       string-value scanning behavior.
-- [ ] Update README with an example showing embedded-credential detection in a
+- [x] Update README with an example showing embedded-credential detection in a
       non-sensitive-key field.
-- [ ] Run benchmarks before and after to document the per-object perf cost.
+- [x] Run benchmarks before and after to document the per-object perf cost.
 
 ## Future v2 Candidates
 
