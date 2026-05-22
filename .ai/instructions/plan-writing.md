@@ -59,3 +59,19 @@ what.
 - Write in plain present tense ("Add X", "Update Y")
 - Be specific about file paths
 - Decisions should explain trade-offs, not just state what was chosen
+
+## After Opening a PR
+
+Once a PR has been created, evaluate whether the work fully or partially
+completes an item in `docs/ROADMAP.md`:
+
+1. Check the branch diff and commit messages against the unchecked items in
+   `docs/ROADMAP.md`.
+2. If the work clearly completes one or more roadmap items, ask the user:
+   - Whether to mark the item(s) **done** (all checkboxes checked, PR reference
+     added to the section heading) or **partially done** (check off only the
+     completed sub-items, leave the rest open).
+3. If the user confirms, commit the roadmap update as a new commit on the same
+   branch so it lands in the PR before merge. Use the real PR number in the
+   section heading (e.g. `— completed in [#298](...)`).
+4. If the work does not correspond to any roadmap item, skip this step.

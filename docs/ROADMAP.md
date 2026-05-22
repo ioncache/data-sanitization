@@ -64,24 +64,19 @@ carefully documented change.
 
 These items extend behavior without breaking existing contracts.
 
-### Numeric Mask for Number-Typed Sensitive Values
+### Numeric Mask for Number-Typed Sensitive Values — completed in [#298](https://github.com/ioncache/data-sanitization/pull/298)
 
-When a sensitive key holds a numeric value, the current `patternMask` string
-(`**********`) replaces it, silently changing the value type. A dedicated
-`numericMask` preserves the expectation that a number-typed field stays
-number-typed after sanitization.
-
-- [ ] Add `DEFAULT_NUMERIC_MASK = 9999999999` to `src/constants.ts`.
-- [ ] Add `numericMask?: number` to `DataSanitizationReplacerOptions` in
+- [x] Add `DEFAULT_NUMERIC_MASK = 9999999999` to `src/constants.ts`.
+- [x] Add `numericMask?: number` to `DataSanitizationReplacerOptions` in
       `src/types.ts`.
-- [ ] Update `objectReplacer` in `src/replacers.ts` to apply `numericMask` when
+- [x] Update `objectReplacer` in `src/replacers.ts` to apply `numericMask` when
       the matched sensitive-key value is a `number`.
-- [ ] Add tests covering: number-valued sensitive keys masked with default
+- [x] Add tests covering: number-valued sensitive keys masked with default
       `numericMask`, custom `numericMask` override, removal mode with
       number-valued keys, and non-number values unaffected.
-- [ ] Update TSDoc on `sanitizeData` and `objectReplacer` to document
+- [x] Update TSDoc on `sanitizeData` and `objectReplacer` to document
       `numericMask` alongside `patternMask`.
-- [ ] Update README with a `numericMask` example.
+- [x] Update README with a `numericMask` example.
 
 ### Performance Benchmarks
 

@@ -17,3 +17,10 @@
      Fixes #456
      Supersedes #789
      Relates to #012 -->
+
+## Checklist
+
+- [ ] Tests added or updated
+- [ ] README and TSDoc updated if the public API changed
+- [ ] Breaking changes called out (if any)
+- [ ] Roadmap item checked off if this PR completes one

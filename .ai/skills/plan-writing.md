@@ -33,6 +33,12 @@ appropriate syntax for each AI system:
 5. **Confirm before saving** — present the draft to the user for review if the
    scope is large or ambiguous; save directly for straightforward plans
 
+6. **After opening the PR** — once the PR exists and the number is known,
+   check `docs/ROADMAP.md` for items the work fully or partially completes.
+   If found, ask the user whether to mark the item done or partially done,
+   then commit the roadmap update on the same branch before merge. See the
+   full rules in `.ai/instructions/plan-writing.md` under "After Opening a PR".
+
 ## Naming
 
 Use the filename description to summarize the change in two to four words,
