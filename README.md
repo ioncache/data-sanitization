@@ -334,15 +334,15 @@ free-text fields. It does carry a performance cost on object workloads.
 
 Rough throughput on a modern laptop (Apple M-series, Node.js 22):
 
-| Workload                                                         | `scanStringValues: true` | `scanStringValues: false` |
-| ---------------------------------------------------------------- | ------------------------ | ------------------------- |
-| Shallow object (4 fields, 1 sensitive key)                       | ~249,000 ops/s           | ~558,000 ops/s            |
-| Deeply nested object (sensitive key × 5 levels)                  | ~208,000 ops/s           | ~389,000 ops/s            |
-| Object with embedded credential in string value                  | ~106,000 ops/s           | ~399,000 ops/s            |
-| Many embedded matches (20 fields, all strings contain a pattern) | ~13,000 ops/s            | —                         |
-| Large flat object (50 fields, 1 sensitive key)                   | ~72,000 ops/s            | ~91,000 ops/s             |
-| Large array (1,000 objects, 1 sensitive key each)                | ~2,200 ops/s             | ~2,400 ops/s              |
-| Very large array (100,000 objects, 1 sensitive key)              | ~19 ops/s                | ~21 ops/s                 |
+| Workload                                                         | `scanStringValues: true`     | `scanStringValues: false`    |
+| ---------------------------------------------------------------- | ---------------------------- | ---------------------------- |
+| Shallow object (4 fields, 1 sensitive key)                       | ~249,000 ops/s (~4 µs/call)  | ~558,000 ops/s (~2 µs/call)  |
+| Deeply nested object (sensitive key × 5 levels)                  | ~208,000 ops/s (~5 µs/call)  | ~389,000 ops/s (~3 µs/call)  |
+| Object with embedded credential in string value                  | ~106,000 ops/s (~9 µs/call)  | ~399,000 ops/s (~3 µs/call)  |
+| Many embedded matches (20 fields, all strings contain a pattern) | ~13,000 ops/s (~76 µs/call)  | —                            |
+| Large flat object (50 fields, 1 sensitive key)                   | ~72,000 ops/s (~14 µs/call)  | ~91,000 ops/s (~11 µs/call)  |
+| Large array (1,000 objects, 1 sensitive key each)                | ~2,200 ops/s (~0.45 ms/call) | ~2,400 ops/s (~0.42 ms/call) |
+| Very large array (100,000 objects, 1 sensitive key)              | ~19 ops/s (~54 ms/call)      | ~21 ops/s (~48 ms/call)      |
 
 The "Many embedded matches" row shows the worst case: every scanned string
 value actually contains a sensitive pattern and runs the full regex suite.
@@ -356,20 +356,20 @@ sensitive-named keys.
 String input always scans the full string regardless of `scanStringValues`.
 The option only affects the object traversal path.
 
-| Workload                                        | Throughput   |
-| ----------------------------------------------- | ------------ |
-| Long JSON string (50 sensitive key/value pairs) | ~7,100 ops/s |
+| Workload                                        | Throughput                   |
+| ----------------------------------------------- | ---------------------------- |
+| Long JSON string (50 sensitive key/value pairs) | ~7,100 ops/s (~0.14 ms/call) |
 
 ### High pattern counts
 
 Pattern count affects object workloads proportionally when
 `scanStringValues: true`. With default patterns disabled:
 
-| Workload                                               | Throughput    |
-| ------------------------------------------------------ | ------------- |
-| 50-field object, 50 custom patterns (no string match)  | ~23,000 ops/s |
-| 3-field object, 50 custom patterns (no string match)   | ~55,000 ops/s |
-| 3-field object, 50 custom patterns (string value hits) | ~18,000 ops/s |
+| Workload                                               | Throughput                  |
+| ------------------------------------------------------ | --------------------------- |
+| 50-field object, 50 custom patterns (no string match)  | ~23,000 ops/s (~44 µs/call) |
+| 3-field object, 50 custom patterns (no string match)   | ~55,000 ops/s (~18 µs/call) |
+| 3-field object, 50 custom patterns (string value hits) | ~18,000 ops/s (~55 µs/call) |
 
 To run the benchmark suite:
 
