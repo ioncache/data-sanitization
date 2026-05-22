@@ -260,7 +260,7 @@ describe('sanitizeData — large flat object, 5 sensitive keys', () => {
 
 // ---------------------------------------------------------------------------
 // Array — simple items (3 fields: id, token, username; 1 sensitive key)
-// Sizes: 1k / 10k / 100k / 1M / 10M
+// Sizes: 1k / 10k / 100k / 1M
 // ---------------------------------------------------------------------------
 
 describe('sanitizeData — array, simple items (1 sensitive), 1,000 items', () => {
