@@ -60,7 +60,7 @@ describe('sanitizeData — large array', () => {
     username: `user-${i}`,
   }));
 
-  bench('mask one sensitive key across 1 000 array items', () => {
+  bench('mask one sensitive key across 1000 array items', () => {
     sanitizeData(input);
   });
 });
