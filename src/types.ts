@@ -47,6 +47,20 @@ interface DataSanitizationReplacerOptions {
    */
   scanStringValues?: boolean;
   /**
+   * Whether to parse string input as JSON and sanitize via the object
+   * path. When the input is valid JSON containing an object or array,
+   * the sanitized result is re-serialized with JSON.stringify. Falls
+   * back to regex-based sanitization when the input is not valid JSON
+   * or parses to a primitive. Has no effect on non-string input.
+   *
+   * Note: JSON.stringify does not preserve original whitespace or
+   * indentation. Enable this option only when formatting fidelity is
+   * not required.
+   *
+   * Default: false
+   */
+  parseJsonStrings?: boolean;
+  /**
    * Whether to use the built-in default matchers. Default: true
    */
   useDefaultMatchers?: boolean;
