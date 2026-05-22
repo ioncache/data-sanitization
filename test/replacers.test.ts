@@ -416,7 +416,9 @@ describe('DataSanitizationReplacers', () => {
         ) as Record<string, unknown>[];
 
         // Assert
+        expect(result).toHaveLength(2);
         expect(result[0].password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result[1].username).toBe('mark');
       });
 
       it('should fall back to regex for non-JSON strings when parseJsonStrings is true', () => {
