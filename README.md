@@ -310,6 +310,32 @@ original input payload.
    For string input, each configured pattern is tested against each matcher to
    produce regex instances that find and replace sensitive field values.
 
+## Performance
+
+`sanitizeData` is designed for in-process sanitization of log payloads,
+request/response objects, and similar data before they leave your application.
+It is not designed for streaming pipelines or bulk batch processing of large
+files.
+
+Rough throughput on a modern laptop (Apple M-series, Node.js 22):
+
+| Workload                                          | Throughput     |
+| ------------------------------------------------- | -------------- |
+| Shallow object (4 fields, 1 sensitive key)        | ~563,000 ops/s |
+| Deeply nested object (sensitive key × 5 levels)   | ~354,000 ops/s |
+| Large array (1,000 objects, 1 sensitive key each) | ~2,340 ops/s   |
+| Long JSON string (50 sensitive key/value pairs)   | ~6,760 ops/s   |
+
+To run the benchmark suite:
+
+```bash
+yarn bench
+```
+
+Benchmarks live in `bench/sanitize-data.bench.ts`. When the string-value
+scanning and parser-first JSON string handling roadmap items are implemented,
+add benchmark cases to that suite as part of those changes.
+
 ## Contributing
 
 For development setup, testing, and release process, see

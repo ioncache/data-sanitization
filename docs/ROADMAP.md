@@ -84,14 +84,14 @@ Establish a performance baseline before the string-value scanning work lands,
 since that change will meaningfully increase per-object work. Benchmarks also
 document intended workload characteristics for library consumers.
 
-- [ ] Enable `vitest bench` in `vitest.config.ts`.
-- [ ] Create `bench/` with benchmark cases for: shallow objects, deeply nested
+- [x] Enable `vitest bench` in `vitest.config.ts`.
+- [x] Create `bench/` with benchmark cases for: shallow objects, deeply nested
       objects, large arrays, and long strings with many pattern hits.
-- [ ] Add a `bench` script to `package.json`.
-- [ ] Add a performance section to the README covering intended use cases (log
+- [x] Add a `bench` script to `package.json`.
+- [x] Add a performance section to the README covering intended use cases (log
       payloads and in-process sanitization, not streaming pipelines) and rough
       throughput characteristics.
-- [ ] Note in the benchmarks that string-value scanning and parser-first JSON
+- [x] Note in the benchmarks that string-value scanning and parser-first JSON
       changes should each update the suite as part of their implementation.
 
 ### String-Value Scanning in Object Traversal

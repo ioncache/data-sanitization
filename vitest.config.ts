@@ -2,6 +2,9 @@ import { defineConfig } from 'vitest/config';
 import { resolve } from 'node:path';
 
 export default defineConfig({
+  benchmark: {
+    include: ['bench/**/*.bench.ts'],
+  },
   resolve: {
     alias: {
       '~': resolve(import.meta.dirname, 'src'),
