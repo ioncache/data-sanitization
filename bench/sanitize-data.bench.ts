@@ -636,3 +636,44 @@ describe('sanitizeData — deeply nested, many non-sensitive strings (5 × 10 fi
     sanitizeData(DEEP_NESTED_MANY_SAFE, { scanStringValues: false });
   });
 });
+
+// ---------------------------------------------------------------------------
+// parseJsonStrings: true vs false — string input containing JSON
+// ---------------------------------------------------------------------------
+
+describe('sanitizeData — JSON string, small (parseJsonStrings)', () => {
+  const input = JSON.stringify({
+    api_key: SENSITIVE_STRING_VALUE,
+    email: 'user@example.com',
+    region: 'us-east-1',
+    requestId: 'req-abc-123',
+    username: 'mark',
+  });
+
+  bench('parseJsonStrings disabled', () => {
+    sanitizeData(input);
+  });
+  bench('parseJsonStrings enabled', () => {
+    sanitizeData(input, { parseJsonStrings: true });
+  });
+});
+
+describe('sanitizeData — JSON string, large (parseJsonStrings)', () => {
+  const input = JSON.stringify(
+    Object.fromEntries([
+      ...Array.from({ length: 40 }, (_, i) => [`field_${i}`, `value ${i}`]),
+      ...Array.from({ length: 5 }, (_, i) => [
+        `secret_${i}`,
+        SENSITIVE_STRING_VALUE,
+      ]),
+      ...Array.from({ length: 5 }, (_, i) => [`token_${i}`, i * 1000]),
+    ]),
+  );
+
+  bench('parseJsonStrings disabled', () => {
+    sanitizeData(input);
+  });
+  bench('parseJsonStrings enabled', () => {
+    sanitizeData(input, { parseJsonStrings: true });
+  });
+});
