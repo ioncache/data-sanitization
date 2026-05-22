@@ -28,6 +28,11 @@ interface DataSanitizationReplacerOptions {
    */
   customPatterns?: string[];
   /**
+   * A number to use as a mask for number-typed field values in place of the
+   * built-in default numeric mask
+   */
+  numericMask?: number;
+  /**
    * A string to use as a data mask in place of the built-in default mask
    */
   patternMask?: string;

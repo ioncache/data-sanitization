@@ -11,8 +11,17 @@ const DEFAULT_FIELD_NAME_PATTERNS = [
 ];
 
 /**
- * A default pattern used when replacing field values.
+ * A default pattern used when replacing string field values.
  */
 const DEFAULT_PATTERN_MASK = '**********';
 
-export { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK };
+/**
+ * A default mask used when replacing number field values.
+ */
+const DEFAULT_NUMERIC_MASK = 9999999999;
+
+export {
+  DEFAULT_FIELD_NAME_PATTERNS,
+  DEFAULT_NUMERIC_MASK,
+  DEFAULT_PATTERN_MASK,
+};

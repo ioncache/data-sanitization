@@ -187,7 +187,8 @@ sanitizeData(patient, {
 
 | Option               | Type                        | Default      | Description                                         |
 | -------------------- | --------------------------- | ------------ | --------------------------------------------------- |
-| `patternMask`        | `string`                    | `**********` | String used to replace matched field values         |
+| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values  |
+| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values  |
 | `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking   |
 | `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match             |
 | `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats |
@@ -242,6 +243,17 @@ sanitizeData(data, {
 sanitizeData(data, {
   patternMask: '[REDACTED]',
 });
+```
+
+Number-typed sensitive values are masked with `numericMask` to preserve the
+field's type:
+
+```typescript
+sanitizeData({ password: 12345, username: 'mark' });
+// => { password: 9999999999, username: 'mark' }
+
+sanitizeData({ password: 12345, username: 'mark' }, { numericMask: 0 });
+// => { password: 0, username: 'mark' }
 ```
 
 For custom data formats, provide a `DataSanitizationMatcher` — a function that
