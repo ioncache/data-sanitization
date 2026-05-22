@@ -62,7 +62,7 @@ const createSafeErrorDetails = (
  * then parsed back.
  *
  * @param data - String, null, or object data to be sanitized.
- * @param options - Matcher, pattern, masking, and removal options.
+ * @param options - Matcher, pattern, masking, removal, and string-scan options.
  * @returns Sanitized data in the original supported input type when possible.
  * @throws {DataSanitizationError} When the input data type cannot be sanitized.
  * @throws {DataSanitizationError} When sanitized object data cannot be parsed back to JSON.
@@ -81,6 +81,11 @@ const createSafeErrorDetails = (
  * // Sanitize with a custom mask
  * sanitizeData({ token: 'abc123' }, { patternMask: '[REDACTED]' })
  * // => { token: '[REDACTED]' }
+ *
+ * @example
+ * // String values on non-sensitive keys are scanned for embedded patterns by default
+ * sanitizeData({ message: 'request failed: api_key=hunter2' })
+ * // => { message: 'request failed: api_key=**********' }
  */
 const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
   try {

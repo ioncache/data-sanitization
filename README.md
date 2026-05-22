@@ -33,6 +33,10 @@ dependencies.
   - [Custom patterns and matchers](#custom-patterns-and-matchers)
   - [Error handling](#error-handling)
   - [How it works](#how-it-works)
+  - [Performance](#performance)
+    - [Object workloads](#object-workloads)
+    - [String workloads](#string-workloads)
+    - [High pattern counts](#high-pattern-counts)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -185,15 +189,16 @@ sanitizeData(patient, {
 
 ## Options
 
-| Option               | Type                        | Default      | Description                                         |
-| -------------------- | --------------------------- | ------------ | --------------------------------------------------- |
-| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values  |
-| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values  |
-| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking   |
-| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match             |
-| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats |
-| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns    |
-| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers    |
+| Option               | Type                        | Default      | Description                                                                        |
+| -------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------- |
+| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                 |
+| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                 |
+| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                  |
+| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns (object input only) |
+| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                            |
+| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                |
+| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                   |
+| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                   |
 
 ## Default patterns
 
@@ -306,9 +311,12 @@ original input payload.
    Non-plain object instances are preserved without modification to avoid
    corrupting their prototypes.
 4. **Null input** is accepted and returns `null`.
-5. Each configured pattern is matched case-insensitively against object keys.
-   For string input, each configured pattern is tested against each matcher to
-   produce regex instances that find and replace sensitive field values.
+5. **For object input**, each configured pattern is matched case-insensitively
+   against keys. String values on non-sensitive keys are also scanned for
+   embedded patterns by default (`scanStringValues: true`), which catches
+   credentials embedded in log messages or other free-text fields. **For string
+   input**, each pattern is tested against each matcher to produce regex
+   instances that find and replace sensitive values in the string directly.
 
 ## Performance
 
@@ -317,14 +325,51 @@ request/response objects, and similar data before they leave your application.
 It is not designed for streaming pipelines or bulk batch processing of large
 files.
 
+### Object workloads
+
+String-value scanning (`scanStringValues: true`, the default) checks every
+non-sensitive string field for embedded patterns. This is the recommended
+setting — it catches credentials embedded in log messages and similar
+free-text fields. It does carry a performance cost on object workloads.
+
 Rough throughput on a modern laptop (Apple M-series, Node.js 22):
 
-| Workload                                          | Throughput     |
-| ------------------------------------------------- | -------------- |
-| Shallow object (4 fields, 1 sensitive key)        | ~563,000 ops/s |
-| Deeply nested object (sensitive key × 5 levels)   | ~354,000 ops/s |
-| Large array (1,000 objects, 1 sensitive key each) | ~2,340 ops/s   |
-| Long JSON string (50 sensitive key/value pairs)   | ~6,760 ops/s   |
+| Workload                                                         | `scanStringValues: true` | `scanStringValues: false` |
+| ---------------------------------------------------------------- | ------------------------ | ------------------------- |
+| Shallow object (4 fields, 1 sensitive key)                       | ~249,000 ops/s           | ~558,000 ops/s            |
+| Deeply nested object (sensitive key × 5 levels)                  | ~208,000 ops/s           | ~389,000 ops/s            |
+| Object with embedded credential in string value                  | ~106,000 ops/s           | ~399,000 ops/s            |
+| Many embedded matches (20 fields, all strings contain a pattern) | ~13,000 ops/s            | —                         |
+| Large flat object (50 fields, 1 sensitive key)                   | ~72,000 ops/s            | ~91,000 ops/s             |
+| Large array (1,000 objects, 1 sensitive key each)                | ~2,200 ops/s             | ~2,400 ops/s              |
+| Very large array (100,000 objects, 1 sensitive key)              | ~19 ops/s                | ~21 ops/s                 |
+
+The "Many embedded matches" row shows the worst case: every scanned string
+value actually contains a sensitive pattern and runs the full regex suite.
+
+Set `scanStringValues: false` to recover the pre-scanning performance when
+you control your data structure and know sensitive values only appear on
+sensitive-named keys.
+
+### String workloads
+
+String input always scans the full string regardless of `scanStringValues`.
+The option only affects the object traversal path.
+
+| Workload                                        | Throughput   |
+| ----------------------------------------------- | ------------ |
+| Long JSON string (50 sensitive key/value pairs) | ~7,100 ops/s |
+
+### High pattern counts
+
+Pattern count affects object workloads proportionally when
+`scanStringValues: true`. With default patterns disabled:
+
+| Workload                                               | Throughput    |
+| ------------------------------------------------------ | ------------- |
+| 50-field object, 50 custom patterns (no string match)  | ~23,000 ops/s |
+| 3-field object, 50 custom patterns (no string match)   | ~55,000 ops/s |
+| 3-field object, 50 custom patterns (string value hits) | ~18,000 ops/s |
 
 To run the benchmark suite:
 
@@ -332,9 +377,7 @@ To run the benchmark suite:
 yarn bench
 ```
 
-Benchmarks live in `bench/sanitize-data.bench.ts`. When the string-value
-scanning and parser-first JSON string handling roadmap items are implemented,
-add benchmark cases to that suite as part of those changes.
+Benchmarks live in `bench/sanitize-data.bench.ts`.
 
 ## Contributing
 
