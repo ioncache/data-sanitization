@@ -56,7 +56,7 @@ const formEncodedMatcher: DataSanitizationMatcher = (
   const escaped = escapePattern(pattern);
   const fieldName = `\\w*${escaped}\\w*`;
   const fieldPrefix = `${fieldName}[=:]`;
-  const fieldValue = '[^&]*';
+  const fieldValue = '[^\\n&]*';
 
   if (remove) {
     const removeLeadingField = `&${fieldPrefix}${fieldValue}`;
@@ -65,7 +65,9 @@ const formEncodedMatcher: DataSanitizationMatcher = (
     return new RegExp(`${removeLeadingField}|${removeField}`, MATCHER_FLAGS);
   }
 
-  const maskField = `(${fieldPrefix})${fieldValue}(&|$)`;
+  // Use a zero-width lookahead for \n so the newline is not consumed and
+  // content on subsequent lines is preserved in the output.
+  const maskField = `(${fieldPrefix})${fieldValue}(&|(?=\\n|$))`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
 };

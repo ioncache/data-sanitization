@@ -27,6 +27,7 @@ interface StringScanRegexes {
   regexes: RegExp[];
 }
 
+const STRING_SCAN_CACHE_MAX = 10;
 const stringScanCache = new Map<string, StringScanRegexes>();
 
 const buildStringScanRegexes = (
@@ -43,6 +44,9 @@ const buildStringScanRegexes = (
 
   const cached = stringScanCache.get(key);
   if (cached) {
+    // Refresh insertion order so this entry is treated as most recently used.
+    stringScanCache.delete(key);
+    stringScanCache.set(key, cached);
     return cached;
   }
 
@@ -56,6 +60,10 @@ const buildStringScanRegexes = (
     ),
   };
 
+  if (stringScanCache.size >= STRING_SCAN_CACHE_MAX) {
+    const [lruKey] = stringScanCache.keys();
+    stringScanCache.delete(lruKey);
+  }
   stringScanCache.set(key, result);
   return result;
 };

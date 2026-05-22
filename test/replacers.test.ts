@@ -754,6 +754,25 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
+      it('should mask embedded sensitive patterns in a stack trace string and preserve stack frames', () => {
+        // Arrange
+        const testData = {
+          requestId: 'req-abc-123',
+          stack: `Error: upstream request failed — api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)\n    at processRequest (/app/src/handlers.js:134:20)`,
+          userId: 'usr-456',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.stack).toEqual(
+          `Error: upstream request failed — api_key=${DEFAULT_PATTERN_MASK}\n    at authenticate (/app/src/auth.js:89:15)\n    at processRequest (/app/src/handlers.js:134:20)`,
+        );
+        expect(result.requestId).toEqual('req-abc-123');
+        expect(result.userId).toEqual('usr-456');
+      });
+
       it('should not scan string values when scanStringValues is false', () => {
         // Arrange
         const testData = {
@@ -770,6 +789,32 @@ describe('DataSanitizationReplacers', () => {
         // Assert
         expect(result.message).toEqual('api_key=hunter2');
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should return correct results after string-scan cache eviction', () => {
+        // Arrange — fill the cache past the 10-entry cap with distinct configs
+        const testData = {
+          log: 'custom_0=secret&other=safe',
+          username: 'mark',
+        };
+        for (let i = 0; i < 11; i++) {
+          objectReplacer(testData, {
+            customPatterns: [`custom_${i}`],
+            useDefaultPatterns: false,
+          });
+        }
+
+        // Act — re-use the first config, which was evicted; must still work
+        const result = objectReplacer(testData, {
+          customPatterns: ['custom_0'],
+          useDefaultPatterns: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.log).toEqual(
+          `custom_0=${DEFAULT_PATTERN_MASK}&other=safe`,
+        );
         expect(result.username).toEqual('mark');
       });
     });
