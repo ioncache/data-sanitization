@@ -30,13 +30,28 @@ interface StringScanRegexes {
 const STRING_SCAN_CACHE_MAX = 10;
 const stringScanCache = new Map<string, StringScanRegexes>();
 
+// Assign stable numeric IDs to matcher functions by object identity so that
+// two closures with identical source but different captured state don't collide.
+const matcherIds = new WeakMap<DataSanitizationMatcher, number>();
+let matcherIdCounter = 0;
+
+const getMatcherId = (matcher: DataSanitizationMatcher): string => {
+  const existing = matcherIds.get(matcher);
+  if (existing !== undefined) {
+    return String(existing);
+  }
+  const id = matcherIdCounter++;
+  matcherIds.set(matcher, id);
+  return String(id);
+};
+
 const buildStringScanRegexes = (
   matchers: DataSanitizationMatcher[],
   patterns: string[],
   removeMatches: boolean,
 ): StringScanRegexes => {
   const key =
-    matchers.map((m) => m.toString()).join('\x00') +
+    matchers.map(getMatcherId).join('\x00') +
     '\x01' +
     patterns.join('\x00') +
     '\x01' +

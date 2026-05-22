@@ -792,6 +792,42 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
+      it('should treat two closures with identical source but different captured state as distinct cache entries', () => {
+        // Arrange — same factory produces closures with identical source text but
+        // different captured prefix; toString()-based keys would collide and use
+        // the first closure's regexes for all subsequent calls with identical source
+        const makeCustomMatcher =
+          (prefix: string) =>
+          (pattern: string): RegExp =>
+            // Group 1: prefix+key+delimiter, Group 2: trailing & or end-of-string
+            new RegExp(`(${prefix}${pattern}=)[^&\\n]+(&|$)`, 'gi');
+
+        const matcherA = makeCustomMatcher('a_');
+        const matcherB = makeCustomMatcher('b_');
+
+        const testData = { log: 'a_key=AVALUE&b_key=BVALUE', username: 'mark' };
+        const sharedOptions = {
+          customPatterns: ['key'],
+          useDefaultMatchers: false,
+          useDefaultPatterns: false,
+        };
+
+        // Act — prime the cache with matcherA, then apply matcherB
+        objectReplacer(testData, {
+          ...sharedOptions,
+          customMatchers: [matcherA],
+        });
+        const result = objectReplacer(testData, {
+          ...sharedOptions,
+          customMatchers: [matcherB],
+        }) as Record<string, unknown>;
+
+        // Assert — matcherB should mask b_key only; a cache collision would
+        // return matcherA's regexes and mask a_key instead
+        expect(result.log).toContain(`b_key=${DEFAULT_PATTERN_MASK}`);
+        expect(result.log).toContain('a_key=AVALUE');
+      });
+
       it('should return correct results after string-scan cache eviction', () => {
         // Arrange — fill the cache past the 10-entry cap with distinct configs
         const testData = {
