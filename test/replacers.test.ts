@@ -319,6 +319,180 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('bar');
       });
     });
+
+    describe('parseJsonStrings option', () => {
+      it('should leave numeric sensitive fields unmasked without the option', () => {
+        // Arrange
+        const testData = '{"password":12345,"username":"mark"}';
+
+        // Act
+        const result = JSON.parse(stringReplacer(testData) as string);
+
+        // Assert
+        expect(result.password).toBe(12345);
+      });
+
+      it('should mask a numeric sensitive field when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = '{"password":12345,"username":"mark"}';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: true }) as string,
+        );
+
+        // Assert
+        expect(result.password).toBe(DEFAULT_NUMERIC_MASK);
+      });
+
+      it('should mask a string sensitive field when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = '{"password":"secret","username":"mark"}';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: true }) as string,
+        );
+
+        // Assert
+        expect(result.password).toBe(DEFAULT_PATTERN_MASK);
+      });
+
+      it('should sanitize a nested object at all depths when parseJsonStrings is true', () => {
+        // Arrange
+        const testData =
+          '{"user":{"password":"secret","email":"mark@example.com"},"id":1}';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: true }) as string,
+        );
+
+        // Assert
+        expect(result.user.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.id).toBe(1);
+        expect(result.user.email).toBe('mark@example.com');
+      });
+
+      it('should remove numeric sensitive fields when removeMatches is true', () => {
+        // Arrange
+        const testData = '{"password":12345,"username":"mark"}';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, {
+            parseJsonStrings: true,
+            removeMatches: true,
+          }) as string,
+        );
+
+        // Assert
+        expect(result).toEqual({ username: 'mark' });
+      });
+
+      it('should apply a custom numericMask to numeric sensitive fields when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = '{"password":12345}';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, {
+            numericMask: 0,
+            parseJsonStrings: true,
+          }) as string,
+        );
+
+        // Assert
+        expect(result.password).toBe(0);
+      });
+
+      it('should sanitize a top-level JSON array when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = '[{"password":"secret"},{"username":"mark"}]';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: true }) as string,
+        ) as Record<string, unknown>[];
+
+        // Assert
+        expect(result[0].password).toBe(DEFAULT_PATTERN_MASK);
+      });
+
+      it('should fall back to regex for non-JSON strings when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = 'password=secret&username=mark';
+
+        // Act
+        const result = stringReplacer(testData, {
+          parseJsonStrings: true,
+        }) as string;
+
+        // Assert
+        expect(result).toContain(`password=${DEFAULT_PATTERN_MASK}`);
+      });
+
+      it('should fall back to regex for invalid JSON when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = '{"password":"secret"';
+
+        // Act
+        const result = stringReplacer(testData, {
+          parseJsonStrings: true,
+        }) as string;
+
+        // Assert
+        expect(result).toContain(`"password":"${DEFAULT_PATTERN_MASK}"`);
+      });
+
+      it('should leave a valid JSON primitive string unchanged when parseJsonStrings is true', () => {
+        // Arrange
+        const testData = '"hello world"';
+
+        // Act
+        const result = stringReplacer(testData, {
+          parseJsonStrings: true,
+        }) as string;
+
+        // Assert
+        expect(result).toBe('"hello world"');
+      });
+
+      it('should produce valid JSON with all sensitive keys masked and safe keys intact', () => {
+        // Arrange
+        const input = {
+          apikey: 'k1',
+          city: 'Vancouver',
+          country: 'Canada',
+          email: 'mark@example.com',
+          firstName: 'Mark',
+          lastName: 'Smith',
+          password: 42,
+          postalCode: 'V6B 1A1',
+          province: 'BC',
+          secret: 'topsecret',
+          token: 'tok-abc',
+          username: 'mark',
+        };
+        const testData = JSON.stringify(input);
+
+        // Act
+        const sanitized = stringReplacer(testData, {
+          parseJsonStrings: true,
+        }) as string;
+        const parsed = JSON.parse(sanitized) as Record<string, unknown>;
+
+        // Assert
+        expect(parsed.apikey).toBe(DEFAULT_PATTERN_MASK);
+        expect(parsed.secret).toBe(DEFAULT_PATTERN_MASK);
+        expect(parsed.token).toBe(DEFAULT_PATTERN_MASK);
+        expect(parsed.password).toBe(DEFAULT_NUMERIC_MASK);
+        expect(parsed.username).toBe('mark');
+        expect(parsed.email).toBe('mark@example.com');
+        expect(parsed.firstName).toBe('Mark');
+        expect(parsed.city).toBe('Vancouver');
+      });
+    });
   });
 
   describe('objectReplacer', () => {
