@@ -41,6 +41,12 @@ interface DataSanitizationReplacerOptions {
    */
   removeMatches?: boolean;
   /**
+   * Whether to scan string values on non-sensitive-key fields for embedded
+   * sensitive patterns. Disabling this improves performance on object
+   * workloads. Has no effect on string input. Default: true
+   */
+  scanStringValues?: boolean;
+  /**
    * Whether to use the built-in default matchers. Default: true
    */
   useDefaultMatchers?: boolean;

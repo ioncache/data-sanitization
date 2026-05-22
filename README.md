@@ -33,6 +33,7 @@ dependencies.
   - [Custom patterns and matchers](#custom-patterns-and-matchers)
   - [Error handling](#error-handling)
   - [How it works](#how-it-works)
+  - [Performance](#performance)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -185,15 +186,16 @@ sanitizeData(patient, {
 
 ## Options
 
-| Option               | Type                        | Default      | Description                                         |
-| -------------------- | --------------------------- | ------------ | --------------------------------------------------- |
-| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values  |
-| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values  |
-| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking   |
-| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match             |
-| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats |
-| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns    |
-| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers    |
+| Option               | Type                        | Default      | Description                                                                        |
+| -------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------- |
+| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                 |
+| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                 |
+| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                  |
+| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns (object input only) |
+| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                            |
+| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                |
+| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                   |
+| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                   |
 
 ## Default patterns
 
@@ -306,9 +308,12 @@ original input payload.
    Non-plain object instances are preserved without modification to avoid
    corrupting their prototypes.
 4. **Null input** is accepted and returns `null`.
-5. Each configured pattern is matched case-insensitively against object keys.
-   For string input, each configured pattern is tested against each matcher to
-   produce regex instances that find and replace sensitive field values.
+5. **For object input**, each configured pattern is matched case-insensitively
+   against keys. String values on non-sensitive keys are also scanned for
+   embedded patterns by default (`scanStringValues: true`), which catches
+   credentials embedded in log messages or other free-text fields. **For string
+   input**, each pattern is tested against each matcher to produce regex
+   instances that find and replace sensitive values in the string directly.
 
 ## Performance
 
@@ -317,24 +322,36 @@ request/response objects, and similar data before they leave your application.
 It is not designed for streaming pipelines or bulk batch processing of large
 files.
 
-Rough throughput on a modern laptop (Apple M-series, Node.js 22):
+String-value scanning (`scanStringValues: true`, the default) adds overhead
+on object workloads. The cost depends on how many non-sensitive string fields
+the input has and how long they are. Rough throughput on a modern laptop
+(Apple M-series, Node.js 22):
 
-| Workload                                          | Throughput     |
-| ------------------------------------------------- | -------------- |
-| Shallow object (4 fields, 1 sensitive key)        | ~563,000 ops/s |
-| Deeply nested object (sensitive key × 5 levels)   | ~354,000 ops/s |
-| Large array (1,000 objects, 1 sensitive key each) | ~2,340 ops/s   |
-| Long JSON string (50 sensitive key/value pairs)   | ~6,760 ops/s   |
+| Workload                                       | ops/s    | ms/call | scan overhead |
+| ---------------------------------------------- | -------- | ------- | ------------- |
+| Shallow object (1 sensitive key)               | ~243,000 | ~0.004  | ~55%          |
+| Log object, stack trace with credentials       | ~79,000  | ~0.013  | ~80%          |
+| Log object, clean stack trace                  | ~199,000 | ~0.005  | ~49%          |
+| Object with 10KB non-sensitive string          | ~143,000 | ~0.007  | ~76%          |
+| Large flat object (50 fields, 1 sensitive key) | ~69,000  | ~0.015  | ~15%          |
+| Array (1,000 items, 1 sensitive key each)      | ~2,043   | ~0.49   | ~4%           |
+| Array (1,000,000 items, 1 sensitive key each)  | ~1.7     | ~574    | ~4%           |
 
-To run the benchmark suite:
+Array workloads pay ~2–4% overhead regardless of size — the per-item
+pre-filter cost is negligible. The cost is most visible on individual objects
+with long non-sensitive string values such as stack traces or large text
+fields; a single 10KB non-sensitive string value incurs ~76% overhead.
+
+Set `scanStringValues: false` to recover the pre-scanning performance when
+you control your data structure and know sensitive values only appear on
+sensitive-named keys.
+
+For full benchmark tables, charts, and scaling analysis see
+[docs/performance.md](docs/performance.md). To run the suite:
 
 ```bash
 yarn bench
 ```
-
-Benchmarks live in `bench/sanitize-data.bench.ts`. When the string-value
-scanning and parser-first JSON string handling roadmap items are implemented,
-add benchmark cases to that suite as part of those changes.
 
 ## Contributing
 

@@ -22,6 +22,67 @@ const buildMatchers = (
   return Array.isArray(customMatchers) ? [...base, ...customMatchers] : base;
 };
 
+interface StringScanRegexes {
+  preFilter: RegExp | null;
+  regexes: RegExp[];
+}
+
+const STRING_SCAN_CACHE_MAX = 10;
+const stringScanCache = new Map<string, StringScanRegexes>();
+
+// Assign stable numeric IDs to matcher functions by object identity so that
+// two closures with identical source but different captured state don't collide.
+const matcherIds = new WeakMap<DataSanitizationMatcher, number>();
+let matcherIdCounter = 0;
+
+const getMatcherId = (matcher: DataSanitizationMatcher): string => {
+  const existing = matcherIds.get(matcher);
+  if (existing !== undefined) {
+    return String(existing);
+  }
+  const id = matcherIdCounter++;
+  matcherIds.set(matcher, id);
+  return String(id);
+};
+
+const buildStringScanRegexes = (
+  matchers: DataSanitizationMatcher[],
+  patterns: string[],
+  removeMatches: boolean,
+): StringScanRegexes => {
+  const key =
+    matchers.map(getMatcherId).join('\x00') +
+    '\x01' +
+    patterns.join('\x00') +
+    '\x01' +
+    removeMatches;
+
+  const cached = stringScanCache.get(key);
+  if (cached) {
+    // Refresh insertion order so this entry is treated as most recently used.
+    stringScanCache.delete(key);
+    stringScanCache.set(key, cached);
+    return cached;
+  }
+
+  const result: StringScanRegexes = {
+    preFilter:
+      patterns.length > 0
+        ? new RegExp(patterns.map(escapePattern).join('|'), 'i')
+        : null,
+    regexes: patterns.flatMap((pattern) =>
+      matchers.map((matcher) => matcher(pattern, removeMatches)),
+    ),
+  };
+
+  if (stringScanCache.size >= STRING_SCAN_CACHE_MAX) {
+    const [lruKey] = stringScanCache.keys();
+    stringScanCache.delete(lruKey);
+  }
+  stringScanCache.set(key, result);
+  return result;
+};
+
 /**
  * Sanitizes a string by masking or removing sensitive data.
  *
@@ -80,9 +141,11 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
 
 /**
  * Sanitizes object fields by key name, masking or removing matched keys.
+ * String values on non-sensitive keys are scanned for embedded sensitive
+ * patterns using the configured matchers and masked or removed in place.
  *
  * @param data - Object or array data to sanitize.
- * @param options - Pattern, masking, and removal options.
+ * @param options - Pattern, matcher, masking, removal, and string-scan options.
  * @returns Sanitized object/array data, or the original non-object data for runtime safety.
  * @throws {TypeError} If a circular reference is encountered.
  *
@@ -91,15 +154,22 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
  * // => { password: '**********', username: 'mark' }
  *
  * @example
+ * objectReplacer({ message: 'api_key=hunter2', username: 'mark' })
+ * // => { message: 'api_key=**********', username: 'mark' }
+ *
+ * @example
  * objectReplacer({ token: 123, username: 'mark' }, { removeMatches: true })
  * // => { username: 'mark' }
  */
 const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
+    customMatchers,
     customPatterns,
     numericMask,
     patternMask,
     removeMatches = false,
+    scanStringValues = true,
+    useDefaultMatchers = true,
     useDefaultPatterns = true,
   } = options;
 
@@ -108,13 +178,35 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
   }
 
   const mask = patternMask ?? DEFAULT_PATTERN_MASK;
+  const matchers = buildMatchers(useDefaultMatchers, customMatchers);
   const patterns = buildPatterns(useDefaultPatterns, customPatterns);
   const keyMatchers = patterns.map(
     (pattern) => new RegExp(`\\w*${escapePattern(pattern)}\\w*`, 'i'),
   );
+  const { preFilter: patternPreFilter, regexes: stringRegexes } =
+    scanStringValues
+      ? buildStringScanRegexes(matchers, patterns, removeMatches)
+      : { preFilter: null, regexes: [] };
   const seen = new WeakSet<object>();
 
+  const scanStringValue = (value: string): string => {
+    if (!patternPreFilter?.test(value)) {
+      return value;
+    }
+    let result = value;
+    for (const regex of stringRegexes) {
+      result = removeMatches
+        ? result.replace(regex, '')
+        : result.replace(regex, '$1' + mask + '$2');
+    }
+    return result;
+  };
+
   const sanitizeValue = (value: unknown): unknown => {
+    if (typeof value === 'string') {
+      return scanStringValue(value);
+    }
+
     if (typeof value !== 'object' || value === null) {
       return value;
     }

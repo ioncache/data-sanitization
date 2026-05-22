@@ -136,6 +136,96 @@ describe('DataSanitizationMatchers', () => {
       // Assert
       expect(result).toBe('username=mark');
     });
+
+    it('should stop matching at a newline in a multiline string', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('api_key');
+      const testData =
+        'api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[1]).toEqual('api_key=');
+      expect(allMatches[0]?.[0]).toEqual('api_key=hunter2');
+    });
+
+    it('should mask a field value and preserve lines that follow it', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('api_key');
+      const testData =
+        'api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)';
+      const mask = '**********';
+
+      // Act
+      const result = testData.replace(matcher, '$1' + mask + '$2');
+
+      // Assert
+      expect(result).toBe(
+        'api_key=**********\n    at authenticate (/app/src/auth.js:89:15)',
+      );
+    });
+
+    it('should mask a field value when & follows on the same line and preserve subsequent lines', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('api_key');
+      const testData =
+        'api_key=hunter2&region=us-east-1\n    at authenticate (/app/src/auth.js:89:15)';
+      const mask = '**********';
+
+      // Act
+      const result = testData.replace(matcher, '$1' + mask + '$2');
+
+      // Assert
+      expect(result).toBe(
+        'api_key=**********&region=us-east-1\n    at authenticate (/app/src/auth.js:89:15)',
+      );
+    });
+
+    it('should produce a removal regex that stops at newlines and preserves subsequent lines', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('api_key', true);
+      const testData =
+        'api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)';
+
+      // Act
+      const result = testData.replace(matcher, '');
+
+      // Assert
+      expect(result).toBe('\n    at authenticate (/app/src/auth.js:89:15)');
+    });
+
+    it('should stop matching at a CRLF line ending without consuming the CR', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('api_key');
+      const testData =
+        'api_key=hunter2\r\n    at authenticate (/app/src/auth.js:89:15)';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toEqual('api_key=hunter2');
+    });
+
+    it('should mask a field value and preserve CRLF lines that follow it', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('api_key');
+      const testData =
+        'api_key=hunter2\r\n    at authenticate (/app/src/auth.js:89:15)';
+      const mask = '**********';
+
+      // Act
+      const result = testData.replace(matcher, '$1' + mask + '$2');
+
+      // Assert
+      expect(result).toBe(
+        'api_key=**********\r\n    at authenticate (/app/src/auth.js:89:15)',
+      );
+    });
   });
 
   describe('jsonMatcher', () => {

@@ -5,6 +5,12 @@ import { describe, expect, it } from 'vitest';
 import { objectReplacer, stringReplacer } from '../src/replacers';
 import { DEFAULT_NUMERIC_MASK, DEFAULT_PATTERN_MASK } from '../src/constants';
 
+const headerMatcher = (pattern: string) =>
+  new RegExp(
+    `(${pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}:\\s*).+?(\\n|$)`,
+    'gi',
+  );
+
 describe('DataSanitizationReplacers', () => {
   describe('stringReplacer', () => {
     describe('masking', () => {
@@ -623,6 +629,229 @@ describe('DataSanitizationReplacers', () => {
         // Assert
         expect(result).toEqual({ username: 'mark' });
         expect(Object.getOwnPropertySymbols(result)).toHaveLength(0);
+      });
+    });
+
+    describe('string-value scanning', () => {
+      it('should scan string values on non-sensitive keys for embedded patterns', () => {
+        // Arrange
+        const testData = {
+          message: 'api_key=hunter2',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.message).toEqual(`api_key=${DEFAULT_PATTERN_MASK}`);
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should scan string values at any nesting depth', () => {
+        // Arrange
+        const testData = {
+          config: {
+            log: 'connection failed: token=abc123',
+            status: 'ok',
+          },
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect((result.config as Record<string, unknown>).log).toEqual(
+          `connection failed: token=${DEFAULT_PATTERN_MASK}`,
+        );
+        expect((result.config as Record<string, unknown>).status).toEqual('ok');
+      });
+
+      it('should scan string items inside arrays under non-sensitive keys', () => {
+        // Arrange
+        const testData = {
+          logs: ['api_key=hunter2', 'safe-message'],
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.logs).toEqual([
+          `api_key=${DEFAULT_PATTERN_MASK}`,
+          'safe-message',
+        ]);
+      });
+
+      it('should remove embedded patterns in string values when removeMatches is true', () => {
+        // Arrange
+        const testData = {
+          message: 'api_key=hunter2&username=mark',
+          region: 'us-east-1',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          removeMatches: true,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.message).toEqual('username=mark');
+        expect(result.region).toEqual('us-east-1');
+      });
+
+      it('should scan string values using custom matchers', () => {
+        // Arrange
+        const testData = {
+          authorization: 'Bearer abc123',
+          log: 'authorization: Bearer abc123\nuser: mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          customMatchers: [headerMatcher],
+          customPatterns: ['authorization'],
+          useDefaultMatchers: false,
+          useDefaultPatterns: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.authorization).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.log).toEqual(
+          `authorization: ${DEFAULT_PATTERN_MASK}\nuser: mark`,
+        );
+      });
+
+      it('should leave string values unchanged when no patterns match', () => {
+        // Arrange
+        const testData = {
+          message: 'everything looks fine',
+          region: 'us-east-1',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.message).toEqual('everything looks fine');
+        expect(result.region).toEqual('us-east-1');
+      });
+
+      it('should leave string values unchanged when no patterns are configured', () => {
+        // Arrange
+        const testData = {
+          message: 'api_key=hunter2',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          useDefaultPatterns: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.message).toEqual('api_key=hunter2');
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should mask embedded sensitive patterns in a stack trace string and preserve stack frames', () => {
+        // Arrange
+        const testData = {
+          requestId: 'req-abc-123',
+          stack: `Error: upstream request failed — api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)\n    at processRequest (/app/src/handlers.js:134:20)`,
+          userId: 'usr-456',
+        };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.stack).toEqual(
+          `Error: upstream request failed — api_key=${DEFAULT_PATTERN_MASK}\n    at authenticate (/app/src/auth.js:89:15)\n    at processRequest (/app/src/handlers.js:134:20)`,
+        );
+        expect(result.requestId).toEqual('req-abc-123');
+        expect(result.userId).toEqual('usr-456');
+      });
+
+      it('should not scan string values when scanStringValues is false', () => {
+        // Arrange
+        const testData = {
+          message: 'api_key=hunter2',
+          password: 'secret',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          scanStringValues: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.message).toEqual('api_key=hunter2');
+        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should treat two closures with identical source but different captured state as distinct cache entries', () => {
+        // Arrange — same factory produces closures with identical source text but
+        // different captured prefix; toString()-based keys would collide and use
+        // the first closure's regexes for all subsequent calls with identical source
+        const makeCustomMatcher =
+          (prefix: string) =>
+          (pattern: string): RegExp =>
+            // Group 1: prefix+key+delimiter, Group 2: trailing & or end-of-string
+            new RegExp(`(${prefix}${pattern}=)[^&\\n]+(&|$)`, 'gi');
+
+        const matcherA = makeCustomMatcher('a_');
+        const matcherB = makeCustomMatcher('b_');
+
+        const testData = { log: 'a_key=AVALUE&b_key=BVALUE', username: 'mark' };
+        const sharedOptions = {
+          customPatterns: ['key'],
+          useDefaultMatchers: false,
+          useDefaultPatterns: false,
+        };
+
+        // Act — prime the cache with matcherA, then apply matcherB
+        objectReplacer(testData, {
+          ...sharedOptions,
+          customMatchers: [matcherA],
+        });
+        const result = objectReplacer(testData, {
+          ...sharedOptions,
+          customMatchers: [matcherB],
+        }) as Record<string, unknown>;
+
+        // Assert — matcherB should mask b_key only; a cache collision would
+        // return matcherA's regexes and mask a_key instead
+        expect(result.log).toContain(`b_key=${DEFAULT_PATTERN_MASK}`);
+        expect(result.log).toContain('a_key=AVALUE');
+      });
+
+      it('should return correct results after string-scan cache eviction', () => {
+        // Arrange — fill the cache past the 10-entry cap with distinct configs
+        const testData = {
+          log: 'custom_0=secret&other=safe',
+          username: 'mark',
+        };
+        for (let i = 0; i < 11; i++) {
+          objectReplacer(testData, {
+            customPatterns: [`custom_${i}`],
+            useDefaultPatterns: false,
+          });
+        }
+
+        // Act — re-use the first config, which was evicted; must still work
+        const result = objectReplacer(testData, {
+          customPatterns: ['custom_0'],
+          useDefaultPatterns: false,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.log).toEqual(
+          `custom_0=${DEFAULT_PATTERN_MASK}&other=safe`,
+        );
+        expect(result.username).toEqual('mark');
       });
     });
   });
