@@ -25,6 +25,12 @@ yarn test
 yarn test:coverage
 ```
 
+## Browser Compatibility
+
+The library uses no Node.js-specific globals or APIs and is intentionally
+browser-compatible. Do not add production dependencies or use runtime APIs that
+are not available in browsers.
+
 ## Build
 
 Build artifacts are emitted to `dist/`:
