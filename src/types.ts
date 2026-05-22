@@ -33,20 +33,6 @@ interface DataSanitizationReplacerOptions {
    */
   numericMask?: number;
   /**
-   * A string to use as a data mask in place of the built-in default mask
-   */
-  patternMask?: string;
-  /**
-   * Whether to remove fields matched instead of masking them. Default: false
-   */
-  removeMatches?: boolean;
-  /**
-   * Whether to scan string values on non-sensitive-key fields for embedded
-   * sensitive patterns. Disabling this improves performance on object
-   * workloads. Has no effect on string input. Default: true
-   */
-  scanStringValues?: boolean;
-  /**
    * Whether to parse string input as JSON and sanitize via the object
    * path. When the input is valid JSON containing an object or array,
    * the sanitized result is re-serialized with JSON.stringify. Falls
@@ -60,6 +46,20 @@ interface DataSanitizationReplacerOptions {
    * Default: false
    */
   parseJsonStrings?: boolean;
+  /**
+   * A string to use as a data mask in place of the built-in default mask
+   */
+  patternMask?: string;
+  /**
+   * Whether to remove fields matched instead of masking them. Default: false
+   */
+  removeMatches?: boolean;
+  /**
+   * Whether to scan string values on non-sensitive-key fields for embedded
+   * sensitive patterns. Disabling this improves performance on object
+   * workloads. Has no effect on string input. Default: true
+   */
+  scanStringValues?: boolean;
   /**
    * Whether to use the built-in default matchers. Default: true
    */
