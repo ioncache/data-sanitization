@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 /* local imports */
 import { objectReplacer, stringReplacer } from '../src/replacers';
-import { DEFAULT_PATTERN_MASK } from '../src/constants';
+import { DEFAULT_NUMERIC_MASK, DEFAULT_PATTERN_MASK } from '../src/constants';
 
 describe('DataSanitizationReplacers', () => {
   describe('stringReplacer', () => {
@@ -331,8 +331,8 @@ describe('DataSanitizationReplacers', () => {
         // Act
         const result = objectReplacer(testData) as Record<string, unknown>;
 
-        // Assert
-        expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
+        // Assert — number-typed values get DEFAULT_NUMERIC_MASK; all others get DEFAULT_PATTERN_MASK
+        expect(result.password).toEqual(DEFAULT_NUMERIC_MASK);
         expect(result.secret).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.token).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.api_key).toEqual(DEFAULT_PATTERN_MASK);
@@ -449,6 +449,60 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
         expect(result.username).toEqual('márk');
       });
+
+      it('should mask number-valued sensitive keys with the default numeric mask', () => {
+        // Arrange
+        const testData = { password: 123, username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.password).toEqual(DEFAULT_NUMERIC_MASK);
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should mask number-valued sensitive keys with a custom numericMask', () => {
+        // Arrange
+        const testData = { token: 42, username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, { numericMask: 0 }) as Record<
+          string,
+          unknown
+        >;
+
+        // Assert
+        expect(result.token).toEqual(0);
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should apply numericMask independently of patternMask', () => {
+        // Arrange
+        const testData = { password: 123, secret: 'abc', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          patternMask: '[REDACTED]',
+        }) as Record<string, unknown>;
+
+        // Assert — string value uses patternMask; number value uses DEFAULT_NUMERIC_MASK
+        expect(result.password).toEqual(DEFAULT_NUMERIC_MASK);
+        expect(result.secret).toEqual('[REDACTED]');
+        expect(result.username).toEqual('mark');
+      });
+
+      it('should leave non-sensitive number-valued keys untouched', () => {
+        // Arrange
+        const testData = { count: 5, username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData) as Record<string, unknown>;
+
+        // Assert
+        expect(result.count).toEqual(5);
+        expect(result.username).toEqual('mark');
+      });
     });
 
     describe('removal', () => {
@@ -503,10 +557,10 @@ describe('DataSanitizationReplacers', () => {
           useDefaultPatterns: false,
         }) as Record<string, unknown>;
 
-        // Assert
+        // Assert — ssn is a number so gets DEFAULT_NUMERIC_MASK despite custom patternMask
         expect(result).toEqual({
           password: 'keep-me',
-          ssn: '[MASKED]',
+          ssn: DEFAULT_NUMERIC_MASK,
           username: 'safe',
         });
       });

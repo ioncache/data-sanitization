@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 /* local imports */
 import sanitizeData from '../src/index';
 import { DataSanitizationError } from '../src/errors';
-import { DEFAULT_PATTERN_MASK } from '../src/constants';
+import { DEFAULT_NUMERIC_MASK, DEFAULT_PATTERN_MASK } from '../src/constants';
 
 const failingMatcher = (): RegExp => {
   throw new Error('matcher failed');
@@ -92,7 +92,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       // Assert
       expect(output).toEqual([
         { password: DEFAULT_PATTERN_MASK, username: 'bar' },
-        { safe: true, token: DEFAULT_PATTERN_MASK },
+        { safe: true, token: DEFAULT_NUMERIC_MASK },
       ]);
     });
 
@@ -111,7 +111,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       const output = sanitizeData(input) as Record<string, unknown>;
 
       // Assert
-      expect(output.password).toEqual(DEFAULT_PATTERN_MASK);
+      expect(output.password).toEqual(DEFAULT_NUMERIC_MASK);
       expect(output.secret).toEqual(DEFAULT_PATTERN_MASK);
       expect(output.token).toEqual(DEFAULT_PATTERN_MASK);
       expect(output.api_key).toEqual(DEFAULT_PATTERN_MASK);

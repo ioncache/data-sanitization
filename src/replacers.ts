@@ -1,5 +1,9 @@
 import { DataSanitizationMatcher, DataSanitizationReplacer } from './types';
-import { DEFAULT_FIELD_NAME_PATTERNS, DEFAULT_PATTERN_MASK } from './constants';
+import {
+  DEFAULT_FIELD_NAME_PATTERNS,
+  DEFAULT_NUMERIC_MASK,
+  DEFAULT_PATTERN_MASK,
+} from './constants';
 import defaultMatchers, { escapePattern } from './matchers';
 
 const buildPatterns = (
@@ -93,6 +97,7 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
 const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
     customPatterns,
+    numericMask,
     patternMask,
     removeMatches = false,
     useDefaultPatterns = true,
@@ -141,7 +146,10 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
 
       if (isSensitiveKey) {
         if (!removeMatches) {
-          nextObject[key] = mask;
+          nextObject[key] =
+            typeof item === 'number'
+              ? (numericMask ?? DEFAULT_NUMERIC_MASK)
+              : mask;
         }
         continue;
       }
