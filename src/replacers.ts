@@ -110,6 +110,7 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
     customMatchers,
     customPatterns,
+    parseJsonStrings = false,
     patternMask,
     removeMatches = false,
     useDefaultMatchers = true,
@@ -118,6 +119,18 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
 
   if (typeof data !== 'string') {
     return data;
+  }
+
+  if (parseJsonStrings) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      // not valid JSON — fall through to regex path
+    }
+    if (parsed !== null && parsed !== undefined && typeof parsed === 'object') {
+      return JSON.stringify(objectReplacer(parsed, options));
+    }
   }
 
   const mask = patternMask ?? DEFAULT_PATTERN_MASK;

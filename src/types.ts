@@ -33,6 +33,20 @@ interface DataSanitizationReplacerOptions {
    */
   numericMask?: number;
   /**
+   * Whether to parse string input as JSON and sanitize via the object
+   * path. When the input is valid JSON containing an object or array,
+   * the sanitized result is re-serialized with JSON.stringify. Falls
+   * back to regex-based sanitization when the input is not valid JSON
+   * or parses to a primitive. Has no effect on non-string input.
+   *
+   * Note: JSON.stringify does not preserve original whitespace or
+   * indentation. Enable this option only when formatting fidelity is
+   * not required.
+   *
+   * Default: false
+   */
+  parseJsonStrings?: boolean;
+  /**
    * A string to use as a data mask in place of the built-in default mask
    */
   patternMask?: string;
@@ -43,7 +57,9 @@ interface DataSanitizationReplacerOptions {
   /**
    * Whether to scan string values on non-sensitive-key fields for embedded
    * sensitive patterns. Disabling this improves performance on object
-   * workloads. Has no effect on string input. Default: true
+   * workloads. Has no effect on raw string input unless `parseJsonStrings`
+   * is also enabled — in that case the string is parsed to an object first
+   * and scanning applies normally. Default: true
    */
   scanStringValues?: boolean;
   /**

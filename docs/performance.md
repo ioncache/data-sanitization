@@ -308,6 +308,86 @@ The option only affects the object traversal path.
 | Form-encoded string (1 sensitive field)         | ~102,000 | ~0.010  | ~84,000      |
 | Escaped JSON string (1 sensitive field)         | ~91,000  | ~0.011  | ~69,000      |
 
+## Parser-first JSON strings
+
+When `parseJsonStrings: true` is set, string inputs that are valid JSON objects
+or arrays are parsed and sanitized via the object path rather than the regex
+path. The parse-and-re-serialize overhead is offset by the fact that the object
+traversal is faster than running each pattern against every matcher across the
+full string. The key correctness advantage is that numeric-typed sensitive
+fields (e.g. `{"password":12345}`) are masked with `numericMask` — the default
+regex path cannot detect or replace bare numeric values in strings.
+
+<table>
+  <thead>
+    <tr>
+      <th rowspan="2">Workload</th>
+      <th colspan="2"><code>parseJsonStrings: false</code> (default)</th>
+      <th colspan="2"><code>parseJsonStrings: true</code></th>
+      <th rowspan="2">speedup</th>
+    </tr>
+    <tr>
+      <th>ops/s</th>
+      <th>ms/call</th>
+      <th>ops/s</th>
+      <th>ms/call</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Small JSON string (5 fields, 1 sensitive)</td>
+      <td>~65,783</td><td>~0.0152</td>
+      <td>~271,150</td><td>~0.0037</td>
+      <td>~4.1×</td>
+    </tr>
+    <tr>
+      <td>Large JSON string (50 fields, 5 sensitive string + 5 sensitive numeric)</td>
+      <td>~17,164</td><td>~0.0583</td>
+      <td>~50,848</td><td>~0.0197</td>
+      <td>~3.0×</td>
+    </tr>
+  </tbody>
+</table>
+
+The large input case also demonstrates the correctness benefit: with
+`parseJsonStrings` enabled, numeric `token_N` fields are correctly masked with
+`numericMask`, whereas the default regex path leaves them unmasked.
+
+## parseJsonStrings and scanStringValues interaction
+
+Both options interact on JSON string input. `scanStringValues` has no effect
+when `parseJsonStrings` is disabled — string input goes through the regex path,
+which does not use `scanStringValues`. When `parseJsonStrings` is enabled, string
+input is parsed to an object first; `scanStringValues` then applies normally on
+the object path.
+
+The chart below uses a representative 15-field log payload: 6 sensitive-named
+fields, 1 field with an embedded credential in a non-sensitive key, 1 stack
+trace, and 7 safe fields. The upper line is `scanStringValues: false`; the lower
+line is `scanStringValues: true`.
+
+```mermaid
+xychart-beta
+    title "parseJsonStrings x scanStringValues interaction (15-field log payload, ops/s)"
+    x-axis ["parseJsonStrings off", "parseJsonStrings on"]
+    y-axis "ops/s" 0 --> 200000
+    line [41000, 92000]
+    line [41000, 183000]
+```
+
+The lines start at the same point — `scanStringValues` makes no difference on
+the regex path. They diverge when `parseJsonStrings` is on and the object path
+is active. The embedded-credential field and stack trace add `scanStringValues`
+overhead on the object path, explaining the ~2× gap between the two
+`parseJsonStrings: true` cases.
+
+| Option combination                                            | ops/s    | ms/call |
+| ------------------------------------------------------------- | -------- | ------- |
+| `parseJsonStrings: false`, `scanStringValues: true` (default) | ~41,000  | ~0.024  |
+| `parseJsonStrings: false`, `scanStringValues: false`          | ~41,000  | ~0.024  |
+| `parseJsonStrings: true`, `scanStringValues: true`            | ~92,000  | ~0.011  |
+| `parseJsonStrings: true`, `scanStringValues: false`           | ~183,000 | ~0.0055 |
+
 ## High pattern counts
 
 Pattern count affects object workloads proportionally when

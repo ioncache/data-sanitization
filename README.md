@@ -25,6 +25,7 @@ dependencies.
   - [Usage](#usage)
     - [Quick start](#quick-start)
     - [Sanitize a string](#sanitize-a-string)
+    - [Parse JSON strings](#parse-json-strings)
     - [Remove fields instead of masking](#remove-fields-instead-of-masking)
     - [Sanitize PII and PHI with custom patterns](#sanitize-pii-and-phi-with-custom-patterns)
   - [Options](#options)
@@ -115,6 +116,23 @@ sanitizeData('password=secret&username=mark');
 // => 'password=**********&username=mark'
 ```
 
+### Parse JSON strings
+
+When a string input is valid JSON containing an object or array, set
+`parseJsonStrings: true` to sanitize it via the object path. This also correctly
+masks numeric-valued sensitive fields, which the default regex path cannot do:
+
+```typescript
+sanitizeData('{"password":12345,"username":"mark"}', {
+  parseJsonStrings: true,
+});
+// => '{"password":9999999999,"username":"mark"}'
+```
+
+Note: the result is re-serialized with `JSON.stringify`, which does not preserve
+original whitespace or indentation. Enable this option when formatting fidelity
+is not required — it is faster and more correct than the default regex path.
+
 ### Remove fields instead of masking
 
 ```typescript
@@ -178,24 +196,25 @@ masking them.
 ```typescript
 sanitizeData(patient, {
   customPatterns: sensitivePatterns,
-  useDefaultPatterns: false,
   removeMatches: true,
+  useDefaultPatterns: false,
 });
 // => { accountId: 'acct_123' }
 ```
 
 ## Options
 
-| Option               | Type                        | Default      | Description                                                                        |
-| -------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------- |
-| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                 |
-| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                 |
-| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                  |
-| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns (object input only) |
-| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                            |
-| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                |
-| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                   |
-| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                   |
+| Option               | Type                        | Default      | Description                                                                                                                                                                        |
+| -------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                                                                                                                 |
+| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                                                                                                                 |
+| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                                                                                                                  |
+| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input when `parseJsonStrings` is enabled; has no effect on raw string input. |
+| `parseJsonStrings`   | `boolean`                   | `false`      | Parse valid JSON strings via the object path. Recommended unless formatting fidelity is required; re-serializes with `JSON.stringify`, discarding original whitespace.             |
+| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                                                                                                                            |
+| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
+| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                                                                                                                   |
+| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                                                                                                                   |
 
 ## Default patterns
 
@@ -268,8 +287,8 @@ const headerMatcher = (pattern: string) =>
   new RegExp(`(${pattern}:\\s*).+?(\\n|$)`, 'gi');
 
 sanitizeData('authorization: Bearer abc123\nuser: mark', {
-  customPatterns: ['authorization'],
   customMatchers: [headerMatcher],
+  customPatterns: ['authorization'],
   useDefaultMatchers: false,
 });
 // => 'authorization: **********\nuser: mark'
@@ -342,11 +361,48 @@ pre-filter cost is negligible. The cost is most visible on individual objects
 with long non-sensitive string values such as stack traces or large text
 fields; a single 10KB non-sensitive string value incurs ~76% overhead.
 
-Set `scanStringValues: false` to recover the pre-scanning performance when
-you control your data structure and know sensitive values only appear on
-sensitive-named keys.
+**`scanStringValues: false`** — Disables string-value scanning on the object
+path. Use this when you control your data structure and know sensitive values
+only appear on sensitive-named keys. Recovers the full pre-scanning throughput.
 
-For full benchmark tables, charts, and scaling analysis see
+**`parseJsonStrings: true`** — When your string inputs are JSON, this routes
+them through the object path instead of regex: 3–4× faster and correctly masks
+numeric-valued sensitive fields that the regex path cannot detect. The tradeoff
+is that the result is re-serialized with `JSON.stringify`, which does not
+preserve original whitespace or indentation.
+
+On first call with a given set of options, `sanitizeData` compiles its regex
+set and caches the result by option fingerprint. Subsequent calls with the same
+options reuse the cache at no extra cost — this applies whether options are
+passed inline or as a variable, as long as the content is the same.
+
+The one pattern to avoid is building `customPatterns` dynamically per call from
+variable data, such as from a request or database record:
+
+```typescript
+// Anti-pattern: patterns differ on every call — cache never hits
+app.post('/log', (req) => {
+  sanitizeData(req.body, {
+    customPatterns: [...basePatterns, ...req.user.sensitiveFields],
+  });
+});
+
+// Correct: build options once at startup (or per stable configuration)
+const sanitizerOptions = {
+  customPatterns: [...basePatterns, ...knownSensitiveFields],
+};
+
+app.post('/log', (req) => {
+  sanitizeData(req.body, sanitizerOptions);
+});
+```
+
+If dynamic options are unavoidable, set `scanStringValues: false` — this skips
+the string-scanning cache and avoids the fingerprinting overhead on every call.
+
+When options must genuinely vary per call, each call pays the first-call
+compilation cost (~17× slower than a cached call). For full benchmark tables,
+charts, and scaling analysis see
 [docs/performance.md](docs/performance.md). To run the suite:
 
 ```bash

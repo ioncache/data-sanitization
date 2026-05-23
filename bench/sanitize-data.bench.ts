@@ -315,10 +315,10 @@ describe('sanitizeData — array, simple items (1 sensitive), 1,000,000 items', 
     username: `user-${i}`,
   }));
 
-  bench('default', () => {
+  bench.skip('default', () => {
     sanitizeData(input);
   });
-  bench('scanStringValues disabled', () => {
+  bench.skip('scanStringValues disabled', () => {
     sanitizeData(input, { scanStringValues: false });
   });
 });
@@ -412,10 +412,10 @@ describe('sanitizeData — array, complex items (5 sensitive), 1,000,000 items',
     ]),
   );
 
-  bench('default', () => {
+  bench.skip('default', () => {
     sanitizeData(input);
   });
-  bench('scanStringValues disabled', () => {
+  bench.skip('scanStringValues disabled', () => {
     sanitizeData(input, { scanStringValues: false });
   });
 });
@@ -634,5 +634,86 @@ describe('sanitizeData — deeply nested, many non-sensitive strings (5 × 10 fi
   });
   bench('scanStringValues disabled', () => {
     sanitizeData(DEEP_NESTED_MANY_SAFE, { scanStringValues: false });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseJsonStrings: true vs false — string input containing JSON
+// ---------------------------------------------------------------------------
+
+describe('sanitizeData — JSON string, small (parseJsonStrings)', () => {
+  const input = JSON.stringify({
+    api_key: SENSITIVE_STRING_VALUE,
+    email: 'user@example.com',
+    region: 'us-east-1',
+    requestId: 'req-abc-123',
+    username: 'mark',
+  });
+
+  bench('parseJsonStrings disabled', () => {
+    sanitizeData(input);
+  });
+  bench('parseJsonStrings enabled', () => {
+    sanitizeData(input, { parseJsonStrings: true });
+  });
+});
+
+describe('sanitizeData — JSON string, large (parseJsonStrings)', () => {
+  const input = JSON.stringify(
+    Object.fromEntries([
+      ...Array.from({ length: 40 }, (_, i) => [`field_${i}`, `value ${i}`]),
+      ...Array.from({ length: 5 }, (_, i) => [
+        `secret_${i}`,
+        SENSITIVE_STRING_VALUE,
+      ]),
+      ...Array.from({ length: 5 }, (_, i) => [`token_${i}`, i * 1000]),
+    ]),
+  );
+
+  bench('parseJsonStrings disabled', () => {
+    sanitizeData(input);
+  });
+  bench('parseJsonStrings enabled', () => {
+    sanitizeData(input, { parseJsonStrings: true });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Option interaction: parseJsonStrings × scanStringValues
+// Representative log payload: 15 fields, 6 sensitive keys, 1 embedded
+// credential in a non-sensitive field, 1 stack trace, 7 safe fields.
+// ---------------------------------------------------------------------------
+
+describe('sanitizeData — option interaction (parseJsonStrings × scanStringValues)', () => {
+  const input = JSON.stringify({
+    api_key: SENSITIVE_STRING_VALUE,
+    api_secret: SENSITIVE_STRING_VALUE,
+    auth_token: SENSITIVE_STRING_VALUE,
+    environment: 'production',
+    message: `request failed: api_key=${SENSITIVE_STRING_VALUE}`,
+    method: 'POST',
+    password: SENSITIVE_STRING_VALUE,
+    path: '/api/v1/users',
+    region: 'us-east-1',
+    requestId: 'req-abc-123',
+    secret: SENSITIVE_STRING_VALUE,
+    service: 'api-gateway',
+    stack:
+      'Error: Connection refused\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1148:16)\n    at Object.onceWrapper (events.js:422:26)\n    at TCPConnectWrap.emit (events.js:400:28)',
+    token: SENSITIVE_STRING_VALUE,
+    username: 'mark',
+  });
+
+  bench('parseJsonStrings off, scanStringValues on (default)', () => {
+    sanitizeData(input);
+  });
+  bench('parseJsonStrings off, scanStringValues off', () => {
+    sanitizeData(input, { scanStringValues: false });
+  });
+  bench('parseJsonStrings on, scanStringValues on', () => {
+    sanitizeData(input, { parseJsonStrings: true });
+  });
+  bench('parseJsonStrings on, scanStringValues off', () => {
+    sanitizeData(input, { parseJsonStrings: true, scanStringValues: false });
   });
 });
