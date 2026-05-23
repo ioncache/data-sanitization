@@ -1,6 +1,6 @@
 {
   "name": "data-sanitization",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Sanitization library for masking or removing sensitive data.",
   "keywords": [
     "data-sanitization",
@@ -66,6 +66,8 @@
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "conventional-changelog": "^7.1.0",
+    "conventional-changelog-conventionalcommits": "^9.3.1",
+    "conventional-commits-filter": "^5.0.0",
     "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",
