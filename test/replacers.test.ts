@@ -2,7 +2,11 @@
 import { describe, expect, it } from 'vitest';
 
 /* local imports */
-import { objectReplacer, stringReplacer } from '../src/replacers';
+import {
+  objectReplacer,
+  stringReplacer,
+  STRING_SCAN_CACHE_MAX,
+} from '../src/replacers';
 import { DEFAULT_NUMERIC_MASK, DEFAULT_PATTERN_MASK } from '../src/constants';
 
 const headerMatcher = (pattern: string) =>
@@ -968,10 +972,9 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should treat two closures with identical source but different captured state as distinct cache entries', () => {
-        // Arrange — same factory produces closures with identical source text but
-        // different captured prefix; toString()-based keys would collide and use
-        // the first closure's regexes for all subsequent calls with identical source
+      it('should apply each custom matcher independently when matchers differ in captured state', () => {
+        // Arrange — two matchers built from the same factory with different
+        // captured prefixes: matcherA targets a_-prefixed keys, matcherB targets b_-prefixed keys
         const makeCustomMatcher =
           (prefix: string) =>
           (pattern: string): RegExp =>
@@ -988,7 +991,7 @@ describe('DataSanitizationReplacers', () => {
           useDefaultPatterns: false,
         };
 
-        // Act — prime the cache with matcherA, then apply matcherB
+        // Act — sanitize with matcherA first, then with matcherB
         objectReplacer(testData, {
           ...sharedOptions,
           customMatchers: [matcherA],
@@ -998,26 +1001,25 @@ describe('DataSanitizationReplacers', () => {
           customMatchers: [matcherB],
         }) as Record<string, unknown>;
 
-        // Assert — matcherB should mask b_key only; a cache collision would
-        // return matcherA's regexes and mask a_key instead
+        // Assert — matcherB targets b_-prefixed keys only; a_key should be unchanged
         expect(result.log).toContain(`b_key=${DEFAULT_PATTERN_MASK}`);
         expect(result.log).toContain('a_key=AVALUE');
       });
 
-      it('should return correct results after string-scan cache eviction', () => {
-        // Arrange — fill the cache past the 10-entry cap with distinct configs
+      it('should produce correct results when a config is reused after many other configs have been used', () => {
+        // Arrange — fill the cache past the cap with distinct configs
         const testData = {
           log: 'custom_0=secret&other=safe',
           username: 'mark',
         };
-        for (let i = 0; i < 11; i++) {
+        for (let i = 0; i < STRING_SCAN_CACHE_MAX + 10; i++) {
           objectReplacer(testData, {
             customPatterns: [`custom_${i}`],
             useDefaultPatterns: false,
           });
         }
 
-        // Act — re-use the first config, which was evicted; must still work
+        // Act
         const result = objectReplacer(testData, {
           customPatterns: ['custom_0'],
           useDefaultPatterns: false,

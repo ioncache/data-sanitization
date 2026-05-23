@@ -11,7 +11,7 @@ const DEFAULT_FIELD_NAME_PATTERNS = [
 ];
 
 /**
- * A default pattern used when replacing string field values.
+ * A default mask used when replacing string field values.
  */
 const DEFAULT_PATTERN_MASK = '**********';
 
