@@ -2,6 +2,7 @@
 
 [![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/coverage.json)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
+![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/ioncache/data-sanitization?utm_source=oss&utm_medium=github&utm_campaign=ioncache%2Fdata-sanitization&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 Pattern-based sanitization for sensitive data in objects and strings. Use it to
 mask or remove fields before logging, debugging, or sending data to systems that
