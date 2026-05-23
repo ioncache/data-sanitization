@@ -10,8 +10,10 @@ annotations are omitted from doc tags.
 1. **Every exported function must have a doc comment** — No exceptions.
 2. **Include function description** — Clear explanation of what it does.
 3. **Add `@example` for functions with I/O** — Show actual usage patterns.
-4. **Add `@throws` for each error type** — Document every throw statement with
-   its specific error condition.
+4. **Add `@throws` for explicit `throw` statements only** — Document every
+   explicit `throw` statement with its specific error condition. Do not document
+   implicit runtime errors (e.g. built-in `TypeError` from calling a method on
+   the wrong type) or errors from called functions.
 
 ---
 
@@ -175,3 +177,50 @@ function sanitize(data: unknown, options?: SanitizeOptions) {}
 - [ ] `@throws` present for every throw statement
 - [ ] `@typeParam` used for generic type parameters
 - [ ] `@example` present for functions with parameters or return values
+
+---
+
+## Anti-Patterns (Both)
+
+These patterns must **never** appear in doc comments:
+
+**Do not document the absence of throws:**
+
+```typescript
+// BAD — documenting that nothing happens is noise
+@throws Does not throw.
+
+// GOOD — omit @throws entirely when the function does not throw
+```
+
+**Do not add `@returns` to constructors:**
+
+```typescript
+// BAD — constructors have no meaningful return value to document
+constructor(message: string) {}
+// @returns A MyClass instance.
+
+// GOOD — omit @returns on constructors entirely
+```
+
+**`@returns` must describe the value, not restate the type:**
+
+```typescript
+// BAD
+@returns string
+@returns A string.
+
+// GOOD
+@returns The sanitized string with all matched fields masked.
+```
+
+**Do not document implicit or built-in throws:**
+
+```typescript
+// BAD — TypeError from .replace() is implicit; there is no throw statement
+const escape = (s: string): string => s.replace(/x/g, '');
+// @throws {TypeError} If s is not a string.
+
+// GOOD — only document errors your code explicitly throws
+// (no @throws needed here)
+```

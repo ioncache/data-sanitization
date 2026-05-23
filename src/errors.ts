@@ -15,9 +15,6 @@ class DataSanitizationError extends Error {
    *
    * @param message - Human-readable error message.
    * @param details - Structured context describing the failure.
-   * @returns A data sanitization error instance.
-   * @throws Does not throw.
-   *
    * @example
    * const error = new DataSanitizationError('Invalid data type', {
    *   inputType: 'number',

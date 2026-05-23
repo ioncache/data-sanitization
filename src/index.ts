@@ -7,7 +7,6 @@ import { DataSanitizationReplacer } from './types';
  *
  * @param data - Input value being sanitized.
  * @returns A type label that does not expose the input value.
- * @throws Does not throw.
  *
  * @example
  * getInputType({ password: 'secret' })
@@ -31,7 +30,6 @@ const getInputType = (data: unknown): string => {
  * @param data - Input value being sanitized.
  * @param error - Optional wrapped error from the failed operation.
  * @returns Structured diagnostics safe for logging.
- * @throws Does not throw.
  *
  * @example
  * createSafeErrorDetails({ password: 'secret' }, new SyntaxError('Bad JSON'))

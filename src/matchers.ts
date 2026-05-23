@@ -7,7 +7,6 @@ const MATCHER_FLAGS = 'gi';
  *
  * @param pattern - Pattern text to treat literally inside a regular expression.
  * @returns Pattern text with regular expression metacharacters escaped.
- * @throws {TypeError} If pattern is not a string.
  *
  * @example
  * escapePattern('pass.*word')
@@ -47,7 +46,6 @@ const escapePattern = (pattern: string): string =>
  * @param pattern - Pattern in url form encoded like data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
  * @returns A global, case-insensitive regular expression for matching form-like fields.
- * @throws {TypeError} If pattern is not a string.
  */
 const formEncodedMatcher: DataSanitizationMatcher = (
   pattern,
@@ -102,7 +100,6 @@ const formEncodedMatcher: DataSanitizationMatcher = (
  * @param pattern - Pattern in json-like data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
  * @returns A global, case-insensitive regular expression for matching JSON-like fields.
- * @throws {TypeError} If pattern is not a string.
  */
 const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   const escaped = escapePattern(pattern);
@@ -138,7 +135,6 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
  * @param pattern - Pattern in escaped json data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
  * @returns A global, case-insensitive regular expression for matching escaped JSON fields.
- * @throws {TypeError} If pattern is not a string.
  */
 const escapedJsonMatcher: DataSanitizationMatcher = (
   pattern,
