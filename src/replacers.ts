@@ -122,13 +122,14 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   }
 
   if (parseJsonStrings) {
+    let parsed: unknown;
     try {
-      const parsed = JSON.parse(data);
-      if (parsed !== null && typeof parsed === 'object') {
-        return JSON.stringify(objectReplacer(parsed, options));
-      }
+      parsed = JSON.parse(data);
     } catch {
-      // not valid JSON or not an object/array — fall through to regex path
+      // not valid JSON — fall through to regex path
+    }
+    if (parsed !== null && parsed !== undefined && typeof parsed === 'object') {
+      return JSON.stringify(objectReplacer(parsed, options));
     }
   }
 

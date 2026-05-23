@@ -227,6 +227,7 @@ Create branch `feat/parser-first-json` from `main`.
      `| \`parseJsonStrings\` | \`boolean\` | \`false\` | Parse string input as JSON and sanitize via the object path when valid. Note: re-serializes with \`JSON.stringify\`, which does not preserve original whitespace or indentation. |`
    - Add a short example under a new "Parse JSON strings" subsection in Usage,
      showing that a numeric sensitive field is correctly masked:
+
      ```typescript
      sanitizeData('{"password":12345,"username":"mark"}', {
        parseJsonStrings: true,
