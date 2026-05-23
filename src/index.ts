@@ -13,10 +13,6 @@ import { DataSanitizationReplacer } from './types';
  * // => 'object'
  */
 const getInputType = (data: unknown): string => {
-  if (data === null) {
-    return 'null';
-  }
-
   if (Array.isArray(data)) {
     return 'array';
   }
