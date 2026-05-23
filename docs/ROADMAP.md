@@ -115,16 +115,28 @@ match the sensitive-key patterns.
       non-sensitive-key field.
 - [x] Run benchmarks before and after to document the per-object perf cost.
 
+### Parser-First JSON String Handling — completed in #301
+
+When `parseJsonStrings: true`, valid JSON object/array strings are parsed,
+sanitized via `objectReplacer`, and re-serialized. Falls back to regex for
+non-JSON or primitive strings. Fixes the gap where numeric-valued sensitive
+fields are invisible to the regex path.
+
+- [x] Add `parseJsonStrings?: boolean` to `DataSanitizationReplacerOptions`.
+- [x] Add parse-first branch in `stringReplacer` after the non-string guard.
+- [x] Add tests: numeric masking, string masking, nested objects, arrays,
+      `removeMatches`, custom `numericMask`, fallback paths, integration.
+- [x] Add benchmark groups for `parseJsonStrings` enabled vs disabled.
+- [x] Update TSDoc on `sanitizeData` with `parseJsonStrings` example.
+- [x] Update `docs/performance.md` with parser-first benchmark results.
+- [x] Update README with options table row and "Parse JSON strings" usage
+      subsection.
+
 ## Future v2 Candidates
 
 These ideas may change behavior or public contracts, so they should be explored
 separately from routine v1.x maintenance.
 
-- [ ] Add parser-first handling for valid JSON strings: parse, sanitize with the
-      object traversal path, and serialize back only when parsing succeeds. Keep
-      regex-based string matching as a fallback for non-JSON strings.
-- [ ] Consider making parser-first string handling opt-in before changing any
-      default behavior.
 - [ ] Decide whether to explicitly support Map, Set, Date, class instances, typed
       arrays, or other non-plain objects.
 - [ ] Collect real v1.x usage signals before planning breaking changes.
