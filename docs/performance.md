@@ -318,12 +318,12 @@ full string. The key correctness advantage is that numeric-typed sensitive
 fields (e.g. `{"password":12345}`) are masked with `numericMask` — the default
 regex path cannot detect or replace bare numeric values in strings.
 
-| Group | Variant                     | ops/s    | mean     |
-| ----- | --------------------------- | -------- | -------- |
-| small | `parseJsonStrings` disabled | ~65,783  | ~15.2 µs |
-| small | `parseJsonStrings` enabled  | ~271,150 | ~3.7 µs  |
-| large | `parseJsonStrings` disabled | ~17,164  | ~58.3 µs |
-| large | `parseJsonStrings` enabled  | ~50,848  | ~19.7 µs |
+| Group | Variant                     | ops/s    | ms/call |
+| ----- | --------------------------- | -------- | ------- |
+| small | `parseJsonStrings` disabled | ~65,783  | ~0.0152 |
+| small | `parseJsonStrings` enabled  | ~271,150 | ~0.0037 |
+| large | `parseJsonStrings` disabled | ~17,164  | ~0.0583 |
+| large | `parseJsonStrings` enabled  | ~50,848  | ~0.0197 |
 
 The large input case also demonstrates the correctness benefit: with
 `parseJsonStrings` enabled, numeric `token_N` fields are correctly masked with
