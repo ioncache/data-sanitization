@@ -25,6 +25,7 @@ dependencies.
   - [Usage](#usage)
     - [Quick start](#quick-start)
     - [Sanitize a string](#sanitize-a-string)
+    - [Parse JSON strings](#parse-json-strings)
     - [Remove fields instead of masking](#remove-fields-instead-of-masking)
     - [Sanitize PII and PHI with custom patterns](#sanitize-pii-and-phi-with-custom-patterns)
   - [Options](#options)
