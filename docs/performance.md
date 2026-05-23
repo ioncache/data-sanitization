@@ -68,6 +68,7 @@ large input array, not algorithmic degradation.
 
 Rough throughput on a modern laptop (Apple M-series, Node.js 22):
 
+<!-- markdownlint-disable MD033 -->
 <table>
   <thead>
     <tr>
@@ -349,6 +350,7 @@ regex path cannot detect or replace bare numeric values in strings.
     </tr>
   </tbody>
 </table>
+<!-- markdownlint-enable MD033 -->
 
 The large input case also demonstrates the correctness benefit: with
 `parseJsonStrings` enabled, numeric `token_N` fields are correctly masked with
