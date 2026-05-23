@@ -1,27 +1,50 @@
 # data-sanitization
 
+> Mask or remove sensitive fields in objects, strings, and logs before they leave your application.
+
 [![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/coverage.json)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/coverage.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
+[![npm](https://img.shields.io/npm/v/data-sanitization.svg?style=flat)](https://www.npmjs.com/package/data-sanitization)
+[![Bundle size](https://img.shields.io/bundlejs/size/data-sanitization?style=flat)](https://bundlejs.com/?q=data-sanitization)
 [![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/ioncache/data-sanitization?utm_source=oss&utm_medium=github&utm_campaign=ioncache%2Fdata-sanitization&labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)](https://coderabbit.ai)
 
-Pattern-based sanitization for sensitive data in objects and strings. Use it to
-mask or remove fields before logging, debugging, or sending data to systems that
-should not receive sensitive values such as secrets, PII, PHI, credentials, or
-other private data.
+[npm](https://www.npmjs.com/package/data-sanitization) &nbsp;•&nbsp; [Changelog](https://github.com/ioncache/data-sanitization/releases) &nbsp;•&nbsp; [GitHub](https://github.com/ioncache/data-sanitization)
 
-Works in Node.js and browsers with JavaScript and TypeScript. The package ships
-compiled JavaScript, TypeScript declarations, and source maps, with no runtime
-dependencies.
+---
+
+Sensitive data (credentials, PII, PHI, and other private information) ends up
+in logs more often than it should. `data-sanitization` masks or removes it by
+field name across objects, arrays, and nested structures, so sensitive values
+never reach your logs, monitoring, or debugging output in plain text.
+
+No runtime dependencies. Works in Node.js and browsers.
+
+## Before / After
+
+```ts
+const input = {
+  username: 'mark',
+  password: 'super-secret',
+  api_key: 'sk_live_abc123',
+};
+
+sanitizeData(input);
+// => { username: 'mark', password: '**********', api_key: '**********' }
+```
+
+## Highlights
+
+- Zero runtime dependencies
+- Works on objects, arrays, strings, and nested structures with no JSON round-trip
+- Error details never include the original input payload
 
 ## Table of Contents
 
 - [data-sanitization](#data-sanitization)
+  - [Before / After](#before--after)
+  - [Highlights](#highlights)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
-    - [npm](#npm)
-    - [Yarn](#yarn)
-    - [pnpm](#pnpm)
-    - [Bun](#bun)
   - [Importing](#importing)
   - [Usage](#usage)
     - [Quick start](#quick-start)
@@ -41,27 +64,17 @@ dependencies.
 
 ## Installation
 
-Install with the package manager used by your project.
-
-### npm
-
 ```bash
 npm install data-sanitization
 ```
-
-### Yarn
 
 ```bash
 yarn add data-sanitization
 ```
 
-### pnpm
-
 ```bash
 pnpm add data-sanitization
 ```
-
-### Bun
 
 ```bash
 bun add data-sanitization
@@ -69,19 +82,13 @@ bun add data-sanitization
 
 ## Importing
 
-The named export is recommended:
-
 ```typescript
 import { sanitizeData, DataSanitizationError } from 'data-sanitization';
 ```
 
-The sanitizer is also available as the default export:
-
 ```typescript
 import sanitizeData from 'data-sanitization';
 ```
-
-CommonJS consumers can require the compiled package:
 
 ```javascript
 const { sanitizeData } = require('data-sanitization');
@@ -106,8 +113,9 @@ const result = sanitizeData(input);
 
 ### Sanitize a string
 
-String sanitization works with JSON-like strings, escaped JSON-like strings, and
-form-encoded strings:
+Pass a string directly and it will be sanitized in place. This is useful for
+sanitizing serialized data before logging. For example, a raw request body,
+a form-encoded payload, or a JSON string you have not yet parsed:
 
 ```typescript
 sanitizeData('{"password":"secret","username":"mark"}');
@@ -119,9 +127,16 @@ sanitizeData('password=secret&username=mark');
 
 ### Parse JSON strings
 
-When a string input is valid JSON containing an object or array, set
-`parseJsonStrings: true` to sanitize it via the object path. This also correctly
-masks numeric-valued sensitive fields, which the default regex path cannot do:
+By default, string inputs are sanitized using text-based pattern matching.
+This works for most cases, but it cannot detect numeric-valued sensitive fields:
+
+```typescript
+sanitizeData('{"password":12345,"username":"mark"}');
+// => '{"password":12345,"username":"mark"}' (numeric value not masked)
+```
+
+Setting `parseJsonStrings: true` parses the JSON first and sanitizes it the
+same way an object would be, which handles numeric values correctly:
 
 ```typescript
 sanitizeData('{"password":12345,"username":"mark"}', {
@@ -130,9 +145,10 @@ sanitizeData('{"password":12345,"username":"mark"}', {
 // => '{"password":9999999999,"username":"mark"}'
 ```
 
-Note: the result is re-serialized with `JSON.stringify`, which does not preserve
-original whitespace or indentation. Enable this option when formatting fidelity
-is not required — it is faster and more correct than the default regex path.
+> [!TIP]
+> `parseJsonStrings: true` is also 3–4× faster for JSON string inputs than the
+> default text-based approach. The tradeoff is that output is re-serialized with
+> `JSON.stringify`, which does not preserve original whitespace or formatting.
 
 ### Remove fields instead of masking
 
@@ -211,11 +227,11 @@ sanitizeData(patient, {
 | `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                                                                                                                 |
 | `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                                                                                                                  |
 | `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input when `parseJsonStrings` is enabled; has no effect on raw string input. |
-| `parseJsonStrings`   | `boolean`                   | `false`      | Parse valid JSON strings via the object path. Recommended unless formatting fidelity is required; re-serializes with `JSON.stringify`, discarding original whitespace.             |
+| `parseJsonStrings`   | `boolean`                   | `false`      | Parse valid JSON string inputs as structured data and sanitize by field name. Re-serializes with `JSON.stringify`, discarding original whitespace.                                 |
 | `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                                                                                                                            |
 | `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
-| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                                                                                                                   |
-| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                                                                                                                   |
+| `useDefaultPatterns` | `boolean`                   | `true`       | Set to `false` to use only your custom patterns, ignoring the built-in defaults.                                                                                                   |
+| `useDefaultMatchers` | `boolean`                   | `true`       | Set to `false` to use only your custom matchers, ignoring the built-in defaults.                                                                                                   |
 
 ## Default patterns
 
@@ -235,14 +251,17 @@ these patterns match as substrings.
 
 Three matchers are included by default:
 
-- **JSON matcher** — matches `"fieldName":"value"` patterns in JSON and
+- **JSON matcher**: matches `"fieldName":"value"` patterns in JSON and
   JSON-like strings
-- **Escaped JSON matcher** — matches `\"fieldName\":\"value\"` patterns in
+- **Escaped JSON matcher**: matches `\"fieldName\":\"value\"` patterns in
   JSON embedded inside JSON string values
-- **Form-encoded matcher** — matches `fieldName=value` and `fieldName:value`
+- **Form-encoded matcher**: matches `fieldName=value` and `fieldName:value`
   patterns in URL-encoded and similarly delimited strings
 
 ## Custom patterns and matchers
+
+Use `customPatterns` to add field names on top of the defaults, or use
+`useDefaultPatterns: false` to replace the defaults entirely:
 
 ```typescript
 import { sanitizeData } from 'data-sanitization';
@@ -253,18 +272,25 @@ const data = {
   credit_card: '4111111111111111',
 };
 
+// Add to the built-in defaults
 sanitizeData(data, {
   customPatterns: ['ssn', 'credit_card'],
 });
+// => { username: 'mark', ssn: '**********', credit_card: '**********' }
 
+// Use only specific patterns, ignoring the defaults
 sanitizeData(data, {
   customPatterns: ['ssn'],
   useDefaultPatterns: false,
 });
+// => { username: 'mark', ssn: '**********', credit_card: '4111111111111111' }
 
+// Use a different mask string
 sanitizeData(data, {
+  customPatterns: ['ssn', 'credit_card'],
   patternMask: '[REDACTED]',
 });
+// => { username: 'mark', ssn: '[REDACTED]', credit_card: '[REDACTED]' }
 ```
 
 Number-typed sensitive values are masked with `numericMask` to preserve the
@@ -278,7 +304,7 @@ sanitizeData({ password: 12345, username: 'mark' }, { numericMask: 0 });
 // => { password: 0, username: 'mark' }
 ```
 
-For custom data formats, provide a `DataSanitizationMatcher` — a function that
+For custom data formats, provide a `DataSanitizationMatcher`, a function that
 takes a pattern string and returns a global, case-insensitive `RegExp`. The
 regex must use capture groups `$1` and `$2` to preserve the field name and
 trailing delimiter while replacing the value.
@@ -328,12 +354,12 @@ original input payload.
    Non-plain object instances are preserved without modification to avoid
    corrupting their prototypes.
 4. **Null input** is accepted and returns `null`.
-5. **For object input**, each configured pattern is matched case-insensitively
-   against keys. String values on non-sensitive keys are also scanned for
-   embedded patterns by default (`scanStringValues: true`), which catches
-   credentials embedded in log messages or other free-text fields. **For string
-   input**, each pattern is tested against each matcher to produce regex
-   instances that find and replace sensitive values in the string directly.
+5. **For object input**, each pattern is matched case-insensitively against key
+   names. By default (`scanStringValues: true`), string values on non-sensitive
+   keys are also scanned, which catches credentials embedded in log messages or
+   other free-text fields.
+6. **For string input**, each pattern is tested against each matcher to find and
+   replace sensitive values in the raw string directly.
 
 ## Performance
 
@@ -357,31 +383,29 @@ the input has and how long they are. Rough throughput on a modern laptop
 | Array (1,000 items, 1 sensitive key each)      | ~2,161   | ~0.46   | ~5%           |
 | Array (1,000,000 items, 1 sensitive key each)  | ~1.7     | ~574    | ~4%           |
 
-Array workloads pay ~3–5% overhead regardless of size — the per-item
+Array workloads pay ~3–5% overhead regardless of size. The per-item
 pre-filter cost is negligible. The cost is most visible on individual objects
 with long non-sensitive string values such as stack traces or large text
 fields; a single 10KB non-sensitive string value incurs ~68% overhead.
 
-**`scanStringValues: false`** — Disables string-value scanning on the object
-path. Use this when you control your data structure and know sensitive values
-only appear on sensitive-named keys. Recovers the full pre-scanning throughput.
-
-**`parseJsonStrings: true`** — When your string inputs are JSON, this routes
-them through the object path instead of regex: 3–4× faster and correctly masks
-numeric-valued sensitive fields that the regex path cannot detect. The tradeoff
-is that the result is re-serialized with `JSON.stringify`, which does not
-preserve original whitespace or indentation.
+> [!TIP]
+> Set `scanStringValues: false` when you control your data structure and know
+> sensitive values only appear on sensitive-named keys. This recovers full pre-scanning throughput.
+>
+> Set `parseJsonStrings: true` when your string inputs are JSON. It is 3–4× faster
+> than the default regex path and correctly masks numeric-valued sensitive fields.
 
 On first call with a given set of options, `sanitizeData` compiles its regex
 set and caches the result by option fingerprint. Subsequent calls with the same
-options reuse the cache at no extra cost — this applies whether options are
+options reuse the cache at no extra cost. This applies whether options are
 passed inline or as a variable, as long as the content is the same.
 
-The one pattern to avoid is building `customPatterns` dynamically per call from
-variable data, such as from a request or database record:
+> [!WARNING]
+> Building `customPatterns` dynamically per call from variable data causes a cache
+> miss on every call, so compilation runs on each request instead of being reused.
 
 ```typescript
-// Anti-pattern: patterns differ on every call — cache never hits
+// Anti-pattern: patterns differ on every call, cache never hits
 app.post('/log', (req) => {
   sanitizeData(req.body, {
     customPatterns: [...basePatterns, ...req.user.sensitiveFields],
@@ -398,13 +422,14 @@ app.post('/log', (req) => {
 });
 ```
 
-If dynamic options are unavoidable, set `scanStringValues: false` — this skips
+If dynamic options are unavoidable, set `scanStringValues: false`. This skips
 the string-scanning cache and avoids the fingerprinting overhead on every call.
 
 When options must genuinely vary per call, each call pays the first-call
-compilation cost (~32× slower than a cached call). For full benchmark tables,
-charts, and scaling analysis see
-[docs/performance.md](docs/performance.md). To run the suite:
+compilation cost (~32× slower than a cached call).
+
+For full benchmark tables, charts, and scaling analysis see
+[docs/performance.md](docs/performance.md). To run the benchmarks:
 
 ```bash
 yarn bench
@@ -412,8 +437,8 @@ yarn bench
 
 ## Contributing
 
-See the repository on GitHub for development setup, testing, release process,
-and project roadmap.
+See [docs/development.md](docs/development.md) for setup, build, test, and
+release instructions, and [ROADMAP.md](ROADMAP.md) for planned work.
 
 ## License
 
