@@ -45,12 +45,18 @@ const runStructuredDataTasks = (filePaths) =>
     ),
   ]);
 
+const runMarkdownTasks = (filePaths) =>
+  compactCommands([
+    runCommand({ command: 'markdownlint-cli2' })(filePaths),
+    runCommand({ command: 'oxfmt' })(filePaths),
+  ]);
+
 export default {
   '*.{json,yml,yaml}': runStructuredDataTasks,
   '*.{ts,js,mjs,cjs}': [
     runCommand({ command: 'oxlint --fix' }),
     runCommand({ command: 'oxfmt' }),
   ],
-  '*.md': runCommand({ command: 'oxfmt' }),
+  '*.md': runMarkdownTasks,
   '*.sh': './scripts/shell_lint.sh',
 };
