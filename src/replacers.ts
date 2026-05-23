@@ -6,28 +6,42 @@ import {
 } from './constants';
 import defaultMatchers, { escapePattern } from './matchers';
 
+/**
+ * Builds the active pattern list from defaults and any caller-supplied patterns.
+ *
+ * @param useDefaultPatterns - Whether to include the built-in default patterns.
+ * @param customPatterns - Additional patterns to append to the active list.
+ * @returns Combined array of field-name patterns to match against.
+ */
 const buildPatterns = (
   useDefaultPatterns: boolean,
   customPatterns?: string[],
-): string[] => {
-  const base = useDefaultPatterns ? [...DEFAULT_FIELD_NAME_PATTERNS] : [];
-  return Array.isArray(customPatterns) ? [...base, ...customPatterns] : base;
-};
+): string[] => [
+  ...(useDefaultPatterns ? DEFAULT_FIELD_NAME_PATTERNS : []),
+  ...(customPatterns ?? []),
+];
 
+/**
+ * Builds the active matcher list from defaults and any caller-supplied matchers.
+ *
+ * @param useDefaultMatchers - Whether to include the built-in default matchers.
+ * @param customMatchers - Additional matchers to append to the active list.
+ * @returns Combined array of matchers used to build replacement regexes.
+ */
 const buildMatchers = (
   useDefaultMatchers: boolean,
   customMatchers?: DataSanitizationMatcher[],
-): DataSanitizationMatcher[] => {
-  const base = useDefaultMatchers ? [...defaultMatchers] : [];
-  return Array.isArray(customMatchers) ? [...base, ...customMatchers] : base;
-};
+): DataSanitizationMatcher[] => [
+  ...(useDefaultMatchers ? defaultMatchers : []),
+  ...(customMatchers ?? []),
+];
 
 interface StringScanRegexes {
   preFilter: RegExp | null;
   regexes: RegExp[];
 }
 
-const STRING_SCAN_CACHE_MAX = 10;
+export const STRING_SCAN_CACHE_MAX = 10;
 const stringScanCache = new Map<string, StringScanRegexes>();
 
 // Assign stable numeric IDs to matcher functions by object identity so that
@@ -35,6 +49,15 @@ const stringScanCache = new Map<string, StringScanRegexes>();
 const matcherIds = new WeakMap<DataSanitizationMatcher, number>();
 let matcherIdCounter = 0;
 
+/**
+ * Returns a stable string ID for a matcher function by object identity.
+ *
+ * Assigns a new ID on first encounter and caches it in a WeakMap so that two
+ * closures with identical source but different captured state do not collide.
+ *
+ * @param matcher - Matcher function to identify.
+ * @returns Stable numeric string ID for the matcher.
+ */
 const getMatcherId = (matcher: DataSanitizationMatcher): string => {
   const existing = matcherIds.get(matcher);
   if (existing !== undefined) {
@@ -45,6 +68,18 @@ const getMatcherId = (matcher: DataSanitizationMatcher): string => {
   return String(id);
 };
 
+/**
+ * Builds and caches the pre-filter and per-pattern regexes used when scanning
+ * non-sensitive string values for embedded sensitive patterns.
+ *
+ * Results are keyed by matcher identity, pattern list, and removeMatches flag,
+ * and stored in an LRU cache capped at {@link STRING_SCAN_CACHE_MAX} entries.
+ *
+ * @param matchers - Active matcher functions.
+ * @param patterns - Active field-name patterns.
+ * @param removeMatches - Whether matchers should target removal instead of masking.
+ * @returns Pre-filter regex (or `null` when no patterns are active) and per-pattern replacement regexes.
+ */
 const buildStringScanRegexes = (
   matchers: DataSanitizationMatcher[],
   patterns: string[],
@@ -89,14 +124,9 @@ const buildStringScanRegexes = (
  * This checks for some common patterns on how sensitive
  * data might appear in a string.
  *
- * NOTE: these are not meant to cover every case, but common cases
- *       care should still be taken in code to ensure only logging of
- *       safe data
- *
  * @param data - Data string to be sanitized.
  * @param options - Matcher, pattern, masking, and removal options.
  * @returns Sanitized string data, or the original non-string data for runtime safety.
- * @throws {Error} If a matcher fails while creating a regular expression for a pattern.
  *
  * @example
  * stringReplacer('password=secret&username=mark')
@@ -137,15 +167,10 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const patterns = buildPatterns(useDefaultPatterns, customPatterns);
   const matchers = buildMatchers(useDefaultMatchers, customMatchers);
 
+  const replacement = removeMatches ? '' : '$1' + mask + '$2';
   for (const pattern of patterns) {
     for (const matcher of matchers) {
-      const matchInstance = matcher(pattern, removeMatches);
-
-      if (removeMatches) {
-        data = data.replace(matchInstance, '');
-      } else {
-        data = data.replace(matchInstance, '$1' + mask + '$2');
-      }
+      data = data.replace(matcher(pattern, removeMatches), replacement);
     }
   }
 
@@ -202,15 +227,14 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
       : { preFilter: null, regexes: [] };
   const seen = new WeakSet<object>();
 
+  const stringScanReplacement = removeMatches ? '' : '$1' + mask + '$2';
   const scanStringValue = (value: string): string => {
     if (!patternPreFilter?.test(value)) {
       return value;
     }
     let result = value;
     for (const regex of stringRegexes) {
-      result = removeMatches
-        ? result.replace(regex, '')
-        : result.replace(regex, '$1' + mask + '$2');
+      result = result.replace(regex, stringScanReplacement);
     }
     return result;
   };

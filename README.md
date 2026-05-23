@@ -348,18 +348,18 @@ the input has and how long they are. Rough throughput on a modern laptop
 
 | Workload                                       | ops/s    | ms/call | scan overhead |
 | ---------------------------------------------- | -------- | ------- | ------------- |
-| Shallow object (1 sensitive key)               | ~243,000 | ~0.004  | ~55%          |
-| Log object, stack trace with credentials       | ~79,000  | ~0.013  | ~80%          |
-| Log object, clean stack trace                  | ~199,000 | ~0.005  | ~49%          |
-| Object with 10KB non-sensitive string          | ~143,000 | ~0.007  | ~76%          |
-| Large flat object (50 fields, 1 sensitive key) | ~69,000  | ~0.015  | ~15%          |
-| Array (1,000 items, 1 sensitive key each)      | ~2,043   | ~0.49   | ~4%           |
+| Shallow object (1 sensitive key)               | ~464,000 | ~0.002  | ~18%          |
+| Log object, stack trace with credentials       | ~46,000  | ~0.022  | ~88%          |
+| Log object, clean stack trace                  | ~318,000 | ~0.003  | ~18%          |
+| Object with 10KB non-sensitive string          | ~200,000 | ~0.005  | ~68%          |
+| Large flat object (50 fields, 1 sensitive key) | ~82,000  | ~0.012  | ~10%          |
+| Array (1,000 items, 1 sensitive key each)      | ~2,161   | ~0.46   | ~5%           |
 | Array (1,000,000 items, 1 sensitive key each)  | ~1.7     | ~574    | ~4%           |
 
-Array workloads pay ~2–4% overhead regardless of size — the per-item
+Array workloads pay ~3–5% overhead regardless of size — the per-item
 pre-filter cost is negligible. The cost is most visible on individual objects
 with long non-sensitive string values such as stack traces or large text
-fields; a single 10KB non-sensitive string value incurs ~76% overhead.
+fields; a single 10KB non-sensitive string value incurs ~68% overhead.
 
 **`scanStringValues: false`** — Disables string-value scanning on the object
 path. Use this when you control your data structure and know sensitive values
@@ -401,7 +401,7 @@ If dynamic options are unavoidable, set `scanStringValues: false` — this skips
 the string-scanning cache and avoids the fingerprinting overhead on every call.
 
 When options must genuinely vary per call, each call pays the first-call
-compilation cost (~17× slower than a cached call). For full benchmark tables,
+compilation cost (~32× slower than a cached call). For full benchmark tables,
 charts, and scaling analysis see
 [docs/performance.md](docs/performance.md). To run the suite:
 

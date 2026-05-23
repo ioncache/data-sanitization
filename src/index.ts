@@ -13,10 +13,6 @@ import { DataSanitizationReplacer } from './types';
  * // => 'object'
  */
 const getInputType = (data: unknown): string => {
-  if (data === null) {
-    return 'null';
-  }
-
   if (Array.isArray(data)) {
     return 'array';
   }
@@ -58,14 +54,12 @@ const createSafeErrorDetails = (
  * enabled, valid JSON object/array strings are sanitized via
  * {@link objectReplacer} and re-serialized with `JSON.stringify`. Non-null
  * objects and arrays are sanitized directly via {@link objectReplacer} without
- * any string conversion. Null is JSON-stringified, sanitized via
- * {@link stringReplacer}, then parsed back.
+ * any string conversion. Null is returned as-is.
  *
  * @param data - String, null, or object data to be sanitized.
  * @param options - Matcher, pattern, masking, removal, and string-scan options.
  * @returns Sanitized data in the original supported input type when possible.
  * @throws {DataSanitizationError} When the input data type cannot be sanitized.
- * @throws {DataSanitizationError} When sanitized object data cannot be parsed back to JSON.
  *
  * @example
  * // Sanitize a JSON string
@@ -98,12 +92,11 @@ const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
       return stringReplacer(data, options);
     }
 
+    if (data === null) {
+      return null;
+    }
+
     if (typeof data === 'object') {
-      if (data === null) {
-        return JSON.parse(
-          stringReplacer(JSON.stringify(data), options) as string,
-        );
-      }
       return objectReplacer(data, options);
     }
 

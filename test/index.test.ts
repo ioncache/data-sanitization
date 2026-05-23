@@ -6,10 +6,6 @@ import sanitizeData from '../src/index';
 import { DataSanitizationError } from '../src/errors';
 import { DEFAULT_NUMERIC_MASK, DEFAULT_PATTERN_MASK } from '../src/constants';
 
-const failingMatcher = (): RegExp => {
-  throw new Error('matcher failed');
-};
-
 describe('DataSanitizationIndexAndErrors', () => {
   describe('sanitizeData', () => {
     it('should sanitize top-level object input', () => {
@@ -184,7 +180,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output).toContain('username=bar');
     });
 
-    it('should pass options through to the replacer', () => {
+    it('should use a custom patternMask when provided', () => {
       // Arrange
       const input = { password: 'foo', username: 'bar' };
 
@@ -269,36 +265,6 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect((thrownError as DataSanitizationError).details).toEqual({
         errorName: 'TypeError',
         inputType: 'object',
-      });
-    });
-
-    it('should report null input type in wrapped error details', () => {
-      // Arrange
-      const input = null as unknown as Record<string, unknown>;
-      let thrownError: unknown;
-
-      // Act
-      const act = (): void => {
-        try {
-          sanitizeData(input, {
-            customMatchers: [failingMatcher],
-            customPatterns: ['password'],
-            useDefaultMatchers: false,
-            useDefaultPatterns: false,
-          });
-        } catch (error) {
-          thrownError = error;
-          throw error;
-        }
-      };
-
-      // Assert
-      expect(act).toThrowError(DataSanitizationError);
-      expect(act).toThrowError('Error parsing data');
-      expect(thrownError).toBeInstanceOf(DataSanitizationError);
-      expect((thrownError as DataSanitizationError).details).toEqual({
-        errorName: 'Error',
-        inputType: 'null',
       });
     });
 
