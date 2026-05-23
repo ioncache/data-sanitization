@@ -51,7 +51,7 @@
     "lint:code": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:yaml": "yamllint \".github/**/*.yml\" \".github/**/*.yaml\" \".yarnrc.yml\"",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "prepack": "yarn build",
     "release": "node scripts/release.mjs",
     "bench": "vitest bench",
