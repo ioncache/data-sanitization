@@ -57,7 +57,9 @@ interface DataSanitizationReplacerOptions {
   /**
    * Whether to scan string values on non-sensitive-key fields for embedded
    * sensitive patterns. Disabling this improves performance on object
-   * workloads. Has no effect on string input. Default: true
+   * workloads. Has no effect on raw string input unless `parseJsonStrings`
+   * is also enabled — in that case the string is parsed to an object first
+   * and scanning applies normally. Default: true
    */
   scanStringValues?: boolean;
   /**
