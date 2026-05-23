@@ -22,25 +22,26 @@ to disabling it, sorted from highest to lowest overhead:
 ```mermaid
 xychart-beta
     title "scanStringValues overhead by workload (sorted)"
-    x-axis ["Log stack hit", "10KB string", "Log embed", "Arr-of-strs", "Shallow", "Log stack miss", "Nested", "Flat 5-key", "Flat 1-key", "Arrays"]
-    y-axis "overhead pct" 0 --> 90
-    bar [80, 76, 70, 64, 55, 49, 44, 19, 15, 3]
+    x-axis ["Log stack hit", "10KB string", "Log embed", "Arr-of-strs", "Shallow", "Log stack miss", "Nested", "Flat 1-key", "Flat 5-key", "Arrays"]
+    y-axis "overhead pct" 0 --> 100
+    bar [88, 68, 66, 47, 18, 18, 14, 10, 9, 3]
 ```
 
 Key observations:
 
-- **Log objects with long strings** pay the most — even a clean stack trace
-  with no matches incurs ~49% overhead because the pre-filter must scan a long
-  string. A matching stack trace hits ~80%.
-- **10KB non-sensitive string values** incur ~76% overhead — the pre-filter
+- **Log objects with long strings** pay the most — a stack trace containing
+  embedded credentials incurs ~88% overhead from the full regex suite running
+  on a long string. A clean stack trace (pre-filter fast-exit) still incurs
+  ~18% from the pre-filter scan alone.
+- **10KB non-sensitive string values** incur ~68% overhead — the pre-filter
   must scan the full length even when it exits immediately with no match.
-- **Array-of-strings fields** (e.g. 100 log lines) pay ~64% — per-item
+- **Array-of-strings fields** (e.g. 100 log lines) pay ~47% — per-item
   pre-filter cost accumulates across all array elements.
-- **Small shallow objects** pay ~44–55% overhead — visible but
-  sub-millisecond (~0.004–0.005 ms/call).
-- **Large flat objects** pay ~15–19% — scanning 45–49 non-sensitive fields
+- **Small shallow objects** pay ~18% overhead — visible but
+  sub-millisecond (~0.002 ms/call).
+- **Large flat objects** pay ~9–10% — scanning 45–49 non-sensitive fields
   costs less per field than scanning fewer long fields.
-- **Arrays** pay only ~2–4% — the per-item pre-filter cost is negligible
+- **Arrays** pay only ~1–5% — the per-item pre-filter cost is negligible
   compared to the work of traversing each item.
 
 ## Array scaling
@@ -54,12 +55,12 @@ xychart-beta
     title "Array throughput items per second thousands"
     x-axis ["1k items", "10k items", "100k items", "1M items"]
     y-axis "items per sec thousands" 0 --> 2400
-    line [2043, 2054, 1733, 1742]
-    line [2123, 2128, 1771, 1812]
+    line [2161, 2150, 1850, 1700]
+    line [2272, 2180, 1890, 1800]
 ```
 
 The two lines are scan enabled (lower) and scan disabled (upper). They are
-nearly indistinguishable — the ~4% gap is smaller than benchmark noise at this
+nearly indistinguishable — the ~1–5% gap is smaller than benchmark noise at this
 scale. The slight drop at 100k and 1M items reflects GC pressure from the
 large input array, not algorithmic degradation.
 
@@ -87,99 +88,99 @@ Rough throughput on a modern laptop (Apple M-series, Node.js 22):
     <tr>
       <td rowspan="2">Shallow object (4 fields)</td>
       <td>1 sensitive key</td>
-      <td>~243,000</td><td>~0.004</td>
-      <td>~545,000</td><td>~0.002</td>
-      <td>~55%</td>
+      <td>~464,000</td><td>~0.002</td>
+      <td>~563,000</td><td>~0.002</td>
+      <td>~18%</td>
     </tr>
     <tr>
       <td>4 sensitive keys (all)</td>
-      <td>~253,000</td><td>~0.004</td>
+      <td>~494,000</td><td>~0.002</td>
       <td>—</td><td>—</td>
       <td>—</td>
     </tr>
     <tr>
       <td>Deeply nested (5 levels)</td>
       <td>multiple sensitive keys</td>
-      <td>~202,000</td><td>~0.005</td>
-      <td>~363,000</td><td>~0.003</td>
-      <td>~44%</td>
+      <td>~311,000</td><td>~0.003</td>
+      <td>~362,000</td><td>~0.003</td>
+      <td>~14%</td>
     </tr>
     <tr>
       <td rowspan="3">Log object (5 fields)</td>
       <td>embedded credential in string value</td>
-      <td>~107,000</td><td>~0.009</td>
-      <td>~360,000</td><td>~0.003</td>
-      <td>~70%</td>
+      <td>~138,000</td><td>~0.007</td>
+      <td>~407,000</td><td>~0.002</td>
+      <td>~66%</td>
     </tr>
     <tr>
       <td>stack trace with embedded credentials</td>
-      <td>~79,000</td><td>~0.013</td>
-      <td>~388,000</td><td>~0.003</td>
-      <td>~80%</td>
+      <td>~46,000</td><td>~0.022</td>
+      <td>~387,000</td><td>~0.003</td>
+      <td>~88%</td>
     </tr>
     <tr>
       <td>clean stack trace (pre-filter fast-exit)</td>
-      <td>~199,000</td><td>~0.005</td>
-      <td>~389,000</td><td>~0.003</td>
-      <td>~49%</td>
+      <td>~318,000</td><td>~0.003</td>
+      <td>~387,000</td><td>~0.003</td>
+      <td>~18%</td>
     </tr>
     <tr>
       <td>Many embedded matches (21 fields)</td>
       <td>20 string values all containing a pattern</td>
-      <td>~13,000</td><td>~0.077</td>
+      <td>~14,000</td><td>~0.072</td>
       <td>—</td><td>—</td>
       <td>—</td>
     </tr>
     <tr>
       <td rowspan="2">Large flat object (50 fields)</td>
       <td>1 sensitive key</td>
-      <td>~69,000</td><td>~0.015</td>
-      <td>~80,000</td><td>~0.012</td>
-      <td>~15%</td>
+      <td>~82,000</td><td>~0.012</td>
+      <td>~91,000</td><td>~0.011</td>
+      <td>~10%</td>
     </tr>
     <tr>
       <td>5 sensitive keys</td>
-      <td>~69,000</td><td>~0.015</td>
-      <td>~86,000</td><td>~0.012</td>
-      <td>~19%</td>
+      <td>~81,000</td><td>~0.012</td>
+      <td>~89,000</td><td>~0.011</td>
+      <td>~9%</td>
     </tr>
     <tr>
       <td rowspan="2">Object with 10KB string field</td>
       <td>1 sensitive key + 10KB non-sensitive value</td>
-      <td>~143,000</td><td>~0.007</td>
-      <td>~596,000</td><td>~0.002</td>
-      <td>~76%</td>
+      <td>~200,000</td><td>~0.005</td>
+      <td>~619,000</td><td>~0.002</td>
+      <td>~68%</td>
     </tr>
     <tr>
       <td>array-of-strings field (100 clean log lines)</td>
-      <td>~151,000</td><td>~0.007</td>
-      <td>~415,000</td><td>~0.002</td>
-      <td>~64%</td>
+      <td>~223,000</td><td>~0.004</td>
+      <td>~425,000</td><td>~0.002</td>
+      <td>~47%</td>
     </tr>
     <tr>
       <td>Deeply nested (5 × 10 safe strings)</td>
       <td>5 levels, 10 non-sensitive string fields each</td>
-      <td>~29,000</td><td>~0.035</td>
+      <td>~30,000</td><td>~0.033</td>
       <td>~32,000</td><td>~0.031</td>
-      <td>~11%</td>
+      <td>~6%</td>
     </tr>
     <tr>
       <td rowspan="4">Array — simple items<br>(3 fields: 1 sensitive)</td>
       <td>1,000 items</td>
-      <td>~2,043</td><td>~0.49</td>
-      <td>~2,123</td><td>~0.47</td>
-      <td>~4%</td>
+      <td>~2,161</td><td>~0.46</td>
+      <td>~2,272</td><td>~0.44</td>
+      <td>~5%</td>
     </tr>
     <tr>
       <td>10,000 items</td>
-      <td>~205</td><td>~4.9</td>
-      <td>~213</td><td>~4.7</td>
-      <td>~4%</td>
+      <td>~215</td><td>~4.7</td>
+      <td>~218</td><td>~4.6</td>
+      <td>~1%</td>
     </tr>
     <tr>
       <td>100,000 items</td>
-      <td>~17</td><td>~58</td>
-      <td>~18</td><td>~56</td>
+      <td>~18</td><td>~54</td>
+      <td>~19</td><td>~53</td>
       <td>~2%</td>
     </tr>
     <tr>
@@ -191,20 +192,20 @@ Rough throughput on a modern laptop (Apple M-series, Node.js 22):
     <tr>
       <td rowspan="4">Array — complex items<br>(10 fields: 5 sensitive)</td>
       <td>1,000 items</td>
-      <td>~516</td><td>~1.94</td>
-      <td>~539</td><td>~1.86</td>
-      <td>~4%</td>
+      <td>~590</td><td>~1.69</td>
+      <td>~565</td><td>~1.77</td>
+      <td>~0%</td>
     </tr>
     <tr>
       <td>10,000 items</td>
-      <td>~51</td><td>~19.5</td>
-      <td>~53</td><td>~18.9</td>
-      <td>~3%</td>
+      <td>~55</td><td>~18.1</td>
+      <td>~58</td><td>~17.2</td>
+      <td>~5%</td>
     </tr>
     <tr>
       <td>100,000 items</td>
-      <td>~5.0</td><td>~201</td>
-      <td>~5.0</td><td>~201</td>
+      <td>~5.3</td><td>~191</td>
+      <td>~5.3</td><td>~187</td>
       <td>~0%</td>
     </tr>
     <tr>
@@ -231,10 +232,10 @@ reuse the cache and pay no compile cost.
 
 | Case                                 | ops/s    | ms/call |
 | ------------------------------------ | -------- | ------- |
-| Warm cache (same options each call)  | ~246,000 | ~0.004  |
+| Warm cache (same options each call)  | ~451,000 | ~0.002  |
 | Cold start (unique options per call) | ~14,000  | ~0.070  |
 
-The first call is ~17× slower than a warm call due to regex compilation.
+The first call is ~32× slower than a warm call due to regex compilation.
 In steady-state server usage this cost is paid once per process lifetime and
 is negligible. It becomes visible only in tests or scripts that create many
 distinct option configurations (e.g. per-request custom patterns).
@@ -267,27 +268,27 @@ replacement pattern differences.
   <tbody>
     <tr>
       <td>Shallow object (4 fields, 1 sensitive)</td>
-      <td>~234,000</td><td>~0.004</td>
-      <td>~234,000</td><td>~0.004</td>
+      <td>~440,000</td><td>~0.002</td>
+      <td>~441,000</td><td>~0.002</td>
       <td>~0%</td>
     </tr>
     <tr>
       <td>Large flat object (50 fields, 1 sensitive)</td>
-      <td>~68,000</td><td>~0.015</td>
-      <td>~61,000</td><td>~0.016</td>
-      <td>~11%</td>
+      <td>~80,000</td><td>~0.013</td>
+      <td>~77,000</td><td>~0.013</td>
+      <td>~3%</td>
     </tr>
     <tr>
       <td>Array (1,000 items, 1 sensitive key)</td>
-      <td>~2,096</td><td>~0.48</td>
-      <td>~1,979</td><td>~0.51</td>
-      <td>~6%</td>
+      <td>~2,132</td><td>~0.47</td>
+      <td>~2,167</td><td>~0.46</td>
+      <td>~0%</td>
     </tr>
     <tr>
       <td>Form-encoded string</td>
-      <td>~101,000</td><td>~0.010</td>
+      <td>~104,000</td><td>~0.010</td>
       <td>~81,000</td><td>~0.012</td>
-      <td>~20%</td>
+      <td>~22%</td>
     </tr>
   </tbody>
 </table>
@@ -336,15 +337,15 @@ regex path cannot detect or replace bare numeric values in strings.
   <tbody>
     <tr>
       <td>Small JSON string (5 fields, 1 sensitive)</td>
-      <td>~65,783</td><td>~0.0152</td>
-      <td>~271,150</td><td>~0.0037</td>
-      <td>~4.1×</td>
+      <td>~78,073</td><td>~0.0128</td>
+      <td>~312,452</td><td>~0.0032</td>
+      <td>~4.0×</td>
     </tr>
     <tr>
       <td>Large JSON string (50 fields, 5 sensitive string + 5 sensitive numeric)</td>
-      <td>~17,164</td><td>~0.0583</td>
-      <td>~50,848</td><td>~0.0197</td>
-      <td>~3.0×</td>
+      <td>~17,608</td><td>~0.0568</td>
+      <td>~58,763</td><td>~0.0170</td>
+      <td>~3.3×</td>
     </tr>
   </tbody>
 </table>
@@ -371,8 +372,8 @@ xychart-beta
     title "parseJsonStrings x scanStringValues interaction (15-field log payload, ops/s)"
     x-axis ["parseJsonStrings off", "parseJsonStrings on"]
     y-axis "ops/s" 0 --> 200000
-    line [41000, 92000]
-    line [41000, 183000]
+    line [43000, 92000]
+    line [43000, 181000]
 ```
 
 The lines start at the same point — `scanStringValues` makes no difference on
@@ -383,10 +384,10 @@ overhead on the object path, explaining the ~2× gap between the two
 
 | Option combination                                            | ops/s    | ms/call |
 | ------------------------------------------------------------- | -------- | ------- |
-| `parseJsonStrings: false`, `scanStringValues: true` (default) | ~41,000  | ~0.024  |
-| `parseJsonStrings: false`, `scanStringValues: false`          | ~41,000  | ~0.024  |
+| `parseJsonStrings: false`, `scanStringValues: true` (default) | ~43,000  | ~0.023  |
+| `parseJsonStrings: false`, `scanStringValues: false`          | ~43,000  | ~0.023  |
 | `parseJsonStrings: true`, `scanStringValues: true`            | ~92,000  | ~0.011  |
-| `parseJsonStrings: true`, `scanStringValues: false`           | ~183,000 | ~0.0055 |
+| `parseJsonStrings: true`, `scanStringValues: false`           | ~181,000 | ~0.0055 |
 
 ## High pattern counts
 
@@ -413,7 +414,7 @@ In steady-state usage — a fixed configuration, possibly with a static list of
 
 If `customPatterns` vary per call (e.g. injected from user input or request
 data), entries will cycle through the cache and every call will pay the
-cold-start regex compilation cost (~17× slower than a warm call). In that
+cold-start regex compilation cost (~32× slower than a warm call). In that
 scenario, prebuild the options object once (or a small set of them) and reuse
 it across calls. Or set `scanStringValues: false`, which bypasses the cache
 entirely.
