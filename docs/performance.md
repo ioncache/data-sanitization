@@ -308,6 +308,27 @@ The option only affects the object traversal path.
 | Form-encoded string (1 sensitive field)         | ~102,000 | ~0.010  | ~84,000      |
 | Escaped JSON string (1 sensitive field)         | ~91,000  | ~0.011  | ~69,000      |
 
+## Parser-first JSON strings
+
+When `parseJsonStrings: true` is set, string inputs that are valid JSON objects
+or arrays are parsed and sanitized via the object path rather than the regex
+path. The parse-and-re-serialize overhead is offset by the fact that the object
+traversal is faster than running each pattern against every matcher across the
+full string. The key correctness advantage is that numeric-typed sensitive
+fields (e.g. `{"password":12345}`) are masked with `numericMask` — the default
+regex path cannot detect or replace bare numeric values in strings.
+
+| Group | Variant                     | ops/s    | mean     |
+| ----- | --------------------------- | -------- | -------- |
+| small | `parseJsonStrings` disabled | ~65,783  | ~15.2 µs |
+| small | `parseJsonStrings` enabled  | ~271,150 | ~3.7 µs  |
+| large | `parseJsonStrings` disabled | ~17,164  | ~58.3 µs |
+| large | `parseJsonStrings` enabled  | ~50,848  | ~19.7 µs |
+
+The large input case also demonstrates the correctness benefit: with
+`parseJsonStrings` enabled, numeric `token_N` fields are correctly masked with
+`numericMask`, whereas the default regex path leaves them unmasked.
+
 ## High pattern counts
 
 Pattern count affects object workloads proportionally when

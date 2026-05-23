@@ -56,10 +56,12 @@ const createSafeErrorDetails = (
  * Sanitizes data in an object/string to make it safe for logging
  * or other purposes of a sensitive nature
  *
- * Strings are sanitized via {@link stringReplacer}. Non-null objects and arrays
- * are sanitized directly via {@link objectReplacer} without any string
- * conversion. Null is JSON-stringified, sanitized via {@link stringReplacer},
- * then parsed back.
+ * Strings are sanitized via {@link stringReplacer}. When `parseJsonStrings` is
+ * enabled, valid JSON object/array strings are sanitized via
+ * {@link objectReplacer} and re-serialized with `JSON.stringify`. Non-null
+ * objects and arrays are sanitized directly via {@link objectReplacer} without
+ * any string conversion. Null is JSON-stringified, sanitized via
+ * {@link stringReplacer}, then parsed back.
  *
  * @param data - String, null, or object data to be sanitized.
  * @param options - Matcher, pattern, masking, removal, and string-scan options.
@@ -86,6 +88,11 @@ const createSafeErrorDetails = (
  * // String values on non-sensitive keys are scanned for embedded patterns by default
  * sanitizeData({ message: 'request failed: api_key=hunter2' })
  * // => { message: 'request failed: api_key=**********' }
+ *
+ * @example
+ * // Parse JSON string and mask numeric sensitive fields
+ * sanitizeData('{"password":12345,"username":"mark"}', { parseJsonStrings: true })
+ * // => '{"password":9999999999,"username":"mark"}'
  */
 const sanitizeData: DataSanitizationReplacer = (data, options = {}) => {
   try {

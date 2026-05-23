@@ -115,6 +115,22 @@ sanitizeData('password=secret&username=mark');
 // => 'password=**********&username=mark'
 ```
 
+### Parse JSON strings
+
+When a string input is valid JSON containing an object or array, set
+`parseJsonStrings: true` to sanitize it via the object path. This also correctly
+masks numeric-valued sensitive fields, which the default regex path cannot do:
+
+```typescript
+sanitizeData('{"password":12345,"username":"mark"}', {
+  parseJsonStrings: true,
+});
+// => '{"password":9999999999,"username":"mark"}'
+```
+
+Note: the result is re-serialized with `JSON.stringify`, which does not preserve
+original whitespace or indentation.
+
 ### Remove fields instead of masking
 
 ```typescript
@@ -186,16 +202,17 @@ sanitizeData(patient, {
 
 ## Options
 
-| Option               | Type                        | Default      | Description                                                                        |
-| -------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------- |
-| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                 |
-| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                 |
-| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                  |
-| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns (object input only) |
-| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                            |
-| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                |
-| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                   |
-| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                   |
+| Option               | Type                        | Default      | Description                                                                                                                                                                    |
+| -------------------- | --------------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                                                                                                             |
+| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                                                                                                             |
+| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                                                                                                              |
+| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns (object input only)                                                                                             |
+| `parseJsonStrings`   | `boolean`                   | `false`      | Parse string input as JSON and sanitize via the object path when valid. Note: re-serializes with `JSON.stringify`, which does not preserve original whitespace or indentation. |
+| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                                                                                                                        |
+| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                            |
+| `useDefaultPatterns` | `boolean`                   | `true`       | Whether to include the built-in default patterns                                                                                                                               |
+| `useDefaultMatchers` | `boolean`                   | `true`       | Whether to include the built-in default matchers                                                                                                                               |
 
 ## Default patterns
 
