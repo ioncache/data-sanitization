@@ -411,9 +411,8 @@ yarn bench
 
 ## Contributing
 
-For development setup, testing, and release process, see
-[docs/development.md](docs/development.md). For future direction, see
-[docs/ROADMAP.md](docs/ROADMAP.md).
+See the repository on GitHub for development setup, testing, release process,
+and project roadmap.
 
 ## License
 

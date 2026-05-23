@@ -29,6 +29,7 @@
   },
   "files": [
     "dist",
+    "docs/performance.md",
     "README.md",
     "LICENSE"
   ],
