@@ -7,10 +7,11 @@ that is ready to implement on a branch.
 
 ## Current State
 
-Version 1.0.1 is a stable base for the library. The current API supports
+Version 1.1.0 is a stable base for the library. The current API supports
 sanitizing objects, arrays, strings, and `null`; masks or removes fields based
-on configurable patterns; ships TypeScript declarations; and avoids exposing
-input payloads in sanitizer error details.
+on configurable patterns; supports numeric masking, string-value scanning for
+embedded credentials, and parser-first JSON string handling; ships TypeScript
+declarations; and avoids exposing input payloads in sanitizer error details.
 
 The project should continue to prioritize a small public API, predictable
 behavior, sensitive-data sanitization for logging and debugging workflows, and
@@ -78,7 +79,7 @@ These items extend behavior without breaking existing contracts.
       `numericMask` alongside `patternMask`.
 - [x] Update README with a `numericMask` example.
 
-### Performance Benchmarks — completed in #299
+### Performance Benchmarks — completed in [#299](https://github.com/ioncache/data-sanitization/pull/299)
 
 Establish a performance baseline before the string-value scanning work lands,
 since that change will meaningfully increase per-object work. Benchmarks also
