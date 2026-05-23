@@ -1,6 +1,8 @@
-# data-sanitization
+# data-sanitization: protect credentials and personal data from accidental exposure
 
-> Mask or remove sensitive fields in objects, strings, and logs before they leave your application.
+> Sensitive data (credentials, PII, PHI, and other private information) ends up in logs more often than it should.
+
+<!-- markdownlint-disable MD013 -->
 
 [![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/coverage.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
@@ -10,14 +12,16 @@
 
 [npm](https://www.npmjs.com/package/data-sanitization) &nbsp;•&nbsp; [Changelog](https://github.com/ioncache/data-sanitization/releases) &nbsp;•&nbsp; [GitHub](https://github.com/ioncache/data-sanitization)
 
+<!-- markdownlint-enable MD013 -->
+
 ---
 
-Sensitive data (credentials, PII, PHI, and other private information) ends up
-in logs more often than it should. `data-sanitization` masks or removes it by
-field name across objects, arrays, and nested structures, so sensitive values
-never reach your logs, monitoring, or debugging output in plain text.
+`data-sanitization` masks or removes sensitive field values before they leave your application.
 
-No runtime dependencies. Works in Node.js and browsers.
+Use it in log pipelines, request handlers, and error reporters to catch what might otherwise slip through.
+
+It matches field names across objects, arrays, and strings, and lets you extend the built-in
+defaults with your own patterns for PII, PHI, or any domain-specific fields.
 
 ## Before / After
 
@@ -34,13 +38,14 @@ sanitizeData(input);
 
 ## Highlights
 
-- Zero runtime dependencies
-- Works on objects, arrays, strings, and nested structures with no JSON round-trip
-- Error details never include the original input payload
+- Zero runtime dependencies, with compiled JS and full TypeScript declarations
+- Sanitizes nested structures at any depth, preserving types and class instances
+- Handles circular references safely
+- Sanitization errors never expose the original input payload
 
 ## Table of Contents
 
-- [data-sanitization](#data-sanitization)
+- [data-sanitization: protect credentials and personal data from accidental exposure](#data-sanitization-protect-credentials-and-personal-data-from-accidental-exposure)
   - [Before / After](#before--after)
   - [Highlights](#highlights)
   - [Table of Contents](#table-of-contents)
@@ -346,6 +351,8 @@ original input payload.
 
 ## How it works
 
+`sanitizeData` dispatches on the input type and applies the configured patterns and matchers accordingly:
+
 1. **String input** is sanitized directly via regex replacement with the configured matchers.
 2. **Object input** is sanitized recursively by key name without JSON
    serialization. Sensitive keys are masked or removed regardless of whether
@@ -437,8 +444,10 @@ yarn bench
 
 ## Contributing
 
+Bug reports and pull requests are welcome. Open an issue or PR on [GitHub](https://github.com/ioncache/data-sanitization).
+
 See [docs/development.md](docs/development.md) for setup, build, test, and
-release instructions, and [ROADMAP.md](ROADMAP.md) for planned work.
+release instructions, and [docs/ROADMAP.md](docs/ROADMAP.md) for planned work.
 
 ## License
 
