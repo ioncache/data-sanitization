@@ -1,0 +1,6 @@
+# .coderabbit.yaml
+reviews:
+  tools:
+    # This repo uses Oxlint instead of ESLint.
+    eslint:
+      enabled: false
