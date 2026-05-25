@@ -33,28 +33,31 @@ jobs:
       - run: yarn format:check
       - run: yarn lint:ci
       - run: yarn test:coverage
-      - name: Report coverage
+      - name: Report coverage (data-sanitization)
         if: matrix.node-version == 24
         uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
-      - name: Extract coverage percentage
-        id: coverage
+        with:
+          json-summary-coverage-filepath: packages/data-sanitization/coverage/coverage-summary.json
+          json-final-coverage-filepath: packages/data-sanitization/coverage/coverage-final.json
+      - name: Extract coverage percentage (data-sanitization)
+        id: coverage-data-sanitization
         if: matrix.node-version == 24 && github.event_name == 'push'
-        run: echo "percentage=$(jq '.total.lines.pct' coverage/coverage-summary.json)" >> "$GITHUB_OUTPUT"
-      - name: Update coverage badge
+        run: echo "percentage=$(jq '.total.lines.pct' packages/data-sanitization/coverage/coverage-summary.json)" >> "$GITHUB_OUTPUT"
+      - name: Update coverage badge (data-sanitization)
         if: matrix.node-version == 24 && github.event_name == 'push'
         uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501 # v1.8.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.COVERAGE_GIST_ID }}
-          filename: coverage.json
+          filename: data-sanitization-coverage-badge-config.json
           label: coverage
-          message: ${{ steps.coverage.outputs.percentage }}%
-          valColorRange: ${{ steps.coverage.outputs.percentage }}
+          message: ${{ steps.coverage-data-sanitization.outputs.percentage }}%
+          valColorRange: ${{ steps.coverage-data-sanitization.outputs.percentage }}
           maxColorRange: 100
           minColorRange: 0
-      - name: Update coverage report in Gist
+      - name: Update coverage report in Gist (data-sanitization)
         if: matrix.node-version == 24 && github.event_name == 'push'
         env:
           COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
           GIST_SECRET: ${{ secrets.GIST_SECRET }}
-        run: yarn node scripts/update-coverage-gist.mjs
+        run: yarn workspace data-sanitization node scripts/update-coverage-gist.mjs --package-name data-sanitization

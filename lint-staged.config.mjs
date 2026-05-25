@@ -7,6 +7,25 @@ const isGeneratedSdkFile = (filePath) => {
   return relativePath.startsWith(generatedSdkDirectory);
 };
 
+const excludedMarkdownPrefixes = [
+  `docs${path.sep}plans${path.sep}`,
+  `.ai${path.sep}`,
+  `.remember${path.sep}`,
+  `.agents${path.sep}`,
+  `.claude${path.sep}`,
+  `.github${path.sep}instructions${path.sep}`,
+  `.github${path.sep}skills${path.sep}`,
+  `.github${path.sep}prompts${path.sep}`,
+];
+
+const isLintableMarkdown = (filePath) => {
+  const relativePath = path.relative(process.cwd(), filePath);
+  return (
+    !isGeneratedSdkFile(filePath) &&
+    !excludedMarkdownPrefixes.some((prefix) => relativePath.startsWith(prefix))
+  );
+};
+
 const isYamlFile = (filePath) => {
   const extension = path.extname(filePath).toLowerCase();
   return extension === '.yaml' || extension === '.yml';
@@ -47,7 +66,10 @@ const runStructuredDataTasks = (filePaths) =>
 
 const runMarkdownTasks = (filePaths) =>
   compactCommands([
-    runCommand({ command: 'markdownlint-cli2' })(filePaths),
+    runCommand({
+      command: 'markdownlint-cli2',
+      includeFile: isLintableMarkdown,
+    })(filePaths),
     runCommand({ command: 'oxfmt' })(filePaths),
   ]);
 

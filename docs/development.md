@@ -92,21 +92,8 @@ Examples:
 
 ## Release Process
 
-Releases are script-driven and modeled after the reference repository workflow.
-
-Dry run:
-
-```bash
-yarn release --bump patch --dry-run
-```
-
-Live release:
-
-```bash
-yarn release --bump patch
-```
-
-Supported bump values: `major`, `minor`, `patch`.
+Releases use [Changesets](https://github.com/changesets/changesets) for
+version management and changelog generation.
 
 Before publishing or cutting a release, run the local validation scripts:
 
@@ -117,10 +104,15 @@ yarn build
 yarn test:coverage
 ```
 
-Live release behavior:
+### Adding a changeset (during a PR)
 
-1. Generates release notes from conventional commits.
-2. Bumps version in `package.json`.
-3. Commits release metadata and creates an annotated tag.
-4. Pushes `main` and tags.
-5. Creates a GitHub Release with generated notes.
+```bash
+yarn changeset
+```
+
+### Releasing (after PRs are merged)
+
+```bash
+yarn changeset:version   # bumps versions, updates changelogs
+yarn changeset:publish   # publishes to npm, creates git tags
+```
