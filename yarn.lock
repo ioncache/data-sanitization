@@ -1624,6 +1624,7 @@ __metadata:
     query-string: "npm:^9.3.1"
     typescript: "npm:^6.0.3"
     vitest: "npm:^4.1.6"
+    yargs: "npm:^18.0.0"
   languageName: unknown
   linkType: soft
 
