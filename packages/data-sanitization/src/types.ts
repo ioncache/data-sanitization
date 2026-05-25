@@ -82,6 +82,18 @@ interface DataSanitizationReplacerOptions {
 }
 
 /**
+ * Options for {@link buildSanitizedWarning}.
+ */
+interface BuildSanitizedWarningOptions {
+  /**
+   * An explicit list of field names to carry over from the sanitized log
+   * object into the warning entry. When omitted, all fields whose values
+   * did not change are included.
+   */
+  allowedFields?: string[];
+}
+
+/**
  * Data accepted by sanitization replacers.
  */
 type DataSanitizationInput = string | object | null;
@@ -111,6 +123,7 @@ type DataSanitizationReplacer = (
 ) => DataSanitizationOutput;
 
 export {
+  BuildSanitizedWarningOptions,
   DataSanitizationInput,
   DataSanitizationMatcher,
   DataSanitizationOutput,
