@@ -1032,5 +1032,245 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
     });
+
+    describe('Map sanitization', () => {
+      it('should pass through Map unchanged when sanitizeCollections is not enabled', () => {
+        // Arrange
+        const map = new Map<string, unknown>([['password', 'secret']]);
+
+        // Act
+        const result = objectReplacer({ data: map }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.data).toBe(map);
+      });
+
+      it('should return a new Map instance when sanitizeCollections is true', () => {
+        // Arrange
+        const map = new Map<string, unknown>([['username', 'mark']]);
+
+        // Act
+        const result = objectReplacer(
+          { data: map },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+
+        // Assert
+        expect(result.data).not.toBe(map);
+        expect(result.data).toBeInstanceOf(Map);
+      });
+
+      it('should mask string value when string key matches sensitive field pattern', () => {
+        // Arrange
+        const map = new Map<string, unknown>([
+          ['password', 'secret'],
+          ['username', 'mark'],
+        ]);
+
+        // Act
+        const result = objectReplacer(
+          { data: map },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Map<string, unknown>;
+
+        // Assert
+        expect(sanitized.get('password')).toBe(DEFAULT_PATTERN_MASK);
+        expect(sanitized.get('username')).toBe('mark');
+      });
+
+      it('should mask numeric value with numericMask when string key matches sensitive field pattern', () => {
+        // Arrange
+        const map = new Map<string, unknown>([['token', 42]]);
+
+        // Act
+        const result = objectReplacer(
+          { data: map },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Map<string, unknown>;
+
+        // Assert
+        expect(sanitized.get('token')).toBe(DEFAULT_NUMERIC_MASK);
+      });
+
+      it('should omit entry when removeMatches is true and string key matches', () => {
+        // Arrange
+        const map = new Map<string, unknown>([
+          ['password', 'secret'],
+          ['username', 'mark'],
+        ]);
+
+        // Act
+        const result = objectReplacer(
+          { data: map },
+          { removeMatches: true, sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Map<string, unknown>;
+
+        // Assert
+        expect(sanitized.has('password')).toBe(false);
+        expect(sanitized.get('username')).toBe('mark');
+      });
+
+      it('should scan string values on non-sensitive keys for embedded patterns', () => {
+        // Arrange
+        const map = new Map<string, unknown>([['message', 'api_key=hunter2']]);
+
+        // Act
+        const result = objectReplacer(
+          { data: map },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Map<string, unknown>;
+
+        // Assert
+        expect(sanitized.get('message')).toBe(
+          `api_key=${DEFAULT_PATTERN_MASK}`,
+        );
+      });
+
+      it('should sanitize plain object values recursively', () => {
+        // Arrange
+        const map = new Map<string, unknown>([
+          ['data', { password: 'secret', username: 'mark' }],
+        ]);
+
+        // Act
+        const result = objectReplacer(
+          { map },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.map as Map<string, unknown>;
+        const nested = sanitized.get('data') as Record<string, unknown>;
+
+        // Assert
+        expect(nested.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(nested.username).toBe('mark');
+      });
+
+      it('should sanitize object keys recursively', () => {
+        // Arrange
+        const sensitiveKey = { id: 1, password: 'secret' };
+        const map = new Map<object, string>([[sensitiveKey, 'value']]);
+
+        // Act
+        const result = objectReplacer(
+          { data: map },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Map<Record<string, unknown>, string>;
+        const [sanitizedKey] = sanitized.keys();
+
+        // Assert
+        expect(sanitizedKey.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(sanitizedKey.id).toBe(1);
+        expect(sanitized.get(sanitizedKey)).toBe('value');
+      });
+
+      it('should sanitize nested Maps', () => {
+        // Arrange
+        const inner = new Map<string, unknown>([['token', 'abc']]);
+        const outer = new Map<string, unknown>([['nested', inner]]);
+
+        // Act
+        const result = objectReplacer(
+          { data: outer },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitizedOuter = result.data as Map<string, unknown>;
+        const sanitizedInner = sanitizedOuter.get('nested') as Map<
+          string,
+          unknown
+        >;
+
+        // Assert
+        expect(sanitizedInner).toBeInstanceOf(Map);
+        expect(sanitizedInner).not.toBe(inner);
+        expect(sanitizedInner.get('token')).toBe(DEFAULT_PATTERN_MASK);
+      });
+    });
+
+    describe('Set sanitization', () => {
+      it('should pass through Set unchanged when sanitizeCollections is not enabled', () => {
+        // Arrange
+        const set = new Set(['secret']);
+
+        // Act
+        const result = objectReplacer({ data: set }) as Record<string, unknown>;
+
+        // Assert
+        expect(result.data).toBe(set);
+      });
+
+      it('should return a new Set instance when sanitizeCollections is true', () => {
+        // Arrange
+        const set = new Set(['mark']);
+
+        // Act
+        const result = objectReplacer(
+          { data: set },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+
+        // Assert
+        expect(result.data).not.toBe(set);
+        expect(result.data).toBeInstanceOf(Set);
+      });
+
+      it('should scan string values for embedded sensitive patterns', () => {
+        // Arrange
+        const set = new Set(['api_key=hunter2', 'safe-value']);
+
+        // Act
+        const result = objectReplacer(
+          { data: set },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Set<string>;
+
+        // Assert
+        expect(sanitized.has(`api_key=${DEFAULT_PATTERN_MASK}`)).toBe(true);
+        expect(sanitized.has('safe-value')).toBe(true);
+        expect(sanitized.has('api_key=hunter2')).toBe(false);
+      });
+
+      it('should sanitize plain object values recursively', () => {
+        // Arrange
+        const obj = { password: 'secret', username: 'mark' };
+        const set = new Set([obj]);
+
+        // Act
+        const result = objectReplacer(
+          { data: set },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Set<Record<string, unknown>>;
+        const [sanitizedObj] = sanitized;
+
+        // Assert
+        expect(sanitizedObj.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(sanitizedObj.username).toBe('mark');
+      });
+
+      it('should sanitize Map values within a Set', () => {
+        // Arrange
+        const map = new Map<string, unknown>([['token', 'abc']]);
+        const set = new Set([map]);
+
+        // Act
+        const result = objectReplacer(
+          { data: set },
+          { sanitizeCollections: true },
+        ) as Record<string, unknown>;
+        const sanitized = result.data as Set<Map<string, unknown>>;
+        const [sanitizedMap] = sanitized;
+
+        // Assert
+        expect(sanitizedMap).toBeInstanceOf(Map);
+        expect(sanitizedMap).not.toBe(map);
+        expect(sanitizedMap.get('token')).toBe(DEFAULT_PATTERN_MASK);
+      });
+    });
   });
 });

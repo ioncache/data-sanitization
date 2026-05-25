@@ -57,6 +57,7 @@ sanitizeData(input);
     - [Parse JSON strings](#parse-json-strings)
     - [Remove fields instead of masking](#remove-fields-instead-of-masking)
     - [Sanitize PII and PHI with custom patterns](#sanitize-pii-and-phi-with-custom-patterns)
+    - [Sanitize Maps and Sets](#sanitize-maps-and-sets)
   - [Options](#options)
   - [Default patterns](#default-patterns)
   - [Default matchers](#default-matchers)
@@ -224,19 +225,58 @@ sanitizeData(patient, {
 // => { accountId: 'acct_123' }
 ```
 
+### Sanitize Maps and Sets
+
+Enable `sanitizeCollections: true` to traverse `Map` and `Set` instances.
+Each collection is sanitized and returned as a new instance — the original
+is never mutated.
+
+```typescript
+const session = new Map([
+  ['token', 'abc123'],
+  ['username', 'mark'],
+]);
+
+sanitizeData({ session }, { sanitizeCollections: true });
+// => { session: Map { 'token' => '**********', 'username' => 'mark' } }
+```
+
+```typescript
+const tags = new Set(['api_key=hunter2', 'env=production']);
+
+sanitizeData({ tags }, { sanitizeCollections: true });
+// => { tags: Set { 'api_key=**********', 'env=production' } }
+```
+
+> [!TIP]
+> `Map` and `Set` are not JSON-serializable by default — `JSON.stringify` turns
+> them into `{}` and `[]`. To include them in structured logs, spread them first:
+>
+> ```typescript
+> // Map with string keys → plain object
+> JSON.stringify(Object.fromEntries(sanitizedMap));
+>
+> // Map with mixed or object keys → entries array
+> JSON.stringify([...sanitizedMap.entries()]);
+>
+> // Set → array
+> JSON.stringify([...sanitizedSet]);
+> ```
+
 ## Options
 
-| Option               | Type                        | Default      | Description                                                                                                                                                                        |
-| -------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `patternMask`        | `string`                    | `**********` | String used to replace matched string field values                                                                                                                                 |
-| `numericMask`        | `number`                    | `9999999999` | Number used to replace matched number field values                                                                                                                                 |
-| `removeMatches`      | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                                                                                                                  |
-| `scanStringValues`   | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input when `parseJsonStrings` is enabled; has no effect on raw string input. |
-| `parseJsonStrings`   | `boolean`                   | `false`      | Parse valid JSON string inputs as structured data and sanitize by field name. Re-serializes with `JSON.stringify`, discarding original whitespace.                                 |
-| `customPatterns`     | `string[]`                  | `[]`         | Additional field name patterns to match                                                                                                                                            |
-| `customMatchers`     | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
-| `useDefaultPatterns` | `boolean`                   | `true`       | Set to `false` to use only your custom patterns, ignoring the built-in defaults.                                                                                                   |
-| `useDefaultMatchers` | `boolean`                   | `true`       | Set to `false` to use only your custom matchers, ignoring the built-in defaults.                                                                                                   |
+| Option                | Type                        | Default      | Description                                                                                                                                                                        |
+| --------------------- | --------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `patternMask`         | `string`                    | `**********` | String used to replace matched string field values                                                                                                                                 |
+| `numericMask`         | `number`                    | `9999999999` | Number used to replace matched number field values                                                                                                                                 |
+| `removeMatches`       | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                                                                                                                  |
+| `sanitizeCollections` | `boolean`                   | `false`      | Sanitize `Map` and `Set` instances by traversing their entries and returning a new sanitized copy. When false, these pass through unchanged like other non-plain object instances. |
+| `scanStringValues`    | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input when `parseJsonStrings` is enabled; has no effect on raw string input. |
+| `parseJsonStrings`    | `boolean`                   | `false`      | Parse valid JSON string inputs as structured data and sanitize by field name. Re-serializes with `JSON.stringify`, discarding original whitespace.                                 |
+| `customPatterns`      | `string[]`                  | `[]`         | Additional field name patterns to match                                                                                                                                            |
+| `customMatchers`      | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
+| `useDefaultPatterns`  | `boolean`                   | `true`       | Set to `false` to use only your custom patterns, ignoring the built-in defaults.                                                                                                   |
+| `useDefaultMatchers`  | `boolean`                   | `true`       | Set to `false` to use only your custom matchers, ignoring the built-in defaults.                                                                                                   |
 
 ## Default patterns
 
@@ -359,13 +399,19 @@ original input payload.
    their values are strings, numbers, arrays, objects, or other primitives.
 3. **Plain nested objects and arrays** are cloned as they are sanitized.
    Non-plain object instances are preserved without modification to avoid
-   corrupting their prototypes.
-4. **Null input** is accepted and returns `null`.
-5. **For object input**, each pattern is matched case-insensitively against key
+   corrupting their prototypes. Enable `sanitizeCollections: true` to instead
+   traverse `Map` and `Set` instances, producing a new sanitized copy.
+4. **Object property names and Map string keys** are used for pattern matching
+   but are not themselves sanitized. If a property name or string Map key
+   happens to contain sensitive data it will appear unsanitized in the output.
+   Map keys that are objects are recursed into and sanitized like any other
+   nested object.
+5. **Null input** is accepted and returns `null`.
+6. **For object input**, each pattern is matched case-insensitively against key
    names. By default (`scanStringValues: true`), string values on non-sensitive
    keys are also scanned, which catches credentials embedded in log messages or
    other free-text fields.
-6. **For string input**, each pattern is tested against each matcher to find and
+7. **For string input**, each pattern is tested against each matcher to find and
    replace sensitive values in the raw string directly.
 
 ## Performance
@@ -446,8 +492,8 @@ yarn bench
 
 Bug reports and pull requests are welcome. Open an issue or PR on [GitHub](https://github.com/ioncache/data-sanitization).
 
-See [docs/development.md](docs/development.md) for setup, build, test, and
-release instructions, and [docs/ROADMAP.md](docs/ROADMAP.md) for planned work.
+See [docs/development.md](docs/development.md) for setup, build, and test
+instructions. And [docs/ROADMAP.md](docs/ROADMAP.md) for planned work.
 
 ## License
 

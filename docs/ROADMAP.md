@@ -144,8 +144,8 @@ Current behavior: non-plain objects (custom prototypes) pass through untouched.
 
 | Type              | Difficulty | Value  | Breaking Change       | Notes                                                |
 | ----------------- | ---------- | ------ | --------------------- | ---------------------------------------------------- |
-| Map               | Medium     | High   | No (additive, opt-in) | v1.x candidate; traverse entries behind opt-in flag  |
-| Set               | Low        | Low    | No (additive, opt-in) | Consider alongside Map; limited real-world demand    |
+| Map               | —          | —      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
+| Set               | —          | —      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
 | Date              | None       | None   | No                    | Already preserved correctly; no work needed          |
 | TypedArrays       | None       | None   | No                    | Already preserved correctly; no work needed          |
 | Class instances   | High       | Medium | Yes (without opt-in)  | v2 candidate; needs opt-in flag and prototype safety |
@@ -153,20 +153,17 @@ Current behavior: non-plain objects (custom prototypes) pass through untouched.
 
 ### Collect Usage Signals
 
-Collect real v1.x usage signals before planning Map/Set or class instance
-support.
+Collect real-world signals before committing to class instance support.
 
 Concrete evidence of user impact should drive timing. Signals to watch for:
 
-- GitHub issues where users report Map, Set, or class instance values passing
-  through without sanitization unexpectedly
-- Feature requests for Map or Set traversal
+- GitHub issues where users report class instance values passing through without
+  sanitization unexpectedly
 - Repeated questions about why non-plain objects are not sanitized
 
   To collect: monitor the GitHub Issues tracker; periodically search open and
-  closed issues for keywords like `Map`, `Set`, `class`, `instance`, or
-  `non-plain`. A cluster of independent requests for the same type is the
-  clearest signal that v1.x work on that type is justified.
+  closed issues for keywords like `class`, `instance`, or `non-plain`. A cluster
+  of independent requests is the clearest signal that the work is justified.
 
 ## Planning Workflow
 

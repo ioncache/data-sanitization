@@ -21,6 +21,7 @@
  * - Object with an array-of-strings field (per-item string scan)
  * - String input variants (form-encoded, escaped JSON)
  * - Deeply nested objects with many non-sensitive strings per level
+ * - Map and Set with sanitizeCollections: true
  */
 
 import { bench, describe } from 'vitest';
@@ -634,6 +635,48 @@ describe('sanitizeData — deeply nested, many non-sensitive strings (5 × 10 fi
   });
   bench('scanStringValues disabled', () => {
     sanitizeData(DEEP_NESTED_MANY_SAFE, { scanStringValues: false });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Map — shallow (1 sensitive key, 3 safe keys)
+// Comparable to the shallow object benchmark above.
+// ---------------------------------------------------------------------------
+
+describe('sanitizeData — Map, shallow (1 sensitive key)', () => {
+  const input = {
+    session: new Map([
+      ['api_key', SENSITIVE_STRING_VALUE],
+      ['email', 'user@example.com'],
+      ['region', 'us-east-1'],
+      ['username', 'mark'],
+    ]),
+  };
+
+  bench('sanitizeCollections enabled', () => {
+    sanitizeData(input, { sanitizeCollections: true });
+  });
+  bench('sanitizeCollections enabled, scanStringValues disabled', () => {
+    sanitizeData(input, { sanitizeCollections: true, scanStringValues: false });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Set — small (1 embedded-pattern string, 2 clean strings)
+// Comparable to the array-of-strings benchmark above.
+// ---------------------------------------------------------------------------
+
+describe('sanitizeData — Set, small string values (1 embedded pattern)', () => {
+  const input = {
+    tags: new Set([
+      `api_key=${SENSITIVE_STRING_VALUE}`,
+      'env=production',
+      'region=us-east-1',
+    ]),
+  };
+
+  bench('sanitizeCollections enabled', () => {
+    sanitizeData(input, { sanitizeCollections: true });
   });
 });
 
