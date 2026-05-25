@@ -490,10 +490,7 @@ yarn bench
 
 ## Contributing
 
-Bug reports and pull requests are welcome. Open an issue or PR on [GitHub](https://github.com/ioncache/data-sanitization).
-
-See [docs/development.md](docs/development.md) for setup, build, and test
-instructions. And [docs/ROADMAP.md](docs/ROADMAP.md) for planned work.
+Bug reports and pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) to get started.
 
 ## License
 
