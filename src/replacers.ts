@@ -206,6 +206,7 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
     numericMask,
     patternMask,
     removeMatches = false,
+    sanitizeCollections = false,
     scanStringValues = true,
     useDefaultMatchers = true,
     useDefaultPatterns = true,
@@ -258,6 +259,39 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
       const nextArray = value.map((item) => sanitizeValue(item));
       seen.delete(value);
       return nextArray;
+    }
+
+    if (sanitizeCollections && value instanceof Map) {
+      const entries: [unknown, unknown][] = [];
+      for (const [k, v] of value) {
+        const sanitizedKey =
+          typeof k === 'object' && k !== null ? sanitizeValue(k) : k;
+        const isSensitiveStringKey =
+          typeof k === 'string' && keyMatchers.some((m) => m.test(k));
+        if (isSensitiveStringKey) {
+          if (!removeMatches) {
+            entries.push([
+              sanitizedKey,
+              typeof v === 'number'
+                ? (numericMask ?? DEFAULT_NUMERIC_MASK)
+                : mask,
+            ]);
+          }
+        } else {
+          entries.push([sanitizedKey, sanitizeValue(v)]);
+        }
+      }
+      seen.delete(value);
+      return new Map(entries);
+    }
+
+    if (sanitizeCollections && value instanceof Set) {
+      const items: unknown[] = [];
+      for (const item of value) {
+        items.push(sanitizeValue(item));
+      }
+      seen.delete(value);
+      return new Set(items);
     }
 
     const prototype = Object.getPrototypeOf(value);
