@@ -128,6 +128,16 @@ import sanitizeData from 'data-sanitization';
 const { sanitizeData } = require('data-sanitization');
 ```
 
+Utility helpers for log middleware are available on a separate subpath —
+see [docs/utils.md](docs/utils.md).
+
+```typescript
+import {
+  diffSanitizedFields,
+  buildSanitizedWarning,
+} from 'data-sanitization/utils';
+```
+
 ## Usage
 
 ### Quick start
