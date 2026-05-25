@@ -153,20 +153,17 @@ Current behavior: non-plain objects (custom prototypes) pass through untouched.
 
 ### Collect Usage Signals
 
-Collect real v1.x usage signals before planning Map/Set or class instance
-support.
+Collect real-world signals before committing to class instance support.
 
 Concrete evidence of user impact should drive timing. Signals to watch for:
 
-- GitHub issues where users report Map, Set, or class instance values passing
-  through without sanitization unexpectedly
-- Feature requests for Map or Set traversal
+- GitHub issues where users report class instance values passing through without
+  sanitization unexpectedly
 - Repeated questions about why non-plain objects are not sanitized
 
   To collect: monitor the GitHub Issues tracker; periodically search open and
-  closed issues for keywords like `Map`, `Set`, `class`, `instance`, or
-  `non-plain`. A cluster of independent requests for the same type is the
-  clearest signal that v1.x work on that type is justified.
+  closed issues for keywords like `class`, `instance`, or `non-plain`. A cluster
+  of independent requests is the clearest signal that the work is justified.
 
 ## Planning Workflow
 

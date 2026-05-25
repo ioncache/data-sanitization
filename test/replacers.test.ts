@@ -1125,7 +1125,9 @@ describe('DataSanitizationReplacers', () => {
         const sanitized = result.data as Map<string, unknown>;
 
         // Assert
-        expect(sanitized.get('message')).toBe('api_key=**********');
+        expect(sanitized.get('message')).toBe(
+          `api_key=${DEFAULT_PATTERN_MASK}`,
+        );
       });
 
       it('should sanitize plain object values recursively', () => {
@@ -1228,7 +1230,7 @@ describe('DataSanitizationReplacers', () => {
         const sanitized = result.data as Set<string>;
 
         // Assert
-        expect(sanitized.has('api_key=**********')).toBe(true);
+        expect(sanitized.has(`api_key=${DEFAULT_PATTERN_MASK}`)).toBe(true);
         expect(sanitized.has('safe-value')).toBe(true);
         expect(sanitized.has('api_key=hunter2')).toBe(false);
       });
