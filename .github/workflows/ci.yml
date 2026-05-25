@@ -37,8 +37,9 @@ jobs:
         if: matrix.node-version == 24
         uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
         with:
-          json-summary-coverage-filepath: packages/data-sanitization/coverage/coverage-summary.json
-          json-final-coverage-filepath: packages/data-sanitization/coverage/coverage-final.json
+          json-summary-path: packages/data-sanitization/coverage/coverage-summary.json
+          json-final-path: packages/data-sanitization/coverage/coverage-final.json
+          working-directory: packages/data-sanitization
       - name: Extract coverage percentage (data-sanitization)
         id: coverage-data-sanitization
         if: matrix.node-version == 24 && github.event_name == 'push'
