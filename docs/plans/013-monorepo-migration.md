@@ -404,7 +404,7 @@ Closes #308.
       env:
         COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
         GIST_SECRET: ${{ secrets.GIST_SECRET }}
-      run: yarn workspace data-sanitization node scripts/update-coverage-gist.mjs
+      run: yarn workspace data-sanitization node scripts/update-coverage-gist.mjs --package-name data-sanitization
     ```
 
     All other steps (`yarn install`, `yarn format:check`, `yarn lint:ci`,
