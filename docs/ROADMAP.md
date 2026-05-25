@@ -133,6 +133,41 @@ fields are invisible to the regex path.
 - [x] Update README with options table row and "Parse JSON strings" usage
       subsection.
 
+## Ecosystem Expansion
+
+These items extend the library into companion packages and shared utilities.
+They involve structural changes to the repository but do not affect the
+existing `data-sanitization` public API.
+
+### Utility Helpers (`/utils` subpath export)
+
+Export `diffSanitizedFields` and `buildSanitizedWarning` as named exports from
+a `data-sanitization/utils` subpath. These helpers are useful in log middleware
+implementations regardless of logger and are currently only available to
+applications that inline them.
+
+- `diffSanitizedFields(original, sanitized)` — recursively diffs two parsed log
+  objects and returns dot-notation paths for any keys whose values changed
+- `buildSanitizedWarning(originalStr, sanitizedStr)` — builds a structured
+  warning log entry identifying which fields were sanitized, suitable for
+  prepending to the sanitized log line
+
+### Monorepo Migration
+
+Migrate the repository to a Yarn workspace monorepo to support companion
+packages. Replace the current `conventional-changelog`-based release script
+with [Changesets](https://github.com/changesets/changesets) for independent
+per-package versioning. Conventional commit discipline and commitlint
+enforcement remain unchanged.
+
+### Log Provider Adapters (`data-sanitization-log-providers`)
+
+New `data-sanitization-log-providers` workspace package with subpath exports
+for Pino (`/pino`), Winston (`/winston`), and Bunyan (`/bunyan`). Each adapter
+wires `sanitizeData` into the logger's native hook or transport API. The
+package lists `data-sanitization` as a peer dependency and each supported
+logger as an optional peer dependency.
+
 ## Collect Usage Signals Before Implementing
 
 ### Strict `parseJsonStrings` Mode

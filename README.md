@@ -40,14 +40,41 @@ sanitizeData(input);
 
 - Zero runtime dependencies, with compiled JS and full TypeScript declarations
 - Sanitizes nested structures at any depth, preserving types and class instances
+- Matches sensitive field names across any data shape without requiring exact path declarations
 - Handles circular references safely
 - Sanitization errors never expose the original input payload
+
+## Why not fast-redact or pino-redact?
+
+Tools like fast-redact and pino's built-in redaction are excellent choices when
+you control your data shape. They require you to declare the exact paths to
+redact upfront — `user.password`, `req.headers.authorization` — and compile
+those paths into a specialized function at initialization, achieving near-zero
+overhead.
+
+The tradeoff is that **you must know the shape of your data ahead of time**.
+That works well for application-level logging where you own the data models,
+but falls short when sanitizing third-party library payloads, error objects
+with arbitrary attached metadata, or log entries assembled from sources you
+don't control.
+
+`data-sanitization` takes a pattern-based approach instead. A single
+`'password'` entry matches `password`, `db_password`, `resetPasswordToken`,
+and any other key containing that substring — at any depth, in any structure,
+without path declarations. The cost is a small per-call overhead versus
+path-based tools; the benefit is that it works on data whose shape you don't
+fully know.
+
+If you control your data shape exactly and need maximum throughput, reach for
+fast-redact. If you need to sanitize data you don't fully control,
+`data-sanitization` is the right tool.
 
 ## Table of Contents
 
 - [data-sanitization: protect credentials and personal data from accidental exposure](#data-sanitization-protect-credentials-and-personal-data-from-accidental-exposure)
   - [Before / After](#before--after)
   - [Highlights](#highlights)
+  - [Why not fast-redact or pino-redact?](#why-not-fast-redact-or-pino-redact)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Importing](#importing)
