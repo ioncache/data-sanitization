@@ -144,8 +144,8 @@ Current behavior: non-plain objects (custom prototypes) pass through untouched.
 
 | Type              | Difficulty | Value  | Breaking Change       | Notes                                                |
 | ----------------- | ---------- | ------ | --------------------- | ---------------------------------------------------- |
-| Map               | Medium     | High   | No (additive, opt-in) | v1.x candidate; traverse entries behind opt-in flag  |
-| Set               | Low        | Low    | No (additive, opt-in) | Consider alongside Map; limited real-world demand    |
+| Map               | —          | —      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
+| Set               | —          | —      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
 | Date              | None       | None   | No                    | Already preserved correctly; no work needed          |
 | TypedArrays       | None       | None   | No                    | Already preserved correctly; no work needed          |
 | Class instances   | High       | Medium | Yes (without opt-in)  | v2 candidate; needs opt-in flag and prototype safety |
