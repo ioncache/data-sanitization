@@ -156,6 +156,11 @@ sanitizeData('{"password":12345,"username":"mark"}', {
 > default text-based approach. The tradeoff is that output is re-serialized with
 > `JSON.stringify`, which does not preserve original whitespace or formatting.
 
+If the string cannot be parsed as JSON, `sanitizeData` silently falls back to
+text-based pattern matching. Numeric-valued sensitive fields will not be masked
+in that case. If you need strict behavior (fail or redact on parse failure),
+[open an issue](https://github.com/ioncache/data-sanitization/issues/306) — this is tracked for a future release.
+
 ### Remove fields instead of masking
 
 ```typescript

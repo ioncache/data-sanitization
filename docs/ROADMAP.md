@@ -133,6 +133,28 @@ fields are invisible to the regex path.
 - [x] Update README with options table row and "Parse JSON strings" usage
       subsection.
 
+## Collect Usage Signals Before Implementing
+
+### Strict `parseJsonStrings` Mode
+
+When `parseJsonStrings: true` is set and the input string is not valid JSON,
+`sanitizeData` silently falls back to text-based pattern matching. Numeric-valued
+sensitive fields are not masked on the regex path, so callers who expect JSON
+but receive malformed input may get incomplete sanitization without knowing it.
+
+Proposed: a `parseJsonStringsStrict` option (or similar) that throws or fully
+redacts the string when `JSON.parse` fails, rather than silently falling back.
+Tracked in [#306](https://github.com/ioncache/data-sanitization/issues/306).
+
+Signals to watch for:
+
+- GitHub issues where users report unexpected incomplete masking with
+  `parseJsonStrings: true`
+- Questions about the fallback behavior or requests for a strict mode
+
+To collect: monitor the GitHub Issues tracker; search for keywords like
+`parseJsonStrings`, `strict`, `fallback`, or `parse failure`.
+
 ## Future v2 Candidates
 
 These ideas may change behavior or public contracts, so they should be explored
