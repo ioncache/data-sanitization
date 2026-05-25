@@ -46,7 +46,8 @@ sanitizeData(input);
 
 ## Why not fast-redact or pino-redact?
 
-Tools like fast-redact and pino's built-in redaction are excellent choices when
+Tools like [fast-redact](https://github.com/davidmarkclements/fast-redact) and
+[pino's built-in redaction](https://getpino.io/#/docs/redaction) are excellent choices when
 you control your data shape. They require you to declare the exact paths to
 redact upfront — `user.password`, `req.headers.authorization` — and compile
 those paths into a specialized function at initialization, achieving near-zero
@@ -66,7 +67,7 @@ path-based tools; the benefit is that it works on data whose shape you don't
 fully know.
 
 If you control your data shape exactly and need maximum throughput, reach for
-fast-redact. If you need to sanitize data you don't fully control,
+[fast-redact](https://github.com/davidmarkclements/fast-redact). If you need to sanitize data you don't fully control,
 `data-sanitization` is the right tool.
 
 ## Table of Contents
