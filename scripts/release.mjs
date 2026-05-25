@@ -270,6 +270,20 @@ function writeVersion(packagePath, newVersion) {
 }
 
 async function main() {
+  const currentBranch = git('branch', '--show-current');
+  if (currentBranch !== 'main') {
+    throw new Error(
+      `Release must be run from main (current: ${currentBranch})`,
+    );
+  }
+
+  const dirtyFiles = git('status', '--porcelain');
+  if (dirtyFiles) {
+    throw new Error(
+      'Working tree is not clean. Commit or stash changes before releasing.',
+    );
+  }
+
   const repoSlug = getRepoSlug();
   const packages = getWorkspacePackages();
 

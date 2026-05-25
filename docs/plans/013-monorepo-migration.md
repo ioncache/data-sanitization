@@ -3,6 +3,11 @@
 > **For agentic workers:** Use `superpowers:using-git-worktrees` to create an
 > isolated worktree before starting, then `superpowers:executing-plans` to
 > execute tasks with checkpoints.
+>
+> **Note:** The Changesets tasks in this plan were superseded during
+> implementation. The final release workflow uses a custom interactive script
+> (`scripts/release.mjs`) instead of Changesets. See `docs/development.md` for
+> the actual release process.
 
 ## Approach
 
