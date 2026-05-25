@@ -92,10 +92,12 @@ Examples:
 
 ## Release Process
 
-Releases use [Changesets](https://github.com/changesets/changesets) for
-version management and changelog generation.
+Releases are driven by a custom interactive script that detects unreleased
+commits per workspace package, suggests a semver bump, previews release notes,
+and creates the git tag and GitHub release. npm publishing is a separate manual
+step done after the script finishes.
 
-Before publishing or cutting a release, run the local validation scripts:
+### Step 1 — Validate
 
 ```bash
 yarn format:check
@@ -104,15 +106,60 @@ yarn build
 yarn test:coverage
 ```
 
-### Adding a changeset (during a PR)
+### Step 2 — Run the release script
 
 ```bash
-yarn changeset
+yarn release
 ```
 
-### Releasing (after PRs are merged)
+The script is interactive:
+
+1. **Summary** — shows each package, how many commits since its last release,
+   how many are user-facing, and the suggested semver bump.
+2. **Select packages** — checkbox to choose which packages to release
+   (pre-checked for packages that have user-facing changes).
+3. **Bump type** — for each selected package, choose `patch`, `minor`, or
+   `major` (the suggestion is pre-selected).
+4. **Preview** — shows the release notes that will be published to GitHub.
+5. **Confirm** — proceed or abort.
+
+On confirmation the script:
+
+- Bumps the version in each package's `package.json`
+- Commits as `chore: release <name>@<version>`
+- Creates an annotated git tag `<name>@<version>` (e.g. `data-sanitization@1.5.0`)
+- Creates a GitHub release with the generated release notes
+- Pushes the commit and tag to `origin main`
+
+### Step 3 — Publish to npm (manual)
+
+The script prints the publish command at the end. Run it to publish each
+released package:
 
 ```bash
-yarn changeset:version   # bumps versions, updates changelogs
-yarn changeset:publish   # publishes to npm, creates git tags
+yarn workspace data-sanitization npm publish
 ```
+
+This publishes only the package whose version was just bumped. The `prepack`
+script runs `yarn build` automatically.
+
+### Release notes format
+
+Release notes are generated from conventional commits since the last release
+tag for that package. Only user-facing commit types are included:
+
+- `feat` → Features
+- `fix` → Bug Fixes
+- `perf` → Performance
+- `revert` → Reverts
+
+Commits of type `chore`, `docs`, `ci`, `test`, `build`, and `style` are
+omitted. Breaking changes (`feat!`, `fix!`, or a `BREAKING CHANGE:` footer)
+appear in a dedicated **⚠️ Breaking Changes** section at the top and are
+also listed under their normal section.
+
+### Git tag scheme
+
+Tags use the format `<package-name>@<version>` (e.g. `data-sanitization@1.5.0`).
+The release script falls back to `v*` tags when looking for the previous release
+of a package that predates the prefixed scheme.
