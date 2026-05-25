@@ -1,19 +1,14 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
-  "include": ["./src/**/*", "./test/**/*"],
   "compilerOptions": {
     "allowJs": false,
     "allowSyntheticDefaultImports": true,
     "declaration": true,
     "declarationMap": false,
-    "incremental": true,
-    "noEmit": true,
     "noImplicitAny": true,
-    "outDir": "./dist",
     "removeComments": false,
     "resolveJsonModule": true,
     "sourceMap": true,
-    "strictNullChecks": true,
-    "types": ["node"]
+    "strictNullChecks": true
   }
 }

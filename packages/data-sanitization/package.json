@@ -1,0 +1,66 @@
+{
+  "name": "data-sanitization",
+  "version": "1.4.1",
+  "description": "Sanitization library for masking or removing sensitive data.",
+  "keywords": [
+    "data-sanitization",
+    "logging",
+    "mask",
+    "masking",
+    "phi",
+    "pii",
+    "redact",
+    "redaction",
+    "sanitization",
+    "sanitize",
+    "secrets",
+    "sensitive-data",
+    "typescript"
+  ],
+  "homepage": "https://github.com/ioncache/data-sanitization#readme",
+  "bugs": {
+    "url": "https://github.com/ioncache/data-sanitization/issues"
+  },
+  "license": "MIT",
+  "author": "Mark Jubenville <ioncache@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ioncache/data-sanitization.git"
+  },
+  "files": [
+    "dist",
+    "docs/performance.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "bench": "vitest bench",
+    "build": "yarn clean && tsc -p tsconfig.build.json",
+    "clean": "rm -rf dist coverage && find . -maxdepth 1 -name '*.tsbuildinfo' -delete",
+    "prepack": "yarn build",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^25.9.0",
+    "@vitest/coverage-v8": "^4.1.6",
+    "query-string": "^9.3.1",
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.6"
+  },
+  "engines": {
+    "node": ">=22.22.1"
+  }
+}

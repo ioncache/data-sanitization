@@ -9,8 +9,8 @@
     "builtin": true
   },
   "ignorePatterns": [
-    "dist/**",
-    "coverage/**",
+    "**/dist/**",
+    "**/coverage/**",
     ".yarn/sdks/**",
     "node_modules/**"
   ],

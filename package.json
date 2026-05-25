@@ -1,75 +1,34 @@
 {
-  "name": "data-sanitization",
-  "version": "1.4.1",
-  "description": "Sanitization library for masking or removing sensitive data.",
-  "keywords": [
-    "data-sanitization",
-    "logging",
-    "mask",
-    "masking",
-    "phi",
-    "pii",
-    "redact",
-    "redaction",
-    "sanitization",
-    "sanitize",
-    "secrets",
-    "sensitive-data",
-    "typescript"
+  "private": true,
+  "workspaces": [
+    "packages/*"
   ],
-  "homepage": "https://github.com/ioncache/data-sanitization#readme",
-  "bugs": {
-    "url": "https://github.com/ioncache/data-sanitization/issues"
-  },
-  "license": "MIT",
-  "author": "Mark Jubenville <ioncache@gmail.com>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/ioncache/data-sanitization.git"
-  },
-  "files": [
-    "dist",
-    "docs/performance.md",
-    "README.md",
-    "LICENSE"
-  ],
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
-    }
-  },
   "scripts": {
-    "build": "yarn clean && tsc -p tsconfig.build.json",
-    "clean": "rm -rf dist coverage && find . -maxdepth 1 -name '*.tsbuildinfo' -delete",
+    "bench": "yarn workspace data-sanitization bench",
+    "build": "yarn workspaces foreach -A run build",
+    "clean": "yarn workspaces foreach -A run clean",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "yarn lint:code && yarn lint:actions && yarn lint:yaml && yarn lint:md",
     "lint:actions": "github-actionlint",
     "lint:ci": "yarn lint:code --format=github && yarn lint:actions && yarn lint:yaml && yarn lint:md",
     "lint:code": "oxlint",
-    "lint:md": "markdownlint-cli2 \"**/*.md\" \"!.yarn/**\" \"!node_modules/**\" \"!CLAUDE.md\" \"!docs/plans/**\" \"!.ai/**\" \"!.remember/**\" \"!.agents/**\" \"!.claude/**\" \"!.github/instructions/**\" \"!.github/skills/**\" \"!.github/prompts/**\"",
     "lint:fix": "oxlint --fix",
+    "lint:md": "markdownlint-cli2 \"**/*.md\" \"!.yarn/**\" \"!node_modules/**\" \"!CLAUDE.md\" \"!docs/plans/**\" \"!docs/superpowers/**\" \"!.ai/**\" \"!.remember/**\" \"!.agents/**\" \"!.claude/**\" \"!.github/instructions/**\" \"!.github/skills/**\" \"!.github/prompts/**\"",
     "lint:yaml": "yamllint \".github/**/*.yml\" \".github/**/*.yaml\" \".yarnrc.yml\"",
     "prepare": "husky || true",
-    "prepack": "yarn build",
     "release": "node scripts/release.mjs",
-    "bench": "vitest bench",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "test:watch": "vitest"
+    "test": "yarn workspaces foreach -A run test",
+    "test:coverage": "yarn workspaces foreach -A run test:coverage",
+    "test:watch": "yarn workspace data-sanitization test:watch"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.0.1",
     "@commitlint/config-conventional": "^21.0.0",
+    "@inquirer/prompts": "^7.5.2",
     "@tsconfig/node22": "^22.0.5",
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
-    "conventional-changelog": "^7.1.0",
-    "conventional-changelog-conventionalcommits": "^9.3.1",
-    "conventional-commits-filter": "^5.0.0",
     "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.5",

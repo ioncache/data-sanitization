@@ -15,6 +15,12 @@ const headerMatcher = (pattern: string) =>
     'gi',
   );
 
+const makeCustomMatcher =
+  (prefix: string) =>
+  (pattern: string): RegExp =>
+    // Group 1: prefix+key+delimiter, Group 2: trailing & or end-of-string
+    new RegExp(`(${prefix}${pattern}=)[^&\\n]+(&|$)`, 'gi');
+
 describe('DataSanitizationReplacers', () => {
   describe('stringReplacer', () => {
     describe('masking', () => {
@@ -975,12 +981,6 @@ describe('DataSanitizationReplacers', () => {
       it('should apply each custom matcher independently when matchers differ in captured state', () => {
         // Arrange — two matchers built from the same factory with different
         // captured prefixes: matcherA targets a_-prefixed keys, matcherB targets b_-prefixed keys
-        const makeCustomMatcher =
-          (prefix: string) =>
-          (pattern: string): RegExp =>
-            // Group 1: prefix+key+delimiter, Group 2: trailing & or end-of-string
-            new RegExp(`(${prefix}${pattern}=)[^&\\n]+(&|$)`, 'gi');
-
         const matcherA = makeCustomMatcher('a_');
         const matcherB = makeCustomMatcher('b_');
 

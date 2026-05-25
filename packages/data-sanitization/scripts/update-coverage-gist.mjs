@@ -14,6 +14,7 @@ import { buildMarkdown } from './coverage-report.mjs';
 /**
  * @typedef {Object} CliArguments
  * @property {boolean} dryRun - Print markdown instead of updating the Gist
+ * @property {string} packageName - Package name prefix for Gist filenames
  */
 
 /**
@@ -23,34 +24,41 @@ import { buildMarkdown } from './coverage-report.mjs';
  * @returns {CliArguments} Parsed command-line arguments
  *
  * @example
- * parseArguments(['--dry-run'])
+ * parseArguments(['--dry-run', '--package-name', 'data-sanitization'])
  */
 function parseArguments(args) {
   return yargs(args)
-    .usage('Usage: $0 [--dry-run]')
+    .usage('Usage: $0 [--dry-run] --package-name <name>')
     .option('dry-run', {
       default: false,
       describe: 'Print the generated markdown without updating the Gist',
       type: 'boolean',
+    })
+    .option('package-name', {
+      demandOption: true,
+      describe:
+        'Package name prefix for Gist filenames (e.g. data-sanitization)',
+      type: 'string',
     })
     .strict()
     .parseSync();
 }
 
 /**
- * Updates the `coverage-report.md` file on a GitHub Gist.
+ * Updates a named file on a GitHub Gist with coverage report content.
  *
  * @param {string} gistId - GitHub Gist ID
  * @param {string} token - GitHub PAT with gist scope
  * @param {string} content - Markdown content to write
+ * @param {string} filename - Gist filename to create or update (e.g. `data-sanitization-coverage-report.md`)
  * @returns {Promise<void>}
  * @throws {Error} When the GitHub API request times out
  * @throws {Error} When the GitHub API request fails or returns a non-OK status
  *
  * @example
- * await updateGist('abc123', process.env.GIST_SECRET, markdown)
+ * await updateGist('abc123', process.env.GIST_SECRET, markdown, 'data-sanitization-coverage-report.md')
  */
-async function updateGist(gistId, token, content) {
+async function updateGist(gistId, token, content, filename) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -60,7 +68,7 @@ async function updateGist(gistId, token, content) {
     response = await fetch(`https://api.github.com/gists/${gistId}`, {
       body: JSON.stringify({
         files: {
-          'coverage-report.md': { content },
+          [filename]: { content },
         },
       }),
       headers: {
@@ -166,7 +174,8 @@ function createCoverageReport({ workspacePath, repository, commitSha }) {
  * await main()
  */
 async function main() {
-  const { dryRun } = parseArguments(hideBin(process.argv));
+  const { dryRun, packageName } = parseArguments(hideBin(process.argv));
+  const filename = `${packageName}-coverage-report.md`;
 
   const markdown = createCoverageReport({
     commitSha: process.env.GITHUB_SHA,
@@ -186,7 +195,7 @@ async function main() {
     throw new Error('COVERAGE_GIST_ID and GIST_SECRET must be set');
   }
 
-  await updateGist(gistId, token, markdown);
+  await updateGist(gistId, token, markdown, filename);
   console.log('Coverage report updated in Gist.');
 }
 

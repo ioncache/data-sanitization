@@ -5,7 +5,7 @@
 <!-- markdownlint-disable MD013 -->
 
 [![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/coverage.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/data-sanitization-coverage-badge-config.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
 [![npm](https://img.shields.io/npm/v/data-sanitization.svg?style=flat)](https://www.npmjs.com/package/data-sanitization)
 [![Bundle size](https://img.shields.io/bundlejs/size/data-sanitization?style=flat)](https://bundlejs.com/?q=data-sanitization)
 [![CodeRabbit PR Reviews](https://img.shields.io/coderabbit/prs/github/ioncache/data-sanitization?utm_source=oss&utm_medium=github&utm_campaign=ioncache%2Fdata-sanitization&labelColor=171717&color=FF570A&label=CodeRabbit+Reviews)](https://coderabbit.ai)

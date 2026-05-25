@@ -1,4 +1,7 @@
 {
+  "permissions": {
+    "allow": ["Bash(yarn test:coverage)", "Bash(yarn workspaces *)"]
+  },
   "enabledPlugins": {
     "typescript-lsp@claude-plugins-official": true,
     "superpowers@claude-plugins-official": true,
