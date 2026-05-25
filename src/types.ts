@@ -55,6 +55,15 @@ interface DataSanitizationReplacerOptions {
    */
   removeMatches?: boolean;
   /**
+   * Whether to sanitize `Map` and `Set` instances by traversing their entries
+   * and returning a new sanitized copy. When false (the default), these pass
+   * through without modification, matching the behaviour for other non-plain
+   * object instances.
+   *
+   * Default: false
+   */
+  sanitizeCollections?: boolean;
+  /**
    * Whether to scan string values on non-sensitive-key fields for embedded
    * sensitive patterns. Disabling this improves performance on object
    * workloads. Has no effect on raw string input unless `parseJsonStrings`
