@@ -25,6 +25,10 @@ interface SanitizeLineResult {
  * @param sanitizeOptions - Options forwarded to `sanitizeData`.
  * @param allowedFields - Fields to carry into the warning entry.
  * @returns Object with `sanitized` and `warning` (`null` when no fields changed).
+ *
+ * @example
+ * sanitizeLine('{"password":"secret","user":"alice"}\n', {}, ['user'])
+ * // => { sanitized: '{"password":"**********","user":"alice"}\n', warning: '...' }
  */
 function sanitizeLine(
   line: string,
@@ -46,6 +50,10 @@ function sanitizeLine(
  *
  * @param original - Original log line before sanitization.
  * @returns A JSON string at level 50 indicating sanitization failure.
+ *
+ * @example
+ * buildErrorPlaceholder('{"time":1700000000,"pid":123,"password":"secret"}')
+ * // => '{"level":50,"time":1700000000,"pid":123,"msg":"log entry dropped: sanitization failed"}'
  */
 function buildErrorPlaceholder(original: string): string {
   try {

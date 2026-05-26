@@ -20,28 +20,14 @@ const escapePattern = (pattern: string): string =>
  * data similarly character delimited
  *
  * @example
- * // when masked: 'password=mask'
- * formEncodedMatcher('password=foo')
+ * // Masking
+ * formEncodedMatcher('password')
+ * // 'password=secret&user=alice' → 'password=**********&user=alice'
  *
  * @example
- * // when masked: 'password=mask&'
- * formEncodedMatcher('password=foo&')
- *
- * @example
- * // when masked: 'db_password=mask'
- * formEncodedMatcher('db_password=foo')
- *
- * @example
- * // when masked: 'db_password=mask&password=mask'
- * formEncodedMatcher('db_password=foo&password=bar')
- *
- * @example
- * // when masked: 'This_Is_a_Password_Field=mask'
- * formEncodedMatcher('This_Is_a_Password_Field=foo')
- *
- * @example
- * // when masked: 'password:mask'
- * formEncodedMatcher('password:bar')
+ * // Removal
+ * formEncodedMatcher('password', true)
+ * // 'password=secret&user=alice' → 'user=alice'
  *
  * @param pattern - Pattern in url form encoded like data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
@@ -74,28 +60,14 @@ const formEncodedMatcher: DataSanitizationMatcher = (
  * Matches field names in json/json-like structured data
  *
  * @example
- * //when masked: '"password":"mask'
- * jsonMatch('"password":"foo"')
+ * // Masking
+ * jsonMatcher('password')
+ * // '{"password":"secret","user":"alice"}' → '{"password":"**********","user":"alice"}'
  *
  * @example
- * // when masked: '"password":"mask"'
- * jsonMatch('"password": "foo"')
- *
- * @example
- * // when masked: '"password":"mask","username":"bar"'
- * jsonMatch('"password":"foo","username":"bar"')
- *
- * @example
- * // when masked: '"db_password":"mask"'
- * jsonMatch('"db_password":"foo"')
- *
- * @example
- * // when masked: '"db_password":"mask","password":"mask"'
- * jsonMatch('"db_password":"foo","password":"bar"')
- *
- * @example
- * // when masked: '"This_Is_a_Password_Field":"mask"'
- * jsonMatch('"This_Is_a_Password_Field":"foo"')
+ * // Removal
+ * jsonMatcher('password', true)
+ * // '{"password":"secret","user":"alice"}' → '{"user":"alice"}'
  *
  * @param pattern - Pattern in json-like data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
@@ -125,12 +97,14 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
  * backslash-escaped (e.g. JSON embedded inside a JSON string value)
  *
  * @example
- * // when masked: '\"password\":\"mask\"'
- * escapedJsonMatcher('\"password\":\"foo\"')
+ * // Masking
+ * escapedJsonMatcher('password')
+ * // '{\"password\":\"secret\"}' → '{\"password\":\"**********\"}'
  *
  * @example
- * // when masked: '\"db_password\":\"mask\"'
- * escapedJsonMatcher('\"db_password\":\"foo\"')
+ * // Removal
+ * escapedJsonMatcher('password', true)
+ * // '{\"password\":\"secret\",\"user\":\"alice\"}' → '{\"user\":\"alice\"}'
  *
  * @param pattern - Pattern in escaped json data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.

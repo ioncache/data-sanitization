@@ -24,7 +24,7 @@ a single function, `sanitizeData`, exported from `packages/data-sanitization/src
 - **Object/array input** → `objectReplacer` recursively walks the structure, matching keys by name
   (no JSON round-trip). Non-plain object instances (custom prototypes) are preserved without
   modification.
-- **Null input** → stringified, processed as a string, then parsed back
+- **Null input** → returned as-is
 
 **Key modules:**
 
