@@ -51,6 +51,7 @@
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "lint": "oxlint",
+    "lint:ci": "oxlint -f github",
     "lint:fix": "oxlint --fix",
     "prepack": "yarn build",
     "test": "vitest run",
