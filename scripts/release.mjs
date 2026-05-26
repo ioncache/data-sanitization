@@ -373,6 +373,7 @@ async function main() {
     git('add', `${r.path}/package.json`);
     git('commit', '-m', `chore: release ${tag}`);
     git('tag', '-a', tag, '-m', tag);
+    git('push', 'origin', 'main', '--follow-tags');
 
     execFileSync(
       'gh',
@@ -383,7 +384,6 @@ async function main() {
     console.log(`✓ ${tag}`);
   }
 
-  git('push', 'origin', 'main', '--follow-tags');
   console.log('\n✓ Pushed to origin.\n');
 
   console.log('To publish to npm:');
