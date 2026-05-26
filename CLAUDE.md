@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git worktrees
+
+Worktrees for this repo are stored as a sibling directory: `../data-sanitization.worktrees/<branch-name>`.
+
 ## Development workflow
 
 See [docs/development.md](docs/development.md) for setup, build, test, lint, planning, PR/commit

@@ -58,7 +58,10 @@ coverage
 
 # Claude
 .claude/settings.local.json
-.claude/worktrees/
+
+# Worktrees
+.worktrees/
+worktrees/
 
 # Misc
 .dccache
