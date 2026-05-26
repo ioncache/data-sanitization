@@ -18,7 +18,7 @@ const MESSAGE = Symbol.for('message');
  */
 class SanitizingTransport extends TransportStream {
   readonly #sanitizeOptions: DataSanitizationReplacerOptions;
-  readonly #allowedFields: string[];
+  readonly #allowedFields: readonly string[];
   readonly #emitWarning: boolean;
   readonly #dest: NodeJS.WritableStream;
   readonly #onError: (err: unknown) => void;
@@ -46,25 +46,20 @@ class SanitizingTransport extends TransportStream {
       | string
       | undefined;
 
-    if (typeof raw !== 'string') {
-      this.#dest.write(JSON.stringify(info) + '\n');
-      this.emit('logged', info);
-      callback();
-      return;
-    }
+    const input = typeof raw === 'string' ? raw : JSON.stringify(info);
 
     let sanitized: string;
     let warning: string | null = null;
 
     try {
       ({ sanitized, warning } = sanitizeLine(
-        raw,
+        input,
         this.#sanitizeOptions,
         this.#allowedFields,
       ));
     } catch (err) {
       this.#onError(err);
-      this.#dest.write(buildErrorPlaceholder(raw) + '\n');
+      this.#dest.write(buildErrorPlaceholder(input) + '\n');
       this.emit('logged', info);
       callback();
       return;

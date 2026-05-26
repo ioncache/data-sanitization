@@ -9,7 +9,7 @@ interface PinoHookOptions extends DataSanitizationReplacerOptions {
    *
    * Default: `['time', 'pid', 'hostname']`.
    */
-  allowedFields?: string[];
+  allowedFields?: readonly string[];
   /**
    * Called when `sanitizeData` throws. Must return a string to write in place
    * of the original log line. Default: emits an error-level (50) JSON
@@ -34,7 +34,7 @@ type PinoTransportOptions = Omit<
    *
    * Default: `['time', 'pid', 'hostname']`.
    */
-  allowedFields?: string[];
+  allowedFields?: readonly string[];
 };
 
 /**
@@ -57,7 +57,7 @@ interface WinstonSanitizationOptions {
    * has no standardized correlation-field convention, so callers opt in
    * explicitly (e.g. `['timestamp', 'service']`).
    */
-  allowedFields?: string[];
+  allowedFields?: readonly string[];
   /**
    * When `true`, a structured warning line is written to the output stream
    * immediately before the sanitized line as a separate `stream.write()` call.

@@ -1,4 +1,11 @@
+import { once } from 'node:events';
 import build from 'pino-abstract-transport';
+
+const writeLine = async (line: string): Promise<void> => {
+  if (!process.stdout.write(line + '\n')) {
+    await once(process.stdout, 'drain');
+  }
+};
 import {
   buildErrorPlaceholder,
   PINO_DEFAULT_ALLOWED_FIELDS,
@@ -47,11 +54,11 @@ export default async function pinoTransport(
             allowedFields,
           );
           if (warning) {
-            process.stdout.write(warning + '\n');
+            await writeLine(warning);
           }
-          process.stdout.write(sanitized + '\n');
+          await writeLine(sanitized);
         } catch {
-          process.stdout.write(buildErrorPlaceholder(line) + '\n');
+          await writeLine(buildErrorPlaceholder(line));
         }
       }
     },

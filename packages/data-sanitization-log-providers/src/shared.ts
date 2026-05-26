@@ -6,7 +6,11 @@ import { buildSanitizedWarning } from 'data-sanitization/utils';
 
 const ERROR_LEVEL = 50;
 const ERROR_MSG = 'log entry dropped: sanitization failed';
-const PINO_DEFAULT_ALLOWED_FIELDS = ['time', 'pid', 'hostname'];
+const PINO_DEFAULT_ALLOWED_FIELDS = Object.freeze([
+  'time',
+  'pid',
+  'hostname',
+] as const);
 
 interface SanitizeLineResult {
   sanitized: string;
@@ -25,7 +29,7 @@ interface SanitizeLineResult {
 function sanitizeLine(
   line: string,
   sanitizeOptions: DataSanitizationReplacerOptions,
-  allowedFields: string[],
+  allowedFields: readonly string[],
 ): SanitizeLineResult {
   const sanitized = sanitizeData(line, sanitizeOptions) as string;
   const warning =
