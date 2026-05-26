@@ -81,17 +81,20 @@ function getWorkspacePackages() {
  * getLastTag('data-sanitization') // 'data-sanitization@1.4.1'
  */
 function getLastTag(packageName) {
+  const opts = { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] };
   try {
-    return git(
-      'describe',
-      '--tags',
-      '--abbrev=0',
-      '--match',
-      `${packageName}@*`,
-    );
+    return execFileSync(
+      'git',
+      ['describe', '--tags', '--abbrev=0', '--match', `${packageName}@*`],
+      opts,
+    ).trim();
   } catch {
     try {
-      return git('describe', '--tags', '--abbrev=0', '--match', 'v*');
+      return execFileSync(
+        'git',
+        ['describe', '--tags', '--abbrev=0', '--match', 'v*'],
+        opts,
+      ).trim();
     } catch {
       return null;
     }
