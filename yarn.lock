@@ -1700,6 +1700,7 @@ __metadata:
     "@types/node": "npm:^25.9.0"
     "@vitest/coverage-v8": "npm:^4.1.6"
     data-sanitization: "workspace:*"
+    markdownlint-cli2: "npm:^0.22.1"
     oxfmt: "npm:^0.51.0"
     oxlint: "npm:^1.66.0"
     pino: "npm:^9.0.0"
@@ -1729,6 +1730,7 @@ __metadata:
   dependencies:
     "@types/node": "npm:^25.9.0"
     "@vitest/coverage-v8": "npm:^4.1.6"
+    markdownlint-cli2: "npm:^0.22.1"
     oxfmt: "npm:^0.51.0"
     oxlint: "npm:^1.66.0"
     query-string: "npm:^9.3.1"
@@ -3609,9 +3611,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"root-workspace-0b6124@workspace:.":
+"root@workspace:.":
   version: 0.0.0-use.local
-  resolution: "root-workspace-0b6124@workspace:."
+  resolution: "root@workspace:."
   dependencies:
     "@commitlint/cli": "npm:^21.0.1"
     "@commitlint/config-conventional": "npm:^21.0.0"
