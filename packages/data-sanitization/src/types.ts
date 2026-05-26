@@ -90,7 +90,7 @@ interface BuildSanitizedWarningOptions {
    * object into the warning entry. When omitted, all fields whose values
    * did not change are included.
    */
-  allowedFields?: string[];
+  allowedFields?: readonly string[];
 }
 
 /**
