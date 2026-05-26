@@ -91,6 +91,4 @@ jobs:
         env:
           COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
           GIST_SECRET: ${{ secrets.GIST_SECRET }}
-        run: |
-          cd packages/data-sanitization-log-providers
-          node ../data-sanitization/scripts/update-coverage-gist.mjs --package-name data-sanitization-log-providers
+        run: yarn workspace data-sanitization-log-providers node ../data-sanitization/scripts/update-coverage-gist.mjs --package-name data-sanitization-log-providers
