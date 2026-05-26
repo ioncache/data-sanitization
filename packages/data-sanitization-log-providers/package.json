@@ -43,8 +43,7 @@
     }
   },
   "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org"
+    "access": "public"
   },
   "scripts": {
     "build": "yarn clean && tsc -p tsconfig.build.json",
