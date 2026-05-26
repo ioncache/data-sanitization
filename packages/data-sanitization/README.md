@@ -43,6 +43,7 @@ sanitizeData(input);
 - Matches sensitive field names across any data shape without requiring exact path declarations
 - Handles circular references safely
 - Sanitization errors never expose the original input payload
+- Drop-in adapters for pino and winston via [`data-sanitization-log-providers`](https://www.npmjs.com/package/data-sanitization-log-providers)
 
 ## Why not fast-redact or pino-redact?
 
@@ -70,12 +71,38 @@ If you control your data shape exactly and need maximum throughput, reach for
 [fast-redact](https://github.com/davidmarkclements/fast-redact). If you need to sanitize data you don't fully control,
 `data-sanitization` is the right tool.
 
+## Log provider integrations
+
+[`data-sanitization-log-providers`](https://www.npmjs.com/package/data-sanitization-log-providers)
+is a companion package with pre-built adapters that wire `data-sanitization` directly into your
+logging pipeline:
+
+<!-- markdownlint-disable MD013 -->
+
+| Adapter               | Import path                                      | How it works                                                                            |
+| --------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| **Pino hook**         | `data-sanitization-log-providers/pino-hook`      | Registers a `pino.hooks.logMethod` hook that sanitizes arguments before they reach pino |
+| **Pino transport**    | `data-sanitization-log-providers/pino-transport` | A `pino-abstract-transport` stream you can pass to `pino({ transport: ... })`           |
+| **Winston transport** | `data-sanitization-log-providers/winston`        | A `winston-transport` subclass that sanitizes each log entry before forwarding it       |
+
+<!-- markdownlint-enable MD013 -->
+
+Install the companion package alongside your logger:
+
+```bash
+npm install data-sanitization-log-providers
+```
+
+See the [data-sanitization-log-providers README](https://github.com/ioncache/data-sanitization/tree/main/packages/data-sanitization-log-providers)
+for usage examples and configuration options.
+
 ## Table of Contents
 
 - [data-sanitization: protect credentials and personal data from accidental exposure](#data-sanitization-protect-credentials-and-personal-data-from-accidental-exposure)
   - [Before / After](#before--after)
   - [Highlights](#highlights)
   - [Why not fast-redact or pino-redact?](#why-not-fast-redact-or-pino-redact)
+  - [Log provider integrations](#log-provider-integrations)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Importing](#importing)
