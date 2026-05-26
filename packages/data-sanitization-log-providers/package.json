@@ -1,6 +1,6 @@
 {
   "name": "data-sanitization-log-providers",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Pre-built log provider adapters for data-sanitization (pino, winston).",
   "keywords": [
     "data-sanitization",
