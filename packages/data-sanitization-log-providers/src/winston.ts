@@ -46,12 +46,11 @@ class SanitizingTransport extends TransportStream {
       | string
       | undefined;
 
-    const input = typeof raw === 'string' ? raw : JSON.stringify(info);
-
     let sanitized: string;
     let warning: string | null = null;
 
     try {
+      const input = typeof raw === 'string' ? raw : JSON.stringify(info);
       ({ sanitized, warning } = sanitizeLine(
         input,
         this.#sanitizeOptions,
@@ -59,7 +58,7 @@ class SanitizingTransport extends TransportStream {
       ));
     } catch (err) {
       this.#onError(err);
-      this.#dest.write(buildErrorPlaceholder(input) + '\n');
+      this.#dest.write(buildErrorPlaceholder(raw ?? '') + '\n');
       this.emit('logged', info);
       callback();
       return;

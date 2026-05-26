@@ -161,6 +161,44 @@ describe('pino-transport', () => {
       expect(parsed.msg).toBe('log entry dropped: sanitization failed');
     });
 
+    it('should handle backpressure when write returns false and drain is emitted', async () => {
+      // Arrange
+      const written: string[] = [];
+      let firstCall = true;
+      const writeSpy = vi
+        .spyOn(process.stdout, 'write')
+        .mockImplementation((chunk) => {
+          written.push(typeof chunk === 'string' ? chunk : String(chunk));
+          if (firstCall) {
+            firstCall = false;
+            setImmediate(() => process.stdout.emit('drain'));
+            return false;
+          }
+          return true;
+        });
+
+      try {
+        await pinoTransport();
+
+        const buildMock = (await import('pino-abstract-transport'))
+          .default as ReturnType<typeof vi.fn>;
+        const [sourceHandler] = buildMock.mock.lastCall as [
+          (source: AsyncIterable<string>) => Promise<void>,
+        ];
+
+        async function* makeSource(): AsyncGenerator<string> {
+          yield clean;
+        }
+
+        await sourceHandler(makeSource());
+      } finally {
+        writeSpy.mockRestore();
+      }
+
+      // Assert — line was written despite backpressure
+      expect(written).toEqual([clean + '\n']);
+    });
+
     it('should pass build the parse:lines option', async () => {
       // Act
       await pinoTransport();

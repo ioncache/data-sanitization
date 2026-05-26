@@ -203,6 +203,27 @@ describe('winston', () => {
       expect(lines()[0]).not.toContain('mark@example.com');
     });
 
+    it('should call onError and write placeholder when JSON.stringify throws for non-string MESSAGE', () => {
+      // Arrange
+      const { stream, lines } = makeStream();
+      const onError = vi.fn();
+      const transport = new SanitizingTransport({ onError, stream });
+      const info: Record<string | symbol, unknown> = {
+        level: 'info',
+        message: 'hi',
+      };
+      info.circular = info;
+
+      // Act
+      transport.log(info, () => undefined);
+
+      // Assert
+      expect(onError).toHaveBeenCalledOnce();
+      const parsed = JSON.parse(lines()[0]) as Record<string, unknown>;
+      expect(parsed.level).toBe(50);
+      expect(parsed.msg).toBe('log entry dropped: sanitization failed');
+    });
+
     it('should silently continue when sanitization throws and no onError is provided', () => {
       // Arrange
       const { stream, lines } = makeStream();
