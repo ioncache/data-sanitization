@@ -1,7 +1,8 @@
-import { defineConfig } from 'vitest/config';
+import { mergeConfig } from 'vitest/config';
 import { resolve } from 'node:path';
+import baseConfig from '../../vitest.config.base';
 
-export default defineConfig({
+export default mergeConfig(baseConfig, {
   benchmark: {
     include: ['bench/**/*.bench.ts'],
   },
@@ -13,17 +14,7 @@ export default defineConfig({
   test: {
     coverage: {
       exclude: ['src/constants.ts', 'src/types.ts'],
-      include: ['src/**/*.ts'],
-      provider: 'v8',
-      reporter: ['text', 'json-summary', 'json'],
-      thresholds: {
-        branches: 100,
-        functions: 100,
-        lines: 100,
-        statements: 100,
-      },
     },
-    exclude: ['dist/**', 'node_modules/**', 'scripts/**'],
-    include: ['test/**/*.test.ts'],
+    exclude: ['scripts/**'],
   },
 });

@@ -62,3 +62,34 @@ jobs:
           COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
           GIST_SECRET: ${{ secrets.GIST_SECRET }}
         run: yarn workspace data-sanitization node scripts/update-coverage-gist.mjs --package-name data-sanitization
+      - name: Report coverage (data-sanitization-log-providers)
+        if: matrix.node-version == 24
+        uses: davelosert/vitest-coverage-report-action@02f3c2e641286b7fa308cd3e430783103ce6103b # v2
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          json-final-path: coverage/coverage-final.json
+          working-directory: packages/data-sanitization-log-providers
+      - name: Extract coverage percentage (data-sanitization-log-providers)
+        id: coverage-log-providers
+        if: matrix.node-version == 24 && github.event_name == 'push'
+        run: echo "percentage=$(jq '.total.lines.pct' packages/data-sanitization-log-providers/coverage/coverage-summary.json)" >> "$GITHUB_OUTPUT"
+      - name: Update coverage badge (data-sanitization-log-providers)
+        if: matrix.node-version == 24 && github.event_name == 'push'
+        uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501 # v1.8.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: ${{ vars.COVERAGE_GIST_ID }}
+          filename: data-sanitization-log-providers-coverage-badge-config.json
+          label: coverage
+          message: ${{ steps.coverage-log-providers.outputs.percentage }}%
+          valColorRange: ${{ steps.coverage-log-providers.outputs.percentage }}
+          maxColorRange: 100
+          minColorRange: 0
+      - name: Update coverage report in Gist (data-sanitization-log-providers)
+        if: matrix.node-version == 24 && github.event_name == 'push'
+        env:
+          COVERAGE_GIST_ID: ${{ vars.COVERAGE_GIST_ID }}
+          GIST_SECRET: ${{ secrets.GIST_SECRET }}
+        run: |
+          cd packages/data-sanitization-log-providers
+          node ../data-sanitization/scripts/update-coverage-gist.mjs --package-name data-sanitization-log-providers
