@@ -32,6 +32,7 @@ jobs:
       - run: yarn install --immutable
       - run: yarn format:check
       - run: yarn lint:ci
+      - run: yarn build
       - run: yarn test:coverage
       - name: Report coverage (data-sanitization)
         if: matrix.node-version == 24
