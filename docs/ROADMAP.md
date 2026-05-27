@@ -195,6 +195,46 @@ To collect: monitor the GitHub Issues tracker; search for keywords like
 These ideas may change behavior or public contracts, so they should be explored
 separately from routine v1.x maintenance.
 
+### Non-String JSON Value Matching on the Regex Path
+
+`jsonMatcher` and `escapedJsonMatcher` only match string-quoted values
+(`"field":"value"`). Sensitive fields whose values are `number`, `boolean`,
+`null`, nested arrays, or nested objects produce no match on the raw regex
+path. The existing workaround is `parseJsonStrings: true`, which routes valid
+JSON through `objectReplacer` and handles all value types correctly.
+
+Three approaches are documented in `docs/plans/018-pattern-and-matcher-additions.md`:
+
+- **Option A** — Extend `jsonMatcher` regex with a second alternative for
+  unquoted primitives. Cannot handle arrays or nested objects (balanced bracket
+  counting is beyond a single-pass regex). Changes `$1`/`$2` capture group
+  semantics for the new alternative.
+- **Option B** — Auto-detect JSON in `stringReplacer` and route through
+  `objectReplacer` unconditionally (effectively making `parseJsonStrings: true`
+  the default). Handles all value types; changes behavior for all string inputs
+  and has a parse-cost for non-JSON strings.
+- **Option C** — Accept the limitation and document `parseJsonStrings: true`
+  as the correct path for JSON strings. Remove the current "Group B" tests
+  that document the gap; they would instead become "known out-of-scope" notes.
+
+Tests in `test/matchers.test.ts` and `test/replacers.test.ts` already document
+the current behavior; the comment in `replacers.test.ts` flags this as a v2
+decision point.
+
+### `parseJsonStrings: true` as the Default
+
+The current default is `parseJsonStrings: false`, meaning string inputs go
+through the regex path. A future major version could flip the default so that
+valid JSON strings are always sanitized via `objectReplacer` (full type
+coverage, including numeric and boolean sensitive values) and fall back to
+regex only for non-JSON text.
+
+This is a **behavior-breaking change** — any caller relying on the current
+regex-path output for JSON strings (e.g. value format, whitespace
+preservation) would be affected. A migration path would need to be documented.
+See the comment in `test/replacers.test.ts` line 543 for the test note
+tracking this.
+
 ### Non-Plain Object Type Support
 
 Current behavior: non-plain objects (custom prototypes) pass through untouched.
