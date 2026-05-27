@@ -44,7 +44,7 @@ describe('winston', () => {
       expect(lines()).toEqual([raw + '\n']);
     });
 
-    it('should sanitize a sensitive field', () => {
+    it('should mask the value of a sensitive field in the output', () => {
       // Arrange
       const { stream, lines } = makeStream();
       const transport = new SanitizingTransport({ stream });
@@ -111,7 +111,7 @@ describe('winston', () => {
       expect(lines()).toHaveLength(1);
     });
 
-    it('should use default empty allowedFields so no extra fields appear in warning', () => {
+    it('should include no extra fields in the warning by default', () => {
       // Arrange
       const { stream, lines } = makeStream();
       const transport = new SanitizingTransport({ emitWarning: true, stream });
@@ -128,7 +128,7 @@ describe('winston', () => {
       expect(warning).not.toHaveProperty('timestamp');
     });
 
-    it('should write JSON.stringify of info when MESSAGE is not a string', () => {
+    it('should fall back to serializing the log info object when the raw message is not available', () => {
       // Arrange
       const { stream, lines } = makeStream();
       const transport = new SanitizingTransport({ stream });
@@ -203,7 +203,7 @@ describe('winston', () => {
       expect(lines()[0]).not.toContain('mark@example.com');
     });
 
-    it('should call onError and write placeholder when JSON.stringify throws for non-string MESSAGE', () => {
+    it('should call onError and write a placeholder when the log info object cannot be serialized', () => {
       // Arrange
       const { stream, lines } = makeStream();
       const onError = vi.fn();

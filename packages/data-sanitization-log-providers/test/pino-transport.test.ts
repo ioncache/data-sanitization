@@ -66,7 +66,7 @@ describe('pino-transport', () => {
       expect(written).toEqual([clean + '\n']);
     });
 
-    it('should sanitize a sensitive field', async () => {
+    it('should mask the value of a sensitive field in the output', async () => {
       // Act
       const written = await runTransport([dirty]);
 
@@ -161,7 +161,7 @@ describe('pino-transport', () => {
       expect(parsed.msg).toBe('log entry dropped: sanitization failed');
     });
 
-    it('should handle backpressure when write returns false and drain is emitted', async () => {
+    it('should wait for the stream to drain before writing more when the destination is full', async () => {
       // Arrange
       const written: string[] = [];
       let firstCall = true;
@@ -199,7 +199,7 @@ describe('pino-transport', () => {
       expect(written).toEqual([clean + '\n']);
     });
 
-    it('should pass build the parse:lines option', async () => {
+    it('should configure the transport to parse input as lines', async () => {
       // Act
       await pinoTransport();
 
