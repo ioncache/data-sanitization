@@ -9,6 +9,10 @@ on:
       - 'yarn.lock'
       - '.yarnrc.yml'
       - 'tsconfig.json'
+      - '.markdownlint.json'
+      - '.markdownlintignore'
+      - '.oxlintrc.json'
+      - '.oxfmtrc.json'
       - '.github/workflows/ci-data-sanitization.yml'
   pull_request:
     branches: [main]
@@ -18,6 +22,10 @@ on:
       - 'yarn.lock'
       - '.yarnrc.yml'
       - 'tsconfig.json'
+      - '.markdownlint.json'
+      - '.markdownlintignore'
+      - '.oxlintrc.json'
+      - '.oxfmtrc.json'
       - '.github/workflows/ci-data-sanitization.yml'
 
 jobs:
