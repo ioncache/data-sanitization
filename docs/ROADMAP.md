@@ -221,19 +221,13 @@ Tests in `test/matchers.test.ts` and `test/replacers.test.ts` already document
 the current behavior; the comment in `replacers.test.ts` flags this as a v2
 decision point.
 
-### `parseJsonStrings: true` as the Default
+### `parseJsonStrings: true` as the Default — completed in #322
 
-The current default is `parseJsonStrings: false`, meaning string inputs go
-through the regex path. A future major version could flip the default so that
-valid JSON strings are always sanitized via `objectReplacer` (full type
-coverage, including numeric and boolean sensitive values) and fall back to
-regex only for non-JSON text.
-
-This is a **behavior-breaking change** — any caller relying on the current
-regex-path output for JSON strings (e.g. value format, whitespace
-preservation) would be affected. A migration path would need to be documented.
-See the comment in `test/replacers.test.ts` line 543 for the test note
-tracking this.
+Valid JSON object and array strings are now always sanitized via `objectReplacer`
+by default (full type coverage, including numeric and boolean sensitive values),
+with automatic fallback to text-based matching for non-JSON strings. Callers
+relying on the regex-path output for JSON strings (e.g. value format, whitespace
+preservation) must opt out with `parseJsonStrings: false`.
 
 ### Non-Plain Object Type Support
 

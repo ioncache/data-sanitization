@@ -206,33 +206,34 @@ sanitizeData('password=secret&username=mark');
 
 ### Parse JSON strings
 
-By default, string inputs are sanitized using text-based pattern matching.
-This works for most cases, but it cannot detect numeric-valued sensitive fields:
+By default, valid JSON object and array strings are parsed first and sanitized
+the same way an object would be. This correctly handles all value types,
+including numeric-valued sensitive fields:
 
 ```typescript
 sanitizeData('{"password":12345,"username":"mark"}');
-// => '{"password":12345,"username":"mark"}' (numeric value not masked)
-```
-
-Setting `parseJsonStrings: true` parses the JSON first and sanitizes it the
-same way an object would be, which handles numeric values correctly:
-
-```typescript
-sanitizeData('{"password":12345,"username":"mark"}', {
-  parseJsonStrings: true,
-});
 // => '{"password":9999999999,"username":"mark"}'
 ```
 
-> [!TIP]
-> `parseJsonStrings: true` is also 3–4× faster for JSON string inputs than the
-> default text-based approach. The tradeoff is that output is re-serialized with
-> `JSON.stringify`, which does not preserve original whitespace or formatting.
+Non-JSON strings fall back to text-based pattern matching automatically.
+
+> [!NOTE]
+> Output is re-serialized with `JSON.stringify`, which does not preserve
+> original whitespace or formatting. Set `parseJsonStrings: false` to use
+> text-based matching instead when formatting fidelity is required or when
+> the input is never JSON:
+>
+> ```typescript
+> sanitizeData('{"password":12345,"username":"mark"}', {
+>   parseJsonStrings: false,
+> });
+> // => '{"password":12345,"username":"mark"}' (numeric value not masked on regex path)
+> ```
 
 If the string cannot be parsed as JSON, `sanitizeData` silently falls back to
-text-based pattern matching. Numeric-valued sensitive fields will not be masked
-in that case. If you need strict behavior (fail or redact on parse failure),
-[open an issue](https://github.com/ioncache/data-sanitization/issues/306) — this is tracked for a future release.
+text-based pattern matching. If you need strict behavior (fail or redact on
+parse failure), [open an issue](https://github.com/ioncache/data-sanitization/issues/306)
+— this is tracked for a future release.
 
 ### Remove fields instead of masking
 
@@ -335,8 +336,8 @@ sanitizeData({ tags }, { sanitizeCollections: true });
 | `numericMask`         | `number`                    | `9999999999` | Number used to replace matched number field values                                                                                                                                 |
 | `removeMatches`       | `boolean`                   | `false`      | Remove matched fields entirely instead of masking                                                                                                                                  |
 | `sanitizeCollections` | `boolean`                   | `false`      | Sanitize `Map` and `Set` instances by traversing their entries and returning a new sanitized copy. When false, these pass through unchanged like other non-plain object instances. |
-| `scanStringValues`    | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input when `parseJsonStrings` is enabled; has no effect on raw string input. |
-| `parseJsonStrings`    | `boolean`                   | `false`      | Parse valid JSON string inputs as structured data and sanitize by field name. Re-serializes with `JSON.stringify`, discarding original whitespace.                                 |
+| `scanStringValues`    | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input parsed via `parseJsonStrings`; has no effect on raw string input.      |
+| `parseJsonStrings`    | `boolean`                   | `true`       | Parse valid JSON string inputs as structured data and sanitize by field name. Re-serializes with `JSON.stringify`, discarding whitespace. Set to `false` to use the regex path.    |
 | `customPatterns`      | `PatternEntry[]`            | `[]`         | Additional field name patterns to match. Each entry is a pattern string (substring match) or `{ match: string; strict?: boolean }` for an exact match.                             |
 | `customMatchers`      | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
 | `useDefaultPatterns`  | `boolean`                   | `true`       | Set to `false` to use only your custom patterns, ignoring the built-in defaults.                                                                                                   |
@@ -590,8 +591,9 @@ fields; a single 10KB non-sensitive string value incurs ~68% overhead.
 > Set `scanStringValues: false` when you control your data structure and know
 > sensitive values only appear on sensitive-named keys. This recovers full pre-scanning throughput.
 >
-> Set `parseJsonStrings: true` when your string inputs are JSON. It is 3–4× faster
-> than the default regex path and correctly masks numeric-valued sensitive fields.
+> JSON string inputs are parsed and sanitized via `objectReplacer` by default,
+> which is 3–4× faster than the regex path and correctly masks numeric-valued
+> sensitive fields. Set `parseJsonStrings: false` to use the regex path instead.
 
 On first call with a given set of options, `sanitizeData` compiles its regex
 set and caches the result by option fingerprint. Subsequent calls with the same
