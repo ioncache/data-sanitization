@@ -1223,6 +1223,46 @@ describe('DataSanitizationReplacers', () => {
         });
       });
 
+      it('should mask only the exact field name when a strict object-form pattern is used', () => {
+        // Arrange
+        const testData = {
+          state: 'secret-state',
+          statement: 'not-sensitive',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          customPatterns: [{ match: 'state', strict: true }],
+          useDefaultPatterns: false,
+        }) as typeof testData;
+
+        // Assert
+        expect(result.state).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.statement).toBe('not-sensitive');
+        expect(result.username).toBe('mark');
+      });
+
+      it('should mask substring field names when an object-form pattern omits strict', () => {
+        // Arrange
+        const testData = {
+          state: 'secret-state',
+          statement: 'also-sensitive',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          customPatterns: [{ match: 'state' }],
+          useDefaultPatterns: false,
+        }) as typeof testData;
+
+        // Assert
+        expect(result.state).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.statement).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.username).toBe('mark');
+      });
+
       it('should leave class instances unchanged while masking sensitive fields in plain objects', () => {
         // Arrange
         const date = new Date('2024-01-01');
