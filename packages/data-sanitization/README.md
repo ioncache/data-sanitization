@@ -425,7 +425,9 @@ regex must use capture groups `$1` and `$2` to preserve the field name and
 trailing delimiter while replacing the value.
 
 ```typescript
-const headerMatcher = (pattern: string) =>
+import type { DataSanitizationMatcher } from 'data-sanitization';
+
+const headerMatcher: DataSanitizationMatcher = (pattern) =>
   new RegExp(`(${pattern}:\\s*).+?(\\n|$)`, 'gi');
 
 sanitizeData('authorization: Bearer abc123\nuser: mark', {

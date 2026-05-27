@@ -2,7 +2,13 @@ import { DataSanitizationError } from './errors';
 import { objectReplacer, stringReplacer } from './replacers';
 import { DataSanitizationReplacer } from './types';
 
-export type { DataSanitizationReplacerOptions } from './types';
+export type {
+  DataSanitizationInput,
+  DataSanitizationMatcher,
+  DataSanitizationOutput,
+  DataSanitizationReplacer,
+  DataSanitizationReplacerOptions,
+} from './types';
 
 /**
  * Returns a safe type label for data passed to the sanitizer.
