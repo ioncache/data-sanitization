@@ -87,7 +87,7 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   }
 
   const fieldPrefix = `"${fieldName}"?:\\s*"`;
-  const maskField = `(${fieldPrefix}).+?(")`;
+  const maskField = `(${fieldPrefix})(?:[^"\\\\]|\\\\.)+?(")`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
 };
@@ -126,7 +126,7 @@ const escapedJsonMatcher: DataSanitizationMatcher = (
     return new RegExp(`${removeLeadingField}|${removeField}`, MATCHER_FLAGS);
   }
 
-  const maskField = `(${fieldPrefix}).+?(\\\\")`;
+  const maskField = `(${fieldPrefix})(?:[^\\\\]|\\\\[^"])+?(\\\\")`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
 };
