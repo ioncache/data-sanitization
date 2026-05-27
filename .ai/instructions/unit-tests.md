@@ -81,6 +81,65 @@ describe('Calculator', () => {
 });
 ```
 
+### `describe()` strings
+
+**Outer block:** the module or unit under test (function name, class name, or
+file name).
+
+**Nested blocks:** use `when`, `with`, or `given` to introduce scenario context.
+This reads naturally when combined with the parent: "Calculator > add > when
+the inputs are negative > should return a negative sum."
+
+```javascript
+// Good
+describe('sanitizeData', () => {
+  describe('with string input', () => { ... });
+  describe('when removal is enabled', () => { ... });
+  describe('when configured with custom options', () => { ... });
+});
+
+// Bad — vague or technical
+describe('masking', () => { ... });       // no unit context
+describe('options', () => { ... });       // not a scenario
+describe('parseJsonStrings option', () => { ... }); // names the option, not the scenario
+```
+
+### `it()` strings
+
+Write from the **caller's perspective**. Describe what the system does in
+observable terms — what comes out, what changes, what error is thrown — not
+what the code does internally.
+
+**Ask:** "What does the caller care about?" not "What does the code do?"
+
+```javascript
+// Good — describes output the caller observes
+it('should mask sensitive fields in a JSON string', () => {});
+it('should leave class instances unchanged', () => {});
+it('should throw an error when given a number', () => {});
+it('should apply a caller-supplied mask string', () => {});
+
+// Bad — describes internal mechanics
+it('should call stringReplacer on the input', () => {}); // internal function
+it('should iterate the WeakSet for circular refs', () => {}); // implementation detail
+it('should construct a global case-insensitive regex', () => {}); // mechanism, not outcome
+it('should set name and details on custom error', () => {}); // describes object state, not behavior
+```
+
+### Description anti-patterns to avoid
+
+| Anti-pattern                           | Example                                                                                  | Better                                                                            |
+| -------------------------------------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Names internal function                | `should call objectReplacer`                                                             | `should mask sensitive fields in the object`                                      |
+| Names the option, not the effect       | `when parseJsonStrings is true`                                                          | `when JSON string parsing is enabled`                                             |
+| Uses implementation jargon             | `should not consume the CR in a CRLF sequence`                                           | `should stop at Windows-style line endings without including the carriage return` |
+| Uses "top-level" as a location         | `should sanitize top-level object input`                                                 | `should mask sensitive fields in an object`                                       |
+| Calls objects "non-plain"              | `should preserve non-plain object input`                                                 | `should return class instances unchanged`                                         |
+| Uses regex terminology                 | `should produce a removal regex that…`                                                   | `should remove the matched field and its value`                                   |
+| Uses "null" as a descriptor            | `should return null warning when…`                                                       | `should produce no warning when…`                                                 |
+| Describes notation instead of behavior | `should return bracket-notation paths`                                                   | `should return indexed paths for array elements`                                  |
+| Redundant qualifier in nested context  | `it('should mask X when option is enabled')` inside `describe('when option is enabled')` | drop the qualifier from `it()`                                                    |
+
 ## AAA and Revert Comments
 
 Use in every non-trivial test:
@@ -145,7 +204,12 @@ describe('labResults.js', () => {
 ## Checklist
 
 - [ ] Tests use `describe()` and `it()`
-- [ ] Test titles start with `should`
+- [ ] Outer `describe()` names the module or unit under test
+- [ ] Nested `describe()` blocks use `when`, `with`, or `given` for scenario context
+- [ ] `it()` titles start with `should`
+- [ ] `it()` titles describe observable behavior from the caller's perspective
+- [ ] `it()` titles contain no implementation details (internal function names,
+      option names, regex concepts, data structure internals, notation style names)
 - [ ] Arrange, Act, and Assert comments are present in non-trivial tests
 - [ ] Revert comments are present only when the test performs cleanup
 - [ ] Coverage exceptions include justification comments
