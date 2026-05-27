@@ -46,6 +46,7 @@ jobs:
           git config --global user.email "ci@localhost"
           git config --global init.defaultBranch main
       - run: yarn install --immutable
+      - run: yarn workspace data-sanitization build
       - run: yarn workspace data-sanitization-log-providers format:check
       - run: yarn workspace data-sanitization-log-providers lint:ci
       - run: yarn workspace data-sanitization-log-providers build
