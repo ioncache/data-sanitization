@@ -8,7 +8,7 @@ import { DEFAULT_NUMERIC_MASK, DEFAULT_PATTERN_MASK } from '../src/constants';
 
 describe('DataSanitizationIndexAndErrors', () => {
   describe('sanitizeData', () => {
-    it('should sanitize top-level object input', () => {
+    it('should mask sensitive fields in an object', () => {
       // Arrange
       const input = {
         db_password: 'baz',
@@ -25,7 +25,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output.username).toEqual('bar');
     });
 
-    it('should sanitize top-level JSON string input', () => {
+    it('should mask sensitive fields in a JSON string', () => {
       // Arrange
       const input = '{"password":"foo","username":"bar"}';
 
@@ -58,7 +58,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(nested.safe).toEqual('visible');
     });
 
-    it('should mask array-valued sensitive object keys', () => {
+    it('should mask sensitive fields whose values are arrays', () => {
       // Arrange
       const input = {
         password: 'secret',
@@ -75,7 +75,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output.username).toEqual('bar');
     });
 
-    it('should sanitize top-level array input', () => {
+    it('should mask sensitive fields in an array of objects', () => {
       // Arrange
       const input = [
         { password: 'secret', username: 'bar' },
@@ -92,7 +92,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       ]);
     });
 
-    it('should sanitize sensitive keys with non-string object values', () => {
+    it('should mask sensitive fields regardless of value type', () => {
       // Arrange
       const input = {
         api_key: ['a', 'b'],
@@ -115,7 +115,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output.username).toEqual('bar');
     });
 
-    it('should remove sensitive keys with non-string object values', () => {
+    it('should remove sensitive fields regardless of value type', () => {
       // Arrange
       const input = {
         api_key: ['a', 'b'],
@@ -135,7 +135,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output).toEqual({ username: 'bar' });
     });
 
-    it('should sanitize top-level empty object input', () => {
+    it('should return an empty object unchanged', () => {
       // Arrange
       const input = {};
 
@@ -146,7 +146,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output).toEqual({});
     });
 
-    it('should preserve top-level non-plain object input', () => {
+    it('should return class instances unchanged', () => {
       // Arrange
       const input = new Date('2024-01-01');
 
@@ -157,7 +157,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output).toBe(input);
     });
 
-    it('should return top-level null input unchanged', () => {
+    it('should return null unchanged', () => {
       // Arrange
       const input = null;
 
@@ -168,7 +168,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output).toBeNull();
     });
 
-    it('should sanitize top-level form-encoded string input', () => {
+    it('should mask sensitive fields in a form-encoded string', () => {
       // Arrange
       const input = 'password=foo&username=bar';
 
@@ -180,7 +180,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output).toContain('username=bar');
     });
 
-    it('should use a custom patternMask when provided', () => {
+    it('should apply a caller-supplied mask string', () => {
       // Arrange
       const input = { password: 'foo', username: 'bar' };
 
@@ -194,7 +194,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(output.username).toEqual('bar');
     });
 
-    it('should throw DataSanitizationError for top-level number input', () => {
+    it('should throw an error when given a number', () => {
       // Arrange
       const input = 123 as unknown as Record<string, unknown>;
       let thrownError: unknown;
@@ -217,7 +217,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       });
     });
 
-    it('should throw DataSanitizationError for top-level boolean input', () => {
+    it('should throw an error when given a boolean', () => {
       // Arrange
       const input = true as unknown as Record<string, unknown>;
 
@@ -230,7 +230,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(act).toThrowError(DataSanitizationError);
     });
 
-    it('should throw DataSanitizationError for top-level undefined input', () => {
+    it('should throw an error when given undefined', () => {
       // Arrange
       const input = undefined as unknown as Record<string, unknown>;
 
@@ -243,7 +243,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       expect(act).toThrowError(DataSanitizationError);
     });
 
-    it('should wrap non-DataSanitizationError in DataSanitizationError', () => {
+    it('should wrap unexpected errors as a DataSanitizationError', () => {
       // Arrange
       const input: Record<string, unknown> = {};
       input.self = input;
@@ -268,7 +268,7 @@ describe('DataSanitizationIndexAndErrors', () => {
       });
     });
 
-    it('should report array input type in wrapped error details', () => {
+    it('should include the input type in the error details when an array contains a circular reference', () => {
       // Arrange
       const input: unknown[] = [];
       input.push(input);
@@ -313,7 +313,7 @@ describe('DataSanitizationIndexAndErrors', () => {
   });
 
   describe('DataSanitizationError', () => {
-    it('should set name and details on custom error', () => {
+    it('should expose the error name and attached details', () => {
       // Arrange
       const details = { reason: 'test' };
 

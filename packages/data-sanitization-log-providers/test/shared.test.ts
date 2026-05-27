@@ -6,7 +6,7 @@ import { buildErrorPlaceholder, sanitizeLine } from '../src/shared';
 
 describe('shared', () => {
   describe('sanitizeLine', () => {
-    it('should return unchanged sanitized and null warning when no sensitive fields', () => {
+    it('should leave the line unchanged and produce no warning when there are no sensitive fields', () => {
       // Arrange
       const line = '{"level":30,"time":1,"msg":"hello"}';
 
@@ -18,7 +18,7 @@ describe('shared', () => {
       expect(result.warning).toBeNull();
     });
 
-    it('should return sanitized string and null warning when fields match but no change', () => {
+    it('should leave the line unchanged when a custom pattern is configured but nothing matches', () => {
       // Arrange
       const line = '{"level":30,"msg":"no secrets here"}';
 
@@ -30,7 +30,7 @@ describe('shared', () => {
       expect(result.warning).toBeNull();
     });
 
-    it('should return sanitized string with masked field', () => {
+    it('should mask the sensitive field value in the output', () => {
       // Arrange
       const line = '{"level":30,"password":"secret","msg":"login"}';
 
@@ -42,7 +42,7 @@ describe('shared', () => {
       expect(result.sanitized).toContain('**********');
     });
 
-    it('should return non-null warning when a field changed', () => {
+    it('should emit a warning when a sensitive field is masked', () => {
       // Arrange
       const line = '{"level":30,"time":1,"password":"secret","msg":"login"}';
 
@@ -75,7 +75,7 @@ describe('shared', () => {
       expect(parsed.pid).toBe(99);
     });
 
-    it('should return a warning with fields array when allowedFields is empty and a field changed', () => {
+    it('should emit a warning identifying the masked field when no extra fields are allowed in the warning', () => {
       // Arrange
       const line = '{"level":30,"password":"secret","msg":"login"}';
 
@@ -94,7 +94,7 @@ describe('shared', () => {
   });
 
   describe('buildErrorPlaceholder', () => {
-    it('should return error-level JSON with msg when original is valid JSON', () => {
+    it('should produce an error-level log entry when the original line is valid JSON', () => {
       // Arrange
       const original =
         '{"level":30,"time":1716667200000,"pid":99,"hostname":"api-1","msg":"hi"}';

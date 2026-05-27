@@ -38,7 +38,7 @@ const formEncodedMatcher: DataSanitizationMatcher = (
   remove = false,
 ) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `\\w*${escaped}\\w*`;
+  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
   const fieldPrefix = `${fieldName}[=:]`;
   const fieldValue = '[^\\r\\n&]*';
 
@@ -75,7 +75,7 @@ const formEncodedMatcher: DataSanitizationMatcher = (
  */
 const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `\\w*${escaped}\\w*`;
+  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
 
   if (remove) {
     const fieldPrefix = `"${fieldName}"\\s*:\\s*"`;
@@ -86,8 +86,8 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
     return new RegExp(`${removeLeadingField}|${removeField}`, MATCHER_FLAGS);
   }
 
-  const fieldPrefix = `"${fieldName}"?:\\s*"`;
-  const maskField = `(${fieldPrefix}).+?(")`;
+  const fieldPrefix = `"${fieldName}"\\s*:\\s*"`;
+  const maskField = `(${fieldPrefix})(?:[^"\\\\]|\\\\.)+?(")`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
 };
@@ -115,7 +115,7 @@ const escapedJsonMatcher: DataSanitizationMatcher = (
   remove = false,
 ) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `\\w*${escaped}\\w*`;
+  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
   const fieldPrefix = `\\\\"${fieldName}\\\\"\\s*:\\s*\\\\"`;
 
   if (remove) {
@@ -126,7 +126,7 @@ const escapedJsonMatcher: DataSanitizationMatcher = (
     return new RegExp(`${removeLeadingField}|${removeField}`, MATCHER_FLAGS);
   }
 
-  const maskField = `(${fieldPrefix}).+?(\\\\")`;
+  const maskField = `(${fieldPrefix})(?:[^\\\\]|\\\\[^"])+?(\\\\")`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
 };

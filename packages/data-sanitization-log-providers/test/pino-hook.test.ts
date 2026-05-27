@@ -33,7 +33,7 @@ describe('pino-hook', () => {
       expect(result).toContain('**********');
     });
 
-    it('should prepend a warning line when a field is sanitized', () => {
+    it('should include a warning entry before the sanitized log line when a field is masked', () => {
       // Arrange
       const hook = createSanitizeLogLine();
 
@@ -83,7 +83,7 @@ describe('pino-hook', () => {
       expect(warning).not.toHaveProperty('hostname');
     });
 
-    it('should emit a warning with only fields metadata when allowedFields is empty', () => {
+    it('should emit a warning identifying only the changed fields when no extra fields are allowed in the warning', () => {
       // Arrange
       const hook = createSanitizeLogLine({ allowedFields: [] });
 
