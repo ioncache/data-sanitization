@@ -60,10 +60,10 @@ interface DataSanitizationReplacerOptions {
    * or parses to a primitive. Has no effect on non-string input.
    *
    * Note: JSON.stringify does not preserve original whitespace or
-   * indentation. Enable this option only when formatting fidelity is
-   * not required.
+   * indentation. Set to `false` when formatting fidelity is required
+   * or when the input is never JSON.
    *
-   * Default: false
+   * Default: true
    */
   parseJsonStrings?: boolean;
   /**

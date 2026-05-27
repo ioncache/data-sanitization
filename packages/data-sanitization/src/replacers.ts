@@ -181,7 +181,7 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
     customMatchers,
     customPatterns,
     ignorePatterns,
-    parseJsonStrings = false,
+    parseJsonStrings = true,
     patternMask,
     removeMatches = false,
     useDefaultMatchers = true,

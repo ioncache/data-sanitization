@@ -329,8 +329,9 @@ describe('DataSanitizationReplacers', () => {
         // Arrange
         const testData = '{"password":"foo","username":"bar"}';
 
-        // Act
+        // Act — regex path: disabling matchers means no patterns are applied
         const result = stringReplacer(testData, {
+          parseJsonStrings: false,
           useDefaultMatchers: false,
         }) as string;
 
@@ -360,13 +361,15 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('when JSON string parsing is enabled', () => {
+    describe('with JSON string inputs', () => {
       it('should not mask numeric sensitive field values when JSON string parsing is disabled', () => {
         // Arrange
         const testData = '{"password":12345,"username":"mark"}';
 
         // Act
-        const result = JSON.parse(stringReplacer(testData) as string);
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: false }) as string,
+        );
 
         // Assert
         expect(result.password).toBe(12345);
@@ -538,89 +541,102 @@ describe('DataSanitizationReplacers', () => {
 
     describe('with edge case string inputs', () => {
       // The regex path only matches string-quoted values. For each non-string value
-      // type below there are two paired tests: the default path documents that the
-      // value is left unchanged, and the parseJsonStrings: true path documents that
-      // masking works correctly via objectReplacer. When parseJsonStrings defaults
-      // to true in v2 the default-path behaviour will change accordingly.
-      it('should leave a boolean sensitive field value unchanged', () => {
+      // type below there are two paired tests: the parseJsonStrings: false path
+      // documents that the value is left unchanged on the regex path, and the default
+      // path documents that masking works correctly via objectReplacer.
+      it('should leave a boolean sensitive field value unchanged when JSON string parsing is disabled', () => {
         // Arrange
         const testData = '{"password":true,"username":"mark"}';
 
         // Act
-        const result = JSON.parse(stringReplacer(testData) as string);
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: false }) as string,
+        );
 
         // Assert
         expect(result.password).toBe(true);
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a sensitive field whose value is a boolean when JSON string parsing is enabled', () => {
+      it('should mask a sensitive field whose value is a boolean', () => {
         // Arrange
         const testData = '{"password":true,"username":"mark"}';
 
         // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        );
+        const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
         expect(result.password).toBe(DEFAULT_PATTERN_MASK);
         expect(result.username).toBe('mark');
       });
 
-      it('should leave a null sensitive field value unchanged', () => {
+      it('should leave a null sensitive field value unchanged when JSON string parsing is disabled', () => {
         // Arrange
         const testData = '{"password":null,"username":"mark"}';
 
         // Act
-        const result = JSON.parse(stringReplacer(testData) as string);
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: false }) as string,
+        );
 
         // Assert
         expect(result.password).toBeNull();
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a sensitive field whose value is null when JSON string parsing is enabled', () => {
+      it('should mask a sensitive field whose value is null', () => {
         // Arrange
         const testData = '{"password":null,"username":"mark"}';
 
         // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        );
+        const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
         expect(result.password).toBe(DEFAULT_PATTERN_MASK);
         expect(result.username).toBe('mark');
       });
 
-      it('should leave an array sensitive field value unchanged', () => {
+      it('should leave an array sensitive field value unchanged when JSON string parsing is disabled', () => {
         // Arrange
         const testData = '{"token":["a","b","c"],"username":"mark"}';
 
         // Act
-        const result = JSON.parse(stringReplacer(testData) as string);
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: false }) as string,
+        );
 
         // Assert
         expect(result.token).toEqual(['a', 'b', 'c']);
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a sensitive field whose value is an array when JSON string parsing is enabled', () => {
+      it('should mask a sensitive field whose value is an array', () => {
         // Arrange
         const testData = '{"token":["a","b","c"],"username":"mark"}';
 
         // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        );
+        const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
         expect(result.token).toBe(DEFAULT_PATTERN_MASK);
         expect(result.username).toBe('mark');
       });
 
-      it('should leave a nested object sensitive field value unchanged', () => {
+      it('should leave a nested object sensitive field value unchanged when JSON string parsing is disabled', () => {
+        // Arrange
+        const testData = '{"token":{"nested":"value"},"username":"mark"}';
+
+        // Act
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: false }) as string,
+        );
+
+        // Assert
+        expect(result.token).toEqual({ nested: 'value' });
+        expect(result.username).toBe('mark');
+      });
+
+      it('should mask a sensitive field whose value is a nested object', () => {
         // Arrange
         const testData = '{"token":{"nested":"value"},"username":"mark"}';
 
@@ -628,32 +644,20 @@ describe('DataSanitizationReplacers', () => {
         const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
-        expect(result.token).toEqual({ nested: 'value' });
-        expect(result.username).toBe('mark');
-      });
-
-      it('should mask a sensitive field whose value is a nested object when JSON string parsing is enabled', () => {
-        // Arrange
-        const testData = '{"token":{"nested":"value"},"username":"mark"}';
-
-        // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        );
-
-        // Assert
         expect(result.token).toBe(DEFAULT_PATTERN_MASK);
         expect(result.username).toBe('mark');
       });
 
-      it('should produce valid JSON when a sensitive field value is an empty string', () => {
+      it('should produce valid JSON when a sensitive field value is an empty string and JSON string parsing is disabled', () => {
         // Arrange
         const testData = '{"password":"","username":"mark"}';
 
         // Act
-        const result = stringReplacer(testData) as string;
+        const result = stringReplacer(testData, {
+          parseJsonStrings: false,
+        }) as string;
 
-        // Assert — output must remain parseable and preserve non-sensitive fields
+        // Assert — regex path leaves empty string values unmasked but output remains valid JSON
         expect(() => JSON.parse(result)).not.toThrow();
         expect(JSON.parse(result).username).toBe('mark');
       });
@@ -663,16 +667,14 @@ describe('DataSanitizationReplacers', () => {
         const testData = '{"password":"","username":"mark"}';
 
         // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        );
+        const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
         expect(result.password).toBe(DEFAULT_PATTERN_MASK);
         expect(result.username).toBe('mark');
       });
 
-      it('should produce valid JSON when a sensitive field value contains an escaped quote', () => {
+      it('should produce valid JSON when a sensitive field value contains an escaped quote and JSON string parsing is disabled', () => {
         // Arrange — value is: sec"ret  (JSON.stringify encodes the inner quote as \")
         const testData = JSON.stringify({
           password: 'sec"ret',
@@ -680,11 +682,14 @@ describe('DataSanitizationReplacers', () => {
         });
 
         // Act
-        const result = stringReplacer(testData) as string;
+        const result = stringReplacer(testData, {
+          parseJsonStrings: false,
+        }) as string;
 
-        // Assert — output must remain valid JSON with non-sensitive fields preserved
-        expect(() => JSON.parse(result)).not.toThrow();
-        expect(JSON.parse(result).username).toBe('mark');
+        // Assert
+        const parsed = JSON.parse(result) as Record<string, unknown>;
+        expect(parsed.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(parsed.username).toBe('mark');
       });
 
       it('should mask a sensitive field whose value contains an embedded quote character', () => {
@@ -695,9 +700,7 @@ describe('DataSanitizationReplacers', () => {
         });
 
         // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        );
+        const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
         expect(result.password).toBe(DEFAULT_PATTERN_MASK);
@@ -708,11 +711,8 @@ describe('DataSanitizationReplacers', () => {
         // Arrange
         const testData = '{"password":';
 
-        // Act + Assert
+        // Act + Assert — JSON.parse fails; falls back to regex path without throwing
         expect(() => stringReplacer(testData)).not.toThrow();
-        expect(() =>
-          stringReplacer(testData, { parseJsonStrings: true }),
-        ).not.toThrow();
       });
 
       it('should not throw on a JSON fragment with no opening brace', () => {
@@ -782,7 +782,7 @@ describe('DataSanitizationReplacers', () => {
         const inner = JSON.stringify({ password: 'secret', user: 'mark' });
         const outer = JSON.stringify({ log: inner, username: 'mark' });
 
-        // Act — escapedJsonMatcher targets \" delimiters in the serialised outer string
+        // Act — outer parsed via objectReplacer; 'log' string scanned and re-parsed as JSON
         const result = JSON.parse(stringReplacer(outer) as string);
 
         // Assert
@@ -790,15 +790,14 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask inner sensitive fields in double-encoded JSON when JSON string parsing is enabled', () => {
+      it('should mask sensitive fields in the inner JSON of a double-encoded string when JSON string parsing is disabled', () => {
         // Arrange
         const inner = JSON.stringify({ password: 'secret', user: 'mark' });
         const outer = JSON.stringify({ log: inner, username: 'mark' });
 
-        // Act — parseJsonStrings parses the outer object; the 'log' string value
-        // is sanitized through the regex path which catches the escaped JSON
+        // Act — regex path: escapedJsonMatcher targets \" delimiters in the serialised outer string
         const result = JSON.parse(
-          stringReplacer(outer, { parseJsonStrings: true }) as string,
+          stringReplacer(outer, { parseJsonStrings: false }) as string,
         );
 
         // Assert
@@ -929,12 +928,9 @@ describe('DataSanitizationReplacers', () => {
 
         // Act + Assert
         expect(() => stringReplacer(level3)).not.toThrow();
-        expect(() =>
-          stringReplacer(level3, { parseJsonStrings: true }),
-        ).not.toThrow();
       });
 
-      it('should mask string values and leave non-string sensitive field values unchanged', () => {
+      it('should mask string values and leave non-string sensitive field values unchanged when JSON string parsing is disabled', () => {
         // Arrange — mixed-type array: same key with different value types across objects
         const testData = JSON.stringify([
           { password: 'string-secret' },
@@ -942,11 +938,10 @@ describe('DataSanitizationReplacers', () => {
           { username: 'mark' },
         ]);
 
-        // Act
-        const result = JSON.parse(stringReplacer(testData) as string) as Record<
-          string,
-          unknown
-        >[];
+        // Act — regex path: can only match string-quoted values
+        const result = JSON.parse(
+          stringReplacer(testData, { parseJsonStrings: false }) as string,
+        ) as Record<string, unknown>[];
 
         // Assert — string value is masked; numeric value is left unchanged on the regex path
         expect(result[0]?.password).toBe(DEFAULT_PATTERN_MASK);
@@ -954,7 +949,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result[2]?.username).toBe('mark');
       });
 
-      it('should mask sensitive field values regardless of their type when JSON string parsing is enabled', () => {
+      it('should mask sensitive field values regardless of their type', () => {
         // Arrange
         const testData = JSON.stringify([
           { password: 'string-secret' },
@@ -962,9 +957,10 @@ describe('DataSanitizationReplacers', () => {
         ]);
 
         // Act
-        const result = JSON.parse(
-          stringReplacer(testData, { parseJsonStrings: true }) as string,
-        ) as Record<string, unknown>[];
+        const result = JSON.parse(stringReplacer(testData) as string) as Record<
+          string,
+          unknown
+        >[];
 
         // Assert
         expect(result[0]?.password).toBe(DEFAULT_PATTERN_MASK);

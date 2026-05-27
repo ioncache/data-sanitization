@@ -21,6 +21,19 @@ describe('pino-hook', () => {
       expect(result).toBe(clean);
     });
 
+    it('should not append a trailing newline when the sanitized output already ends with one', () => {
+      // Arrange
+      // parseJsonStrings: false forces the regex path, which preserves the
+      // trailing \n in the output; the hook must not double-append it.
+      const hook = createSanitizeLogLine({ parseJsonStrings: false });
+
+      // Act
+      const result = hook(clean);
+
+      // Assert
+      expect(result).toBe(clean);
+    });
+
     it('should sanitize a sensitive field and return a masked line', () => {
       // Arrange
       const hook = createSanitizeLogLine();
