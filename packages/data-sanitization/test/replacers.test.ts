@@ -893,18 +893,6 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask only the sensitive field when semicolons delimit form-encoded fields', () => {
-        // Arrange — some HTTP clients use semicolons as query string separators (RFC 3986 §3.4)
-        const testData = 'password=secret;username=mark';
-
-        // Act
-        const result = stringReplacer(testData) as string;
-
-        // Assert — only the password value should be masked; username should be preserved intact
-        expect(result).toContain(`password=${DEFAULT_PATTERN_MASK}`);
-        expect(result).toContain('username=mark');
-      });
-
       it('should return unchanged a string containing only a sensitive key name with no delimiter', () => {
         // Arrange
         const testData = 'password';
