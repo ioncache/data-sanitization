@@ -686,9 +686,10 @@ describe('DataSanitizationReplacers', () => {
           parseJsonStrings: false,
         }) as string;
 
-        // Assert — output must remain valid JSON with non-sensitive fields preserved
-        expect(() => JSON.parse(result)).not.toThrow();
-        expect(JSON.parse(result).username).toBe('mark');
+        // Assert
+        const parsed = JSON.parse(result) as Record<string, unknown>;
+        expect(parsed.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(parsed.username).toBe('mark');
       });
 
       it('should mask a sensitive field whose value contains an embedded quote character', () => {
