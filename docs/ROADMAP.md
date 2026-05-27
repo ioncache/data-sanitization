@@ -256,6 +256,27 @@ Concrete evidence of user impact should drive timing. Signals to watch for:
   closed issues for keywords like `class`, `instance`, or `non-plain`. A cluster
   of independent requests is the clearest signal that the work is justified.
 
+### Convenience Preset Helper
+
+The four named pattern groups (`credentialPatterns`, `headerPatterns`, `piiPatterns`,
+`phiPatterns`) are already exported. A future addition could export a pre-composed helper —
+for example a `buildPreset` function or a `sensitiveDataPatterns` constant that combines
+groups — to reduce configuration mistakes for common use cases (PII opt-in, strict privacy
+removal). Collect signals before adding API surface: watch for repeated questions about how
+to combine pattern groups or requests for a single "include everything" option.
+
+### Additional Adversarial Test Coverage
+
+The adversarial test suite (PR #319) covers key regex edge cases. Potential gaps to revisit
+if user reports emerge:
+
+- Large stack traces with embedded credentials (performance + correctness)
+- `Map` and `Set` instances with sensitive object keys (`sanitizeCollections: true` path)
+- Deeply nested JSON strings within JSON strings (escaped JSON path)
+
+Track via GitHub Issues; add coverage when a concrete failure is reported rather than
+speculatively.
+
 ## Planning Workflow
 
 When a roadmap item becomes concrete implementation work, create a new numbered

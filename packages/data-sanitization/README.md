@@ -41,7 +41,7 @@ sanitizeData(input);
 - Zero runtime dependencies, with compiled JS and full TypeScript declarations
 - Sanitizes nested structures at any depth, preserving types and class instances
 - Matches sensitive field names across any data shape without requiring exact path declarations
-- Handles circular references safely
+- Detects circular references and throws without leaking input — never silently returns partial data
 - Sanitization errors never expose the original input payload
 - Drop-in adapters for pino and winston via [`data-sanitization-log-providers`](https://www.npmjs.com/package/data-sanitization-log-providers)
 
@@ -71,13 +71,24 @@ If you control your data shape exactly and need maximum throughput, reach for
 [fast-redact](https://github.com/davidmarkclements/fast-redact). If you need to sanitize data you don't fully control,
 `data-sanitization` is the right tool.
 
-> [!NOTE]
-> **Best-effort by design.** `data-sanitization` is a defensive layer that reduces accidental
-> leakage — it is not a compliance guarantee. Pattern-based sanitization will miss sensitive values
-> when key names don't match the configured patterns, values appear in unsupported formats (such as
-> numeric fields in unparsed JSON strings), or content is embedded in ways no configured matcher
-> recognizes. Use it to catch what might otherwise slip through, not as a substitute for access
-> controls or data-handling policies.
+## Scope and limitations
+
+`data-sanitization` is a **best-effort defensive layer**, not a security boundary or compliance
+proof.
+
+It will miss sensitive data when:
+
+- A field name is not covered by the configured patterns
+- Values appear in unsupported serialization formats (binary blobs, protocol buffers, custom
+  encoding)
+- Sensitive content is embedded inside values in ways the configured matchers cannot recognize
+- The input arrives in a form `sanitizeData` cannot introspect (encrypted payloads, opaque strings)
+
+Masking also leaks that a field is present and sensitive. If minimizing that signal matters, use
+`removeMatches: true` rather than the default mask.
+
+Use `data-sanitization` to catch accidental leakage in logs and request payloads — not as a
+substitute for access controls, network security, or data-handling policies.
 
 ## Log provider integrations
 
@@ -110,6 +121,7 @@ for usage examples and configuration options.
   - [Before / After](#before--after)
   - [Highlights](#highlights)
   - [Why not fast-redact or pino-redact?](#why-not-fast-redact-or-pino-redact)
+  - [Scope and limitations](#scope-and-limitations)
   - [Log provider integrations](#log-provider-integrations)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
@@ -120,6 +132,7 @@ for usage examples and configuration options.
     - [Parse JSON strings](#parse-json-strings)
     - [Remove fields instead of masking](#remove-fields-instead-of-masking)
     - [Sanitize PII and PHI with custom patterns](#sanitize-pii-and-phi-with-custom-patterns)
+    - [Common configurations](#common-configurations)
     - [Sanitize Maps and Sets](#sanitize-maps-and-sets)
   - [Options](#options)
   - [Default patterns](#default-patterns)
@@ -288,6 +301,48 @@ sanitizeData(patient, {
   useDefaultPatterns: false,
 });
 // => { accountId: 'acct_123' }
+```
+
+### Common configurations
+
+#### Credentials and auth headers only (the default)
+
+No configuration needed. Out of the box, `sanitizeData` covers common credential fields and HTTP
+authentication headers:
+
+```typescript
+sanitizeData({ password: 'secret', token: 'abc', username: 'mark' });
+// => { password: '**********', token: '**********', username: 'mark' }
+```
+
+#### Add PII patterns
+
+```typescript
+import { sanitizeData, piiPatterns } from 'data-sanitization';
+
+sanitizeData(data, { customPatterns: piiPatterns });
+```
+
+#### Add PHI patterns
+
+```typescript
+import { sanitizeData, phiPatterns } from 'data-sanitization';
+
+sanitizeData(data, { customPatterns: phiPatterns });
+```
+
+#### Strict privacy removal
+
+Masking reveals that a field is sensitive. Removal is more appropriate when field presence itself
+must not appear in logs:
+
+```typescript
+import { sanitizeData, piiPatterns, phiPatterns } from 'data-sanitization';
+
+sanitizeData(data, {
+  customPatterns: [...piiPatterns, ...phiPatterns],
+  removeMatches: true,
+});
 ```
 
 ### Sanitize Maps and Sets
@@ -539,7 +594,10 @@ original input payload.
 
 `sanitizeData` dispatches on the input type and applies the configured patterns and matchers accordingly:
 
-1. **String input** is sanitized directly via regex replacement with the configured matchers.
+1. **String input**: by default, valid JSON object and array strings are parsed and sanitized
+   the same way as object input (see item 2 below), then re-serialized with `JSON.stringify`.
+   Non-JSON strings, and strings when `parseJsonStrings: false` is set, are sanitized directly
+   via regex replacement with the configured matchers.
 2. **Object input** is sanitized recursively by key name without JSON
    serialization. Sensitive keys are masked or removed regardless of whether
    their values are strings, numbers, arrays, objects, or other primitives.
