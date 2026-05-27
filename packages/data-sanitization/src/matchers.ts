@@ -86,7 +86,7 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
     return new RegExp(`${removeLeadingField}|${removeField}`, MATCHER_FLAGS);
   }
 
-  const fieldPrefix = `"${fieldName}"?:\\s*"`;
+  const fieldPrefix = `"${fieldName}"\\s*:\\s*"`;
   const maskField = `(${fieldPrefix})(?:[^"\\\\]|\\\\.)+?(")`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
