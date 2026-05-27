@@ -1,10 +1,27 @@
-import { DataSanitizationMatcher, DataSanitizationReplacer } from './types';
 import {
-  DEFAULT_FIELD_NAME_PATTERNS,
+  DataSanitizationMatcher,
+  DataSanitizationReplacer,
+  PatternEntry,
+} from './types';
+import {
+  defaultPatterns,
   DEFAULT_NUMERIC_MASK,
   DEFAULT_PATTERN_MASK,
 } from './constants';
 import defaultMatchers, { escapePattern } from './matchers';
+
+/**
+ * Normalizes a `PatternEntry` to a plain object with `match` and `strict` fields.
+ *
+ * @param entry - Pattern string or object to normalize.
+ * @returns Normalized entry with explicit `match` and `strict` values.
+ */
+const normalizeEntry = (
+  entry: PatternEntry,
+): { match: string; strict: boolean } =>
+  typeof entry === 'string'
+    ? { match: entry, strict: false }
+    : { match: entry.match, strict: entry.strict ?? false };
 
 /**
  * Builds the active pattern list from defaults and any caller-supplied patterns,
@@ -12,16 +29,16 @@ import defaultMatchers, { escapePattern } from './matchers';
  *
  * @param useDefaultPatterns - Whether to include the built-in default patterns.
  * @param customPatterns - Additional patterns to append to the active list.
- * @param ignorePatterns - Patterns to remove from the assembled list.
+ * @param ignorePatterns - Pattern match strings to remove from the assembled list.
  * @returns Combined array of field-name patterns to match against.
  */
 const buildPatterns = (
   useDefaultPatterns: boolean,
-  customPatterns?: string[],
+  customPatterns?: PatternEntry[],
   ignorePatterns?: string[],
-): string[] => {
-  const patterns = [
-    ...(useDefaultPatterns ? DEFAULT_FIELD_NAME_PATTERNS : []),
+): PatternEntry[] => {
+  const patterns: PatternEntry[] = [
+    ...(useDefaultPatterns ? defaultPatterns : []),
     ...(customPatterns ?? []),
   ];
 
@@ -30,7 +47,9 @@ const buildPatterns = (
   }
 
   const ignored = new Set(ignorePatterns.map((p) => p.toLowerCase()));
-  return patterns.filter((p) => !ignored.has(p.toLowerCase()));
+  return patterns.filter(
+    (p) => !ignored.has(normalizeEntry(p).match.toLowerCase()),
+  );
 };
 
 /**
@@ -94,13 +113,17 @@ const getMatcherId = (matcher: DataSanitizationMatcher): string => {
  */
 const buildStringScanRegexes = (
   matchers: DataSanitizationMatcher[],
-  patterns: string[],
+  patterns: PatternEntry[],
   removeMatches: boolean,
 ): StringScanRegexes => {
+  const normalizedPatterns = patterns.map(normalizeEntry);
+
   const key =
     matchers.map(getMatcherId).join('\x00') +
     '\x01' +
-    patterns.join('\x00') +
+    normalizedPatterns
+      .map(({ match, strict }) => `${match}:${strict}`)
+      .join('\x00') +
     '\x01' +
     removeMatches;
 
@@ -114,11 +137,16 @@ const buildStringScanRegexes = (
 
   const result: StringScanRegexes = {
     preFilter:
-      patterns.length > 0
-        ? new RegExp(patterns.map(escapePattern).join('|'), 'i')
+      normalizedPatterns.length > 0
+        ? new RegExp(
+            normalizedPatterns
+              .map(({ match }) => escapePattern(match))
+              .join('|'),
+            'i',
+          )
         : null,
-    regexes: patterns.flatMap((pattern) =>
-      matchers.map((matcher) => matcher(pattern, removeMatches)),
+    regexes: normalizedPatterns.flatMap(({ match, strict }) =>
+      matchers.map((matcher) => matcher(match, removeMatches, strict)),
     ),
   };
 
@@ -240,9 +268,13 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
     customPatterns,
     ignorePatterns,
   );
-  const keyMatchers = patterns.map(
-    (pattern) => new RegExp(`\\w*${escapePattern(pattern)}\\w*`, 'i'),
-  );
+  const keyMatchers = patterns.map((entry) => {
+    const { match, strict } = normalizeEntry(entry);
+    const escaped = escapePattern(match);
+    return strict
+      ? new RegExp(`^${escaped}$`, 'i')
+      : new RegExp(`[\\w-]*${escaped}[\\w-]*`, 'i');
+  });
   const { preFilter: patternPreFilter, regexes: stringRegexes } =
     scanStringValues
       ? buildStringScanRegexes(matchers, patterns, removeMatches)

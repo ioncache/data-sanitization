@@ -8,7 +8,16 @@ export type {
   DataSanitizationOutput,
   DataSanitizationReplacer,
   DataSanitizationReplacerOptions,
+  PatternEntry,
 } from './types';
+
+export {
+  credentialPatterns,
+  defaultPatterns,
+  headerPatterns,
+  phiPatterns,
+  piiPatterns,
+} from './constants';
 
 /**
  * Returns a safe type label for data passed to the sanitizer.

@@ -1,4 +1,18 @@
 /**
+ * A pattern entry for field-name matching. A plain string uses substring
+ * matching; the object form allows strict (exact) matching via `strict: true`.
+ *
+ * @example
+ * // Substring match — matches 'address', 'street_address', 'email_address'
+ * const p1: PatternEntry = 'address';
+ *
+ * @example
+ * // Strict match — matches only the exact field name 'address'
+ * const p2: PatternEntry = { match: 'address', strict: true };
+ */
+type PatternEntry = string | { match: string; strict?: boolean };
+
+/**
  * DataSanitizationMatchers are regex matchers to test against field names in data.
  *
  * They need to be global and case insensitive to ensure all fields that match
@@ -6,6 +20,7 @@
  *
  * @param pattern - Field-name pattern used to create the matcher.
  * @param remove - Whether the matcher should support removal instead of masking.
+ * @param strict - When true, matches only the exact field name rather than as a substring.
  * @returns A regular expression that matches sensitive fields for the pattern.
  * @throws {Error} If the matcher cannot create a regular expression for the pattern.
  *
@@ -14,7 +29,11 @@
  * matcher('password').test('password=secret');
  * // => true
  */
-type DataSanitizationMatcher = (pattern: string, remove?: boolean) => RegExp;
+type DataSanitizationMatcher = (
+  pattern: string,
+  remove?: boolean,
+  strict?: boolean,
+) => RegExp;
 
 interface DataSanitizationReplacerOptions {
   /**
@@ -23,10 +42,11 @@ interface DataSanitizationReplacerOptions {
    */
   customMatchers?: DataSanitizationMatcher[];
   /**
-   * Array of patterns to use in addition or in place
-   * of the built-in default patterns
+   * Array of patterns to use in addition or in place of the built-in default
+   * patterns. Accepts plain strings (substring match) or `PatternEntry` objects
+   * with `strict: true` for exact field-name matching.
    */
-  customPatterns?: string[];
+  customPatterns?: PatternEntry[];
   /**
    * A number to use as a mask for number-typed field values in place of the
    * built-in default numeric mask
@@ -145,4 +165,5 @@ export {
   DataSanitizationOutput,
   DataSanitizationReplacer,
   DataSanitizationReplacerOptions,
+  PatternEntry,
 };

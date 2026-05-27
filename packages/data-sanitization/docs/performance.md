@@ -236,10 +236,11 @@ reuse the cache and pay no compile cost.
 | Warm cache (same options each call)  | ~451,000 | ~0.002  |
 | Cold start (unique options per call) | ~14,000  | ~0.070  |
 
-The first call is ~32× slower than a warm call due to regex compilation.
-In steady-state server usage this cost is paid once per process lifetime and
-is negligible. It becomes visible only in tests or scripts that create many
-distinct option configurations (e.g. per-request custom patterns).
+The first call is significantly slower than a warm call due to regex
+compilation (typically 15–32×, hardware-dependent). In steady-state server
+usage this cost is paid once per process lifetime and is negligible. It becomes
+visible only in tests or scripts that create many distinct option
+configurations (e.g. per-request custom patterns).
 
 See [Cache memory growth](#cache-memory-growth) below for the memory
 implication of many distinct configurations.
@@ -248,8 +249,7 @@ implication of many distinct configurations.
 
 `removeMatches: true` deletes matched fields from objects and matched
 key=value pairs from strings instead of masking them. The cost is similar to
-masking for objects but slightly higher for string inputs due to regex
-replacement pattern differences.
+masking for both objects and strings.
 
 <table>
   <thead>
@@ -295,9 +295,9 @@ replacement pattern differences.
 </table>
 
 For objects, removal and masking are nearly equivalent — both write a result
-object with the same traversal cost. For strings, removal is 10–20% slower
-because the match-and-remove regex path involves different replacement
-semantics than the `$1<mask>$2` substitution.
+object with the same traversal cost. For strings, removal cost is comparable
+to masking; the exact relative overhead varies with input and is within
+benchmark noise at typical payload sizes.
 
 ## String workloads
 
@@ -416,16 +416,17 @@ In steady-state usage — a fixed configuration, possibly with a static list of
 
 If `customPatterns` vary per call (e.g. injected from user input or request
 data), entries will cycle through the cache and every call will pay the
-cold-start regex compilation cost (~32× slower than a warm call). In that
-scenario, prebuild the options object once (or a small set of them) and reuse
-it across calls. Or set `scanStringValues: false`, which bypasses the cache
-entirely.
+cold-start regex compilation cost (typically 15–32× slower than a warm call,
+depending on pattern count and hardware). In that scenario, prebuild the
+options object once (or a small set of them) and reuse it across calls. Or set
+`scanStringValues: false`, which bypasses the cache entirely.
 
-### Form-encoded matcher and multiline strings
+### Cookie and form-encoded matcher and multiline strings
 
-The built-in form-encoded matcher uses `[^\n&]*` to match a field value —
-stopping at either an `&` delimiter or a newline. This means content on lines
-after a matched value is preserved:
+The built-in `cookieAndFormEncodedMatcher` uses `[^\r\n&;]*` to match a field
+value — stopping at `&`, `;`, `\r`, or `\n`. This means content on lines after
+a matched value is preserved, and the two separator styles (URL form-encoded
+`&` and HTTP Cookie `;`) do not bleed into each other:
 
 ```text
 Input:  "Error: auth failed — api_key=hunter2\n    at foo (bar.js:10)"

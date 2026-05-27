@@ -6,12 +6,12 @@ import { describe, expect, it } from 'vitest';
 import {
   escapedJsonMatcher,
   escapePattern,
-  formEncodedMatcher,
+  cookieAndFormEncodedMatcher,
   jsonMatcher,
 } from '../src/matchers';
 
 describe('DataSanitizationMatchers', () => {
-  describe('formEncodedMatcher', () => {
+  describe('cookieAndFormEncodedMatcher', () => {
     it('should find fields that have names that match the pattern', () => {
       // Arrange
       const testPattern = 'password';
@@ -21,7 +21,7 @@ describe('DataSanitizationMatchers', () => {
         username: 'bar',
       };
       const testData = queryString.stringify(testObject);
-      const matcher = formEncodedMatcher(testPattern);
+      const matcher = cookieAndFormEncodedMatcher(testPattern);
       const allMatches: Array<string[]> = [];
 
       // Act
@@ -38,7 +38,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match colon-separated field values', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'password:secret';
 
       // Act
@@ -51,7 +51,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match form values containing non-delimiter punctuation', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'password=abc-123%2Ba/b.c:z+q&username=mark';
 
       // Act
@@ -66,7 +66,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match case-insensitively', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'PASSWORD=foo&Password=bar';
 
       // Act
@@ -78,7 +78,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match fields with the pattern as a substring', () => {
       // Arrange
-      const matcher = formEncodedMatcher('secret');
+      const matcher = cookieAndFormEncodedMatcher('secret');
       const testData = 'client_secret_key=abc&name=bob';
 
       // Act
@@ -91,7 +91,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should not match fields that do not contain the pattern', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'username=foo&email=bar';
 
       // Act
@@ -103,7 +103,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should remove matched fields and their values from the string', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password', true);
+      const matcher = cookieAndFormEncodedMatcher('password', true);
       const testData = 'db_password=baz&username=bar&password=foo';
 
       // Act
@@ -115,7 +115,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should remove the field when it is the only entry in the string', () => {
       // Arrange
-      const matcher = formEncodedMatcher('token', true);
+      const matcher = cookieAndFormEncodedMatcher('token', true);
       const testData = 'token=abc';
 
       // Act
@@ -127,7 +127,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should remove the field even when its value contains special characters', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password', true);
+      const matcher = cookieAndFormEncodedMatcher('password', true);
       const testData = 'password=abc-123%2Ba/b.c:z+q&username=mark';
 
       // Act
@@ -139,7 +139,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should stop matching at a newline without consuming lines that follow', () => {
       // Arrange
-      const matcher = formEncodedMatcher('api_key');
+      const matcher = cookieAndFormEncodedMatcher('api_key');
       const testData =
         'api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)';
 
@@ -154,7 +154,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should mask a field value and preserve lines that follow it', () => {
       // Arrange
-      const matcher = formEncodedMatcher('api_key');
+      const matcher = cookieAndFormEncodedMatcher('api_key');
       const testData =
         'api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)';
       const mask = '**********';
@@ -170,7 +170,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should mask a field value when & follows on the same line and preserve subsequent lines', () => {
       // Arrange
-      const matcher = formEncodedMatcher('api_key');
+      const matcher = cookieAndFormEncodedMatcher('api_key');
       const testData =
         'api_key=hunter2&region=us-east-1\n    at authenticate (/app/src/auth.js:89:15)';
       const mask = '**********';
@@ -186,7 +186,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should remove the field and preserve lines that follow it', () => {
       // Arrange
-      const matcher = formEncodedMatcher('api_key', true);
+      const matcher = cookieAndFormEncodedMatcher('api_key', true);
       const testData =
         'api_key=hunter2\n    at authenticate (/app/src/auth.js:89:15)';
 
@@ -199,7 +199,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should stop at Windows-style line endings without including the carriage return', () => {
       // Arrange
-      const matcher = formEncodedMatcher('api_key');
+      const matcher = cookieAndFormEncodedMatcher('api_key');
       const testData =
         'api_key=hunter2\r\n    at authenticate (/app/src/auth.js:89:15)';
 
@@ -213,7 +213,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should mask a field value and preserve Windows-style lines that follow it', () => {
       // Arrange
-      const matcher = formEncodedMatcher('api_key');
+      const matcher = cookieAndFormEncodedMatcher('api_key');
       const testData =
         'api_key=hunter2\r\n    at authenticate (/app/src/auth.js:89:15)';
       const mask = '**********';
@@ -229,7 +229,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match a field with an empty value', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'password=&username=mark';
 
       // Act
@@ -241,7 +241,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should treat a URL-encoded ampersand as part of the value and not as a delimiter', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'password=a%26b&username=mark';
 
       // Act
@@ -254,7 +254,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match a value containing base64 padding characters', () => {
       // Arrange
-      const matcher = formEncodedMatcher('token');
+      const matcher = cookieAndFormEncodedMatcher('token');
       const testData = 'token=abc123==&username=mark';
 
       // Act
@@ -267,7 +267,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should not treat a semicolon as a field delimiter', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'password=secret;username=mark';
 
       // Act
@@ -280,7 +280,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match a field with a very long value', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const longValue = 'x'.repeat(10_000);
       const testData = `password=${longValue}&username=mark`;
 
@@ -294,7 +294,7 @@ describe('DataSanitizationMatchers', () => {
 
     it('should match a field whose value contains a tab character', () => {
       // Arrange
-      const matcher = formEncodedMatcher('password');
+      const matcher = cookieAndFormEncodedMatcher('password');
       const testData = 'password=sec\tret&username=mark';
 
       // Act
@@ -302,6 +302,119 @@ describe('DataSanitizationMatchers', () => {
 
       // Assert — tab is not in the stop-character set; should be captured as part of value
       expect(allMatches.length).toBe(1);
+    });
+
+    describe('with cookie-style semicolon-separated input', () => {
+      it('should mask a sensitive field in a cookie string', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token');
+        const testData = 'session_token=abc123; user=mark';
+
+        // Act
+        const result = testData.replace(matcher, '$1**********$2');
+
+        // Assert
+        expect(result).toBe('session_token=**********; user=mark');
+      });
+
+      it('should preserve non-sensitive cookie pairs when masking', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token');
+        const testData = 'user=mark; session_token=abc; theme=dark';
+
+        // Act
+        const result = testData.replace(matcher, '$1**********$2');
+
+        // Assert
+        expect(result).toBe('user=mark; session_token=**********; theme=dark');
+      });
+
+      it('should remove a sensitive cookie field and leave others intact', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token', true);
+        const testData = 'user=mark; session_token=abc; theme=dark';
+
+        // Act
+        const result = testData.replace(matcher, '');
+
+        // Assert
+        expect(result).toBe('user=mark; theme=dark');
+      });
+
+      it('should match a cookie field at the end of the string with no trailing semicolon', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token');
+        const testData = 'user=mark; auth_token=xyz';
+
+        // Act
+        const result = testData.replace(matcher, '$1**********$2');
+
+        // Assert
+        expect(result).toBe('user=mark; auth_token=**********');
+      });
+
+      it('should match a cookie field with an empty value', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token');
+        const testData = 'session_token=; user=mark';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(1);
+      });
+
+      it('should not consume an ampersand as part of a cookie value', () => {
+        // Arrange — form-encoded field follows a cookie-style masked field
+        const matcher = cookieAndFormEncodedMatcher('token');
+        const testData = 'session_token=abc; user=mark&extra=data';
+
+        // Act
+        const result = testData.replace(matcher, '$1**********$2');
+
+        // Assert — &extra=data is preserved, not consumed
+        expect(result).toContain('user=mark');
+        expect(result).toContain('extra=data');
+      });
+    });
+
+    describe('with strict matching', () => {
+      it('should match only the exact field name when strict is true', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token', false, true);
+        const testData = 'token=abc&username=mark';
+
+        // Act
+        const result = testData.replace(matcher, '$1**********$2');
+
+        // Assert
+        expect(result).toBe('token=**********&username=mark');
+      });
+
+      it('should not match a field whose name only contains the pattern as a substring when strict is true', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token', false, true);
+        const testData = 'session_token=abc&username=mark';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(0);
+      });
+
+      it('should match substring field names when strict is false (default)', () => {
+        // Arrange
+        const matcher = cookieAndFormEncodedMatcher('token');
+        const testData = 'session_token=abc&username=mark';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(1);
+      });
     });
   });
 
@@ -630,6 +743,44 @@ describe('DataSanitizationMatchers', () => {
       // Assert
       expect(allMatches.length).toBe(0);
     });
+
+    describe('with strict matching', () => {
+      it('should match only the exact field name when strict is true', () => {
+        // Arrange
+        const matcher = jsonMatcher('password', false, true);
+        const testData = '{"password":"secret"}';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(1);
+      });
+
+      it('should not match a field whose name contains the pattern as a substring when strict is true', () => {
+        // Arrange
+        const matcher = jsonMatcher('password', false, true);
+        const testData = '{"db_password":"secret"}';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(0);
+      });
+
+      it('should match substring field names when strict is false', () => {
+        // Arrange
+        const matcher = jsonMatcher('password');
+        const testData = '{"db_password":"secret"}';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(1);
+      });
+    });
   });
 
   describe('escapedJsonMatcher', () => {
@@ -794,6 +945,44 @@ describe('DataSanitizationMatchers', () => {
 
       // Assert
       expect(allMatches.length).toBe(0);
+    });
+
+    describe('with strict matching', () => {
+      it('should match only the exact field name when strict is true', () => {
+        // Arrange
+        const matcher = escapedJsonMatcher('password', false, true);
+        const testData = '\\"password\\":\\"secret\\"';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(1);
+      });
+
+      it('should not match a field whose name only contains the pattern as a substring when strict is true', () => {
+        // Arrange
+        const matcher = escapedJsonMatcher('password', false, true);
+        const testData = '\\"db_password\\":\\"secret\\"';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(0);
+      });
+
+      it('should match substring field names when strict is false (default)', () => {
+        // Arrange
+        const matcher = escapedJsonMatcher('password');
+        const testData = '\\"db_password\\":\\"secret\\"';
+
+        // Act
+        const allMatches = [...testData.matchAll(matcher)];
+
+        // Assert
+        expect(allMatches.length).toBe(1);
+      });
     });
   });
 
