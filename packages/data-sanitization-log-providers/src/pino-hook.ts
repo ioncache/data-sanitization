@@ -35,6 +35,7 @@ function createSanitizeLogLine(
   } = options;
 
   return function sanitizeLogLine(s: string): string {
+    const endsWithNewline = s.endsWith('\n');
     let result: ReturnType<typeof sanitizeLine>;
     try {
       result = sanitizeLine(s, sanitizeOptions, allowedFields);
@@ -46,10 +47,11 @@ function createSanitizeLogLine(
     }
 
     const { sanitized, warning } = result;
-    if (warning) {
-      return warning + '\n' + sanitized;
+    const output = warning ? warning + '\n' + sanitized : sanitized;
+    if (endsWithNewline && !output.endsWith('\n')) {
+      return output + '\n';
     }
-    return sanitized;
+    return output;
   };
 }
 
