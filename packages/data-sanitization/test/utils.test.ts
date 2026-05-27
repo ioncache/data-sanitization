@@ -18,7 +18,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual([]);
     });
 
-    it('should return top-level changed key', () => {
+    it('should return the key name when the changed field is at the root level', () => {
       // Arrange
       const original = { email: 'a@b.com', msg: 'hi' };
       const sanitized = { email: '**********', msg: 'hi' };
@@ -30,7 +30,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual(['email']);
     });
 
-    it('should return dot-notation path for nested changed key', () => {
+    it('should return a dot-separated path for a changed key inside a nested object', () => {
       // Arrange
       const original = { msg: 'hi', user: { email: 'a@b.com' } };
       const sanitized = { msg: 'hi', user: { email: '**********' } };
@@ -42,7 +42,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual(['user.email']);
     });
 
-    it('should return bracket-notation paths for changed array elements', () => {
+    it('should return indexed paths for changed elements inside an array', () => {
       // Arrange
       const original = { tokens: ['abc', 'def'] };
       const sanitized = { tokens: ['**********', '**********'] };
@@ -54,7 +54,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual(['tokens[0]', 'tokens[1]']);
     });
 
-    it('should return bracket-notation path for nested field inside array element', () => {
+    it('should return an indexed path to a changed field inside an array element', () => {
       // Arrange
       const original = { users: [{ email: 'a@b.com', name: 'Alice' }] };
       const sanitized = { users: [{ email: '**********', name: 'Alice' }] };
@@ -78,7 +78,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual(['password']);
     });
 
-    it('should include bracket path for array element removed from sanitized', () => {
+    it('should report removed array elements as changed', () => {
       // Arrange
       const original = { tokens: ['abc', 'def'] };
       const sanitized = { tokens: [] };
@@ -189,7 +189,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual(['data']);
     });
 
-    it('should use bracket-only notation when an array is passed as the root', () => {
+    it('should use indexed paths when the root value is an array', () => {
       // Arrange
       const original = [{ email: 'a@b.com' }] as unknown as object;
       const sanitized = [{ email: '**********' }] as unknown as object;
@@ -201,7 +201,7 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual(['[0].email']);
     });
 
-    it('should return empty array when root-level array and object differ in type', () => {
+    it('should return an empty array when root values have incompatible types with no common keys', () => {
       // Arrange — the diff is one-directional (walks original's keys); when both
       // roots have no common keys to compare, nothing is reported
       const original = [] as unknown as object;
@@ -369,7 +369,7 @@ describe('DataSanitizationUtils', () => {
       expect(parsed.msg).toBe('sensitive data found in log entry');
     });
 
-    it('should exclude top-level key when a nested field changed', () => {
+    it('should omit the parent key when a nested field changed', () => {
       // Arrange
       const original =
         '{"level":30,"time":1,"user":{"email":"a@b.com","id":1},"msg":"hi"}';
@@ -454,7 +454,7 @@ describe('DataSanitizationUtils', () => {
       expect(parsed).not.toHaveProperty('email');
     });
 
-    it('should exclude the top-level key when direct array element values changed', () => {
+    it('should omit the parent key when array element values changed', () => {
       // Arrange
       const original =
         '{"level":30,"time":1,"tokens":["abc","def"],"msg":"hi"}';
@@ -471,7 +471,7 @@ describe('DataSanitizationUtils', () => {
       expect(parsed.time).toBe(1);
     });
 
-    it('should exclude the top-level key when a nested array element field changed', () => {
+    it('should omit the parent key when a field inside an array element changed', () => {
       // Arrange
       const original =
         '{"level":30,"time":1,"users":[{"email":"a@b.com","id":1}],"msg":"hi"}';

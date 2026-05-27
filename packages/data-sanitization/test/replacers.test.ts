@@ -23,8 +23,8 @@ const makeCustomMatcher =
 
 describe('DataSanitizationReplacers', () => {
   describe('stringReplacer', () => {
-    describe('masking', () => {
-      it('should replace values in matched field patterns with a mask string', () => {
+    describe('when masking sensitive field values', () => {
+      it('should mask values of fields matching the default patterns', () => {
         // Arrange
         const testObject = {
           db_password: 'baz',
@@ -177,7 +177,7 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('removal', () => {
+    describe('when removing sensitive fields', () => {
       it('should remove matched fields from JSON data', () => {
         // Arrange
         const testData = JSON.stringify({
@@ -249,8 +249,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('options', () => {
-      it('should return non-string input unchanged for runtime safety', () => {
+    describe('when configured with custom options', () => {
+      it('should return non-string input unchanged', () => {
         // Arrange
         const testData = { password: 'foo' } as unknown as string;
 
@@ -282,7 +282,7 @@ describe('DataSanitizationReplacers', () => {
         expect(replacedData).toContain('username=mark');
       });
 
-      it('should reuse compiled custom matcher regexes for repeated string sanitization', () => {
+      it('should reuse the compiled pattern configuration across repeated calls', () => {
         // Arrange
         let matcherCalls = 0;
         const matcher = (pattern: string): RegExp => {
@@ -312,7 +312,7 @@ describe('DataSanitizationReplacers', () => {
         expect(matcherCalls).toBe(1);
       });
 
-      it('should skip default patterns when useDefaultPatterns is false', () => {
+      it('should not mask any fields when default patterns are disabled', () => {
         // Arrange
         const testData = '{"password":"foo","username":"bar"}';
 
@@ -325,7 +325,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result).toEqual(testData);
       });
 
-      it('should skip default matchers when useDefaultMatchers is false', () => {
+      it('should not mask any fields when default matchers are disabled', () => {
         // Arrange
         const testData = '{"password":"foo","username":"bar"}';
 
@@ -360,8 +360,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('parseJsonStrings option', () => {
-      it('should leave numeric sensitive fields unmasked without the option', () => {
+    describe('when JSON string parsing is enabled', () => {
+      it('should not mask numeric sensitive field values when JSON string parsing is disabled', () => {
         // Arrange
         const testData = '{"password":12345,"username":"mark"}';
 
@@ -372,7 +372,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toBe(12345);
       });
 
-      it('should mask a numeric sensitive field when parseJsonStrings is true', () => {
+      it('should mask numeric sensitive field values', () => {
         // Arrange
         const testData = '{"password":12345,"username":"mark"}';
 
@@ -385,7 +385,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toBe(DEFAULT_NUMERIC_MASK);
       });
 
-      it('should mask a string sensitive field when parseJsonStrings is true', () => {
+      it('should mask string sensitive field values', () => {
         // Arrange
         const testData = '{"password":"secret","username":"mark"}';
 
@@ -398,7 +398,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toBe(DEFAULT_PATTERN_MASK);
       });
 
-      it('should sanitize a nested object at all depths when parseJsonStrings is true', () => {
+      it('should mask sensitive fields at all nesting depths', () => {
         // Arrange
         const testData =
           '{"user":{"password":"secret","email":"mark@example.com"},"id":1}';
@@ -414,7 +414,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.user.email).toBe('mark@example.com');
       });
 
-      it('should remove numeric sensitive fields when removeMatches is true', () => {
+      it('should remove sensitive fields including numeric ones when removal is enabled', () => {
         // Arrange
         const testData = '{"password":12345,"username":"mark"}';
 
@@ -430,7 +430,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result).toEqual({ username: 'mark' });
       });
 
-      it('should apply a custom numericMask to numeric sensitive fields when parseJsonStrings is true', () => {
+      it('should apply a custom numeric mask to number-valued sensitive fields', () => {
         // Arrange
         const testData = '{"password":12345}';
 
@@ -446,7 +446,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toBe(0);
       });
 
-      it('should sanitize a top-level JSON array when parseJsonStrings is true', () => {
+      it('should mask sensitive fields in a JSON array string', () => {
         // Arrange
         const testData = '[{"password":"secret"},{"username":"mark"}]';
 
@@ -461,7 +461,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result[1].username).toBe('mark');
       });
 
-      it('should fall back to regex for non-JSON strings when parseJsonStrings is true', () => {
+      it('should mask form-encoded values in non-JSON strings', () => {
         // Arrange
         const testData = 'password=secret&username=mark';
 
@@ -474,7 +474,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result).toContain(`password=${DEFAULT_PATTERN_MASK}`);
       });
 
-      it('should fall back to regex for invalid JSON when parseJsonStrings is true', () => {
+      it('should mask sensitive fields in malformed JSON strings', () => {
         // Arrange
         const testData = '{"password":"secret"';
 
@@ -487,7 +487,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result).toContain(`"password":"${DEFAULT_PATTERN_MASK}"`);
       });
 
-      it('should leave a valid JSON primitive string unchanged when parseJsonStrings is true', () => {
+      it('should leave a JSON primitive string unchanged', () => {
         // Arrange
         const testData = '"hello world"';
 
@@ -536,8 +536,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('adversarial string inputs', () => {
-      it('should mask a boolean sensitive field value on the regex path', () => {
+    describe('with edge case string inputs', () => {
+      it('should mask a sensitive field whose value is a boolean', () => {
         // Arrange
         const testData = '{"password":true,"username":"mark"}';
 
@@ -549,7 +549,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a boolean sensitive field value when parseJsonStrings is true', () => {
+      it('should mask a sensitive field whose value is a boolean when JSON string parsing is enabled', () => {
         // Arrange
         const testData = '{"password":true,"username":"mark"}';
 
@@ -563,7 +563,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a null sensitive field value on the regex path', () => {
+      it('should mask a sensitive field whose value is null', () => {
         // Arrange
         const testData = '{"password":null,"username":"mark"}';
 
@@ -575,7 +575,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a null sensitive field value when parseJsonStrings is true', () => {
+      it('should mask a sensitive field whose value is null when JSON string parsing is enabled', () => {
         // Arrange
         const testData = '{"password":null,"username":"mark"}';
 
@@ -589,7 +589,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask an array sensitive field value on the regex path', () => {
+      it('should mask a sensitive field whose value is an array', () => {
         // Arrange
         const testData = '{"token":["a","b","c"],"username":"mark"}';
 
@@ -601,7 +601,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask an array sensitive field value when parseJsonStrings is true', () => {
+      it('should mask a sensitive field whose value is an array when JSON string parsing is enabled', () => {
         // Arrange
         const testData = '{"token":["a","b","c"],"username":"mark"}';
 
@@ -615,7 +615,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask an object sensitive field value on the regex path', () => {
+      it('should mask a sensitive field whose value is a nested object', () => {
         // Arrange
         const testData = '{"token":{"nested":"value"},"username":"mark"}';
 
@@ -627,7 +627,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask an object sensitive field value when parseJsonStrings is true', () => {
+      it('should mask a sensitive field whose value is a nested object when JSON string parsing is enabled', () => {
         // Arrange
         const testData = '{"token":{"nested":"value"},"username":"mark"}';
 
@@ -653,7 +653,7 @@ describe('DataSanitizationReplacers', () => {
         expect(JSON.parse(result).username).toBe('mark');
       });
 
-      it('should mask an empty string sensitive field value when parseJsonStrings is true', () => {
+      it('should mask a sensitive field whose value is an empty string', () => {
         // Arrange
         const testData = '{"password":"","username":"mark"}';
 
@@ -682,7 +682,7 @@ describe('DataSanitizationReplacers', () => {
         expect(JSON.parse(result).username).toBe('mark');
       });
 
-      it('should mask a JSON value containing an escaped quote when parseJsonStrings is true', () => {
+      it('should mask a sensitive field whose value contains an embedded quote character', () => {
         // Arrange
         const testData = JSON.stringify({
           password: 'sec"ret',
@@ -785,7 +785,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask inner sensitive fields in double-encoded JSON when parseJsonStrings is true', () => {
+      it('should mask inner sensitive fields in double-encoded JSON when JSON string parsing is enabled', () => {
         // Arrange
         const inner = JSON.stringify({ password: 'secret', user: 'mark' });
         const outer = JSON.stringify({ log: inner, username: 'mark' });
@@ -941,7 +941,7 @@ describe('DataSanitizationReplacers', () => {
         ).not.toThrow();
       });
 
-      it('should mask both string and number values for the same key pattern on the regex path', () => {
+      it('should mask sensitive field values regardless of their type', () => {
         // Arrange — mixed-type array: same key with different value types across objects
         const testData = JSON.stringify([
           { password: 'string-secret' },
@@ -961,7 +961,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result[2]?.username).toBe('mark');
       });
 
-      it('should mask both string and number values for the same key pattern when parseJsonStrings is true', () => {
+      it('should mask sensitive field values regardless of their type when JSON string parsing is enabled', () => {
         // Arrange
         const testData = JSON.stringify([
           { password: 'string-secret' },
@@ -981,8 +981,8 @@ describe('DataSanitizationReplacers', () => {
   });
 
   describe('objectReplacer', () => {
-    describe('masking', () => {
-      it('should mask sensitive object keys with non-string values', () => {
+    describe('when masking sensitive field values', () => {
+      it('should mask sensitive fields regardless of value type', () => {
         // Arrange
         const testData = {
           api_key: ['a', 'b'],
@@ -1034,7 +1034,7 @@ describe('DataSanitizationReplacers', () => {
         });
       });
 
-      it('should mask sensitive keys in deeply nested objects', () => {
+      it('should mask sensitive fields at any nesting depth', () => {
         // Arrange
         const testData = {
           level1: {
@@ -1075,7 +1075,7 @@ describe('DataSanitizationReplacers', () => {
         });
       });
 
-      it('should mask sensitive keys in larger arrays', () => {
+      it('should mask sensitive fields in every element of a large array', () => {
         // Arrange
         const testData = Array.from({ length: 150 }, (_unused, index) => ({
           index,
@@ -1100,7 +1100,7 @@ describe('DataSanitizationReplacers', () => {
         });
       });
 
-      it('should mask unicode sensitive object values', () => {
+      it('should mask sensitive field values that contain unicode characters', () => {
         // Arrange
         const testData = {
           password: 'paß🔐word',
@@ -1115,7 +1115,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('márk');
       });
 
-      it('should mask number-valued sensitive keys with the default numeric mask', () => {
+      it('should use the default numeric mask for number-valued sensitive fields', () => {
         // Arrange
         const testData = { password: 123, username: 'mark' };
 
@@ -1127,7 +1127,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should mask number-valued sensitive keys with a custom numericMask', () => {
+      it('should apply a custom numeric mask to number-valued sensitive fields', () => {
         // Arrange
         const testData = { token: 42, username: 'mark' };
 
@@ -1142,7 +1142,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should apply numericMask independently of patternMask', () => {
+      it('should use separate masks for numeric and string sensitive field values', () => {
         // Arrange
         const testData = { password: 123, secret: 'abc', username: 'mark' };
 
@@ -1157,7 +1157,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should leave non-sensitive number-valued keys untouched', () => {
+      it('should leave number values on non-sensitive keys unchanged', () => {
         // Arrange
         const testData = { count: 5, username: 'mark' };
 
@@ -1170,8 +1170,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('removal', () => {
-      it('should remove sensitive object keys with non-string values', () => {
+    describe('when removing sensitive fields', () => {
+      it('should remove sensitive fields regardless of value type', () => {
         // Arrange
         const testData = {
           api_key: ['a', 'b'],
@@ -1192,7 +1192,7 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('options', () => {
+    describe('when configured with custom options', () => {
       it('should return non-object input unchanged', () => {
         // Arrange
         const nonObjectInput = 'password=secret' as unknown as Record<
@@ -1230,7 +1230,7 @@ describe('DataSanitizationReplacers', () => {
         });
       });
 
-      it('should preserve non-plain objects without corrupting their type', () => {
+      it('should leave class instances unchanged while masking sensitive fields in plain objects', () => {
         // Arrange
         const date = new Date('2024-01-01');
         const testData = {
@@ -1248,7 +1248,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should preserve nested non-plain object instances', () => {
+      it('should leave class instances unchanged when they appear as nested values', () => {
         // Arrange
         class SessionRecord {
           token = 'class-token';
@@ -1274,7 +1274,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.password).toEqual(DEFAULT_PATTERN_MASK);
       });
 
-      it('should omit symbol-keyed properties from sanitized object clones', () => {
+      it('should not copy symbol-keyed properties to the sanitized output', () => {
         // Arrange
         const tokenSymbol = Symbol('token');
         const testData = {
@@ -1291,8 +1291,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('string-value scanning', () => {
-      it('should scan string values on non-sensitive keys for embedded patterns', () => {
+    describe('when scanning string values for embedded sensitive patterns', () => {
+      it('should mask sensitive patterns found inside string values on non-sensitive keys', () => {
         // Arrange
         const testData = {
           message: 'api_key=hunter2',
@@ -1307,7 +1307,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should scan string values at any nesting depth', () => {
+      it('should mask sensitive patterns found in string values at any nesting depth', () => {
         // Arrange
         const testData = {
           config: {
@@ -1326,7 +1326,7 @@ describe('DataSanitizationReplacers', () => {
         expect((result.config as Record<string, unknown>).status).toEqual('ok');
       });
 
-      it('should scan string items inside arrays under non-sensitive keys', () => {
+      it('should mask sensitive patterns in string items inside arrays', () => {
         // Arrange
         const testData = {
           logs: ['api_key=hunter2', 'safe-message'],
@@ -1342,7 +1342,7 @@ describe('DataSanitizationReplacers', () => {
         ]);
       });
 
-      it('should remove embedded patterns in string values when removeMatches is true', () => {
+      it('should remove sensitive patterns found inside string values when removal is enabled', () => {
         // Arrange
         const testData = {
           message: 'api_key=hunter2&username=mark',
@@ -1359,7 +1359,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.region).toEqual('us-east-1');
       });
 
-      it('should scan string values using custom matchers', () => {
+      it('should apply custom matchers when scanning string values for patterns', () => {
         // Arrange
         const testData = {
           authorization: 'Bearer abc123',
@@ -1396,7 +1396,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.region).toEqual('us-east-1');
       });
 
-      it('should leave string values unchanged when no patterns are configured', () => {
+      it('should leave string values unchanged when no sensitive patterns are configured', () => {
         // Arrange
         const testData = {
           message: 'api_key=hunter2',
@@ -1413,7 +1413,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should mask embedded sensitive patterns in a stack trace string and preserve stack frames', () => {
+      it('should mask sensitive patterns embedded in a stack trace while preserving the stack frames', () => {
         // Arrange
         const testData = {
           requestId: 'req-abc-123',
@@ -1432,7 +1432,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.userId).toEqual('usr-456');
       });
 
-      it('should not scan string values when scanStringValues is false', () => {
+      it('should skip string value scanning when the option is disabled', () => {
         // Arrange
         const testData = {
           message: 'api_key=hunter2',
@@ -1451,7 +1451,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toEqual('mark');
       });
 
-      it('should apply each custom matcher independently when matchers differ in captured state', () => {
+      it('should apply custom matchers independently even when they share the same factory', () => {
         // Arrange — two matchers built from the same factory with different
         // captured prefixes: matcherA targets a_-prefixed keys, matcherB targets b_-prefixed keys
         const matcherA = makeCustomMatcher('a_');
@@ -1479,7 +1479,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.log).toContain('a_key=AVALUE');
       });
 
-      it('should produce correct results when a config is reused after many other configs have been used', () => {
+      it('should produce correct results when the same configuration is used again after many others', () => {
         // Arrange — fill the cache past the cap with distinct configs
         const testData = {
           log: 'custom_0=secret&other=safe',
@@ -1506,8 +1506,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('Map sanitization', () => {
-      it('should pass through Map unchanged when sanitizeCollections is not enabled', () => {
+    describe('with Map collections', () => {
+      it('should leave Maps unchanged by default', () => {
         // Arrange
         const map = new Map<string, unknown>([['password', 'secret']]);
 
@@ -1518,7 +1518,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.data).toBe(map);
       });
 
-      it('should return a new Map instance when sanitizeCollections is true', () => {
+      it('should return a new Map when collection sanitization is enabled', () => {
         // Arrange
         const map = new Map<string, unknown>([['username', 'mark']]);
 
@@ -1533,7 +1533,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.data).toBeInstanceOf(Map);
       });
 
-      it('should mask string value when string key matches sensitive field pattern', () => {
+      it('should mask values whose string keys match sensitive field patterns', () => {
         // Arrange
         const map = new Map<string, unknown>([
           ['password', 'secret'],
@@ -1552,7 +1552,7 @@ describe('DataSanitizationReplacers', () => {
         expect(sanitized.get('username')).toBe('mark');
       });
 
-      it('should mask numeric value with numericMask when string key matches sensitive field pattern', () => {
+      it('should mask numeric values whose string keys match sensitive field patterns', () => {
         // Arrange
         const map = new Map<string, unknown>([['token', 42]]);
 
@@ -1567,7 +1567,7 @@ describe('DataSanitizationReplacers', () => {
         expect(sanitized.get('token')).toBe(DEFAULT_NUMERIC_MASK);
       });
 
-      it('should omit entry when removeMatches is true and string key matches', () => {
+      it('should remove entries whose keys match sensitive field patterns when removal is enabled', () => {
         // Arrange
         const map = new Map<string, unknown>([
           ['password', 'secret'],
@@ -1586,7 +1586,7 @@ describe('DataSanitizationReplacers', () => {
         expect(sanitized.get('username')).toBe('mark');
       });
 
-      it('should scan string values on non-sensitive keys for embedded patterns', () => {
+      it('should mask sensitive patterns found inside string values', () => {
         // Arrange
         const map = new Map<string, unknown>([['message', 'api_key=hunter2']]);
 
@@ -1603,7 +1603,7 @@ describe('DataSanitizationReplacers', () => {
         );
       });
 
-      it('should sanitize plain object values recursively', () => {
+      it('should mask sensitive fields in plain object values', () => {
         // Arrange
         const map = new Map<string, unknown>([
           ['data', { password: 'secret', username: 'mark' }],
@@ -1622,7 +1622,7 @@ describe('DataSanitizationReplacers', () => {
         expect(nested.username).toBe('mark');
       });
 
-      it('should sanitize object keys recursively', () => {
+      it('should mask sensitive fields inside object keys', () => {
         // Arrange
         const sensitiveKey = { id: 1, password: 'secret' };
         const map = new Map<object, string>([[sensitiveKey, 'value']]);
@@ -1641,7 +1641,7 @@ describe('DataSanitizationReplacers', () => {
         expect(sanitized.get(sanitizedKey)).toBe('value');
       });
 
-      it('should sanitize nested Maps', () => {
+      it('should mask sensitive fields in nested Maps', () => {
         // Arrange
         const inner = new Map<string, unknown>([['token', 'abc']]);
         const outer = new Map<string, unknown>([['nested', inner]]);
@@ -1664,8 +1664,8 @@ describe('DataSanitizationReplacers', () => {
       });
     });
 
-    describe('Set sanitization', () => {
-      it('should pass through Set unchanged when sanitizeCollections is not enabled', () => {
+    describe('with Set collections', () => {
+      it('should leave Sets unchanged by default', () => {
         // Arrange
         const set = new Set(['secret']);
 
@@ -1676,7 +1676,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.data).toBe(set);
       });
 
-      it('should return a new Set instance when sanitizeCollections is true', () => {
+      it('should return a new Set when collection sanitization is enabled', () => {
         // Arrange
         const set = new Set(['mark']);
 
@@ -1691,7 +1691,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.data).toBeInstanceOf(Set);
       });
 
-      it('should scan string values for embedded sensitive patterns', () => {
+      it('should mask sensitive patterns in string values', () => {
         // Arrange
         const set = new Set(['api_key=hunter2', 'safe-value']);
 
@@ -1708,7 +1708,7 @@ describe('DataSanitizationReplacers', () => {
         expect(sanitized.has('api_key=hunter2')).toBe(false);
       });
 
-      it('should sanitize plain object values recursively', () => {
+      it('should mask sensitive fields in plain object values', () => {
         // Arrange
         const obj = { password: 'secret', username: 'mark' };
         const set = new Set([obj]);
@@ -1726,7 +1726,7 @@ describe('DataSanitizationReplacers', () => {
         expect(sanitizedObj.username).toBe('mark');
       });
 
-      it('should sanitize Map values within a Set', () => {
+      it('should mask sensitive fields in Map values contained in the Set', () => {
         // Arrange
         const map = new Map<string, unknown>([['token', 'abc']]);
         const set = new Set([map]);
