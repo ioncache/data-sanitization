@@ -2,14 +2,14 @@
 
 ## Core Principles
 
-1. **Default: no comment** — Add comments only when absolutely necessary.
-2. **Only why, never what** — Explain the reason or decision, not what the code
-   does
-3. **Never comment about removed/refactored/changed code** — Comments describe
-   present code only
-4. **Never mention LLM actions** — Avoid phrases like "imported function", "removed code",
+1. **Default: no comment.** Add comments only when absolutely necessary.
+2. **Only why, never what.** Explain the reason or decision, not what the code
+   does.
+3. **Never comment about removed/refactored/changed code.** Comments describe
+   present code only.
+4. **Never mention LLM actions.** Avoid phrases like "imported function", "removed code",
    "refactored", etc.
-5. **Code should be self-documenting** — Prefer making code clearer over adding comments.
+5. **Code should be self-documenting.** Prefer making code clearer over adding comments.
 
 ## When Comments Are Allowed
 

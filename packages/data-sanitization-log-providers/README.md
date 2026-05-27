@@ -19,7 +19,7 @@ have to write the glue yourself.
 npm install data-sanitization data-sanitization-log-providers
 ```
 
-npm is used as an example — yarn, pnpm, and bun work the same way.
+npm is used as an example; yarn, pnpm, and bun work the same way.
 
 Install only the peer dependency for the logger you use:
 
@@ -29,7 +29,7 @@ npm install pino pino-abstract-transport  # for /pino-transport
 npm install winston                       # for /winston
 ```
 
-## Pino — stream write hook (`/pino-hook`)
+## Pino: stream write hook (`/pino-hook`)
 
 Runs synchronously in the main thread. Sanitizes each log line and optionally prepends a
 structured warning entry when sensitive fields are found.
@@ -61,7 +61,7 @@ contract. When a field is sanitized, a `level: 40` warning line is prepended:
 ### Error handling
 
 When `sanitizeData` throws, the default behaviour is to emit an error-level (50) JSON
-placeholder preserving `time`, `pid`, and `hostname` — the original line is not emitted.
+placeholder preserving `time`, `pid`, and `hostname`; the original line is not emitted.
 Override this with `onError`:
 
 ```typescript
@@ -73,7 +73,7 @@ createSanitizeLogLine({
 });
 ```
 
-## Pino — worker thread transport (`/pino-transport`)
+## Pino: worker thread transport (`/pino-transport`)
 
 Runs in a `pino.transport()` worker thread via `pino-abstract-transport`. Use this when you
 want process isolation or need to fan out to multiple destinations.
@@ -128,7 +128,7 @@ createSanitizingTransport({
 });
 ```
 
-**Why `emitWarning` is opt-in:** Winston formats are 1-to-1 — one `info` object produces one
+**Why `emitWarning` is opt-in:** Winston formats are 1-to-1; one `info` object produces one
 serialized `MESSAGE` string. There is no built-in way to emit a second log line from a format
 transform. This transport subclass owns the write path directly, which makes the two-line
 pattern possible. However, structured log aggregators that expect exactly one JSON object per

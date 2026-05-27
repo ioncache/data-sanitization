@@ -45,7 +45,7 @@ Root-scoped work scripts (call tools directly):
 
 ### Each package `package.json` scripts today (data-sanitization and data-sanitization-log-providers)
 
-Duplicates (same command, two names — one called by foreach, one was developer shortcut):
+Duplicates (same command, two names; one called by foreach, one was developer shortcut):
 
 - `format` / `format:src` → both `oxfmt`
 - `format:check` / `format:check:src` → both `oxfmt --check`
@@ -114,14 +114,14 @@ Removed from each package: `format:src`, `format:check:src`, `lint:code`, `lint:
 
 Three workflow files, each with path filters:
 
-**`ci-root.yml`** — triggers when root files change (no build/test, root has no code):
+**`ci-root.yml`**: triggers when root files change (no build/test, root has no code):
 
 ```text
 yarn format:check    ← root-scoped only
 yarn lint:ci         ← root-scoped only
 ```
 
-**`ci-data-sanitization.yml`** — triggers when data-sanitization or shared files change:
+**`ci-data-sanitization.yml`**: triggers when data-sanitization or shared files change:
 
 ```text
 yarn workspace data-sanitization format:check
@@ -131,7 +131,7 @@ yarn workspace data-sanitization test:coverage
 + coverage reporting steps
 ```
 
-**`ci-data-sanitization-log-providers.yml`** — triggers when log-providers, data-sanitization
+**`ci-data-sanitization-log-providers.yml`**: triggers when log-providers, data-sanitization
 (peer dep), or shared files change:
 
 ```text
@@ -511,7 +511,7 @@ Path triggers include shared files that affect this package. Shared files: `pack
 - Create: `.github/workflows/ci-data-sanitization-log-providers.yml`
 
 Path triggers include `packages/data-sanitization/**` because log-providers has
-`"data-sanitization": "workspace:*"` as a peer dependency — changes to the core package can
+`"data-sanitization": "workspace:*"` as a peer dependency; changes to the core package can
 break log-providers.
 
 - [ ] **Step 1: Create the file**

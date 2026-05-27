@@ -17,11 +17,11 @@ Before creating any files, check:
 
 ## Steps
 
-1. **Gather inputs** — Ask for:
+1. **Gather inputs**: Ask for:
    - `name`: kebab-case identifier (e.g. `run-tests`)
    - `description`: one-sentence summary shown in the skill picker
 
-2. **Create the shared file** — Create `.ai/skills/<name>.md` with this starter
+2. **Create the shared file**: Create `.ai/skills/<name>.md` with this starter
    template:
 
    ```markdown
@@ -36,7 +36,7 @@ Before creating any files, check:
    1.
    ```
 
-3. **If Copilot skills active** — Create `.github/skills/<name>/SKILL.md`:
+3. **If Copilot skills active**: Create `.github/skills/<name>/SKILL.md`:
 
    ```markdown
    ---
@@ -47,7 +47,7 @@ Before creating any files, check:
    #file:../../../.ai/skills/<name>.md
    ```
 
-4. **If Claude active** — Create `.claude/skills/<name>/SKILL.md`:
+4. **If Claude active**: Create `.claude/skills/<name>/SKILL.md`:
 
    ```markdown
    ---
@@ -61,4 +61,4 @@ Before creating any files, check:
    @../../../.ai/skills/<name>.md
    ```
 
-5. **Confirm** — Report which files were created.
+5. **Confirm**: Report which files were created.

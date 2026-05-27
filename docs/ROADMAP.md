@@ -22,7 +22,7 @@ low-friction adoption in JavaScript and TypeScript projects.
 These items should preserve existing behavior unless a bug fix requires a
 carefully documented change.
 
-### Documentation and Release Polish — completed in [#284](https://github.com/ioncache/data-sanitization/pull/284)
+### Documentation and Release Polish (completed in [#284](https://github.com/ioncache/data-sanitization/pull/284))
 
 - [x] Refresh the README opening and quick-start flow so the first successful use
       case is easy to scan.
@@ -36,7 +36,7 @@ carefully documented change.
 - [x] Update contributor documentation with Volta, supported package scripts,
       build validation, and release validation notes.
 
-### Hardening — completed in [#281](https://github.com/ioncache/data-sanitization/pull/281), [#282](https://github.com/ioncache/data-sanitization/pull/282), [#283](https://github.com/ioncache/data-sanitization/pull/283), [#285](https://github.com/ioncache/data-sanitization/pull/285)
+### Hardening (completed in [#281](https://github.com/ioncache/data-sanitization/pull/281), [#282](https://github.com/ioncache/data-sanitization/pull/282), [#283](https://github.com/ioncache/data-sanitization/pull/283), [#285](https://github.com/ioncache/data-sanitization/pull/285))
 
 - [x] Add regression coverage for Unicode sensitive values, deeply nested objects,
       larger arrays, repeated sensitive keys at different depths, custom matcher
@@ -51,7 +51,7 @@ carefully documented change.
 - [x] Treat custom matchers as trusted code for now, and defer heavier regex safety
       tooling until there is a concrete need.
 
-### Code Clarity and Quality — completed in [#280](https://github.com/ioncache/data-sanitization/pull/280), [#286](https://github.com/ioncache/data-sanitization/pull/286)
+### Code Clarity and Quality (completed in [#280](https://github.com/ioncache/data-sanitization/pull/280), [#286](https://github.com/ioncache/data-sanitization/pull/286))
 
 - [x] Extract shared option resolution so string and object sanitization do not
       drift in how they combine default and custom patterns.
@@ -65,7 +65,7 @@ carefully documented change.
 
 These items extend behavior without breaking existing contracts.
 
-### Numeric Mask for Number-Typed Sensitive Values — completed in [#298](https://github.com/ioncache/data-sanitization/pull/298)
+### Numeric Mask for Number-Typed Sensitive Values (completed in [#298](https://github.com/ioncache/data-sanitization/pull/298))
 
 - [x] Add `DEFAULT_NUMERIC_MASK = 9999999999` to `src/constants.ts`.
 - [x] Add `numericMask?: number` to `DataSanitizationReplacerOptions` in
@@ -79,7 +79,7 @@ These items extend behavior without breaking existing contracts.
       `numericMask` alongside `patternMask`.
 - [x] Update README with a `numericMask` example.
 
-### Performance Benchmarks — completed in [#299](https://github.com/ioncache/data-sanitization/pull/299)
+### Performance Benchmarks (completed in [#299](https://github.com/ioncache/data-sanitization/pull/299))
 
 Establish a performance baseline before the string-value scanning work lands,
 since that change will meaningfully increase per-object work. Benchmarks also
@@ -95,7 +95,7 @@ document intended workload characteristics for library consumers.
 - [x] Note in the benchmarks that string-value scanning and parser-first JSON
       changes should each update the suite as part of their implementation.
 
-### String-Value Scanning in Object Traversal — completed in [#300](https://github.com/ioncache/data-sanitization/pull/300)
+### String-Value Scanning in Object Traversal (completed in [#300](https://github.com/ioncache/data-sanitization/pull/300))
 
 `objectReplacer` currently matches by key name only. A field like
 `{ message: "api_key=hunter2" }` passes through untouched because `message` is
@@ -116,7 +116,7 @@ match the sensitive-key patterns.
       non-sensitive-key field.
 - [x] Run benchmarks before and after to document the per-object perf cost.
 
-### Parser-First JSON String Handling — completed in #301
+### Parser-First JSON String Handling (completed in #301)
 
 When `parseJsonStrings: true`, valid JSON object/array strings are parsed,
 sanitized via `objectReplacer`, and re-serialized. Falls back to regex for
@@ -139,20 +139,20 @@ These items extend the library into companion packages and shared utilities.
 They involve structural changes to the repository but do not affect the
 existing `data-sanitization` public API.
 
-### Utility Helpers (`/utils` subpath export) — completed in [#313](https://github.com/ioncache/data-sanitization/pull/313)
+### Utility Helpers (`/utils` subpath export) (completed in [#313](https://github.com/ioncache/data-sanitization/pull/313))
 
 Export `diffSanitizedFields` and `buildSanitizedWarning` as named exports from
 a `data-sanitization/utils` subpath. These helpers are useful in log middleware
 implementations regardless of logger and are currently only available to
 applications that inline them.
 
-- [x] `diffSanitizedFields(original, sanitized)` — recursively diffs two parsed
+- [x] `diffSanitizedFields(original, sanitized)`: recursively diffs two parsed
       log objects and returns dot-notation paths for any keys whose values changed
-- [x] `buildSanitizedWarning(originalStr, sanitizedStr)` — builds a structured
+- [x] `buildSanitizedWarning(originalStr, sanitizedStr)`: builds a structured
       warning log entry identifying which fields were sanitized, suitable for
       prepending to the sanitized log line
 
-### Monorepo Migration — completed in [#310](https://github.com/ioncache/data-sanitization/pull/310)
+### Monorepo Migration (completed in [#310](https://github.com/ioncache/data-sanitization/pull/310))
 
 Migrate the repository to a Yarn workspace monorepo to support companion
 packages. Replace the current `conventional-changelog`-based release script
@@ -160,7 +160,7 @@ with [Changesets](https://github.com/changesets/changesets) for independent
 per-package versioning. Conventional commit discipline and commitlint
 enforcement remain unchanged.
 
-### Log Provider Adapters (`data-sanitization-log-providers`) — completed in [#314](https://github.com/ioncache/data-sanitization/pull/314)
+### Log Provider Adapters (`data-sanitization-log-providers`) (completed in [#314](https://github.com/ioncache/data-sanitization/pull/314))
 
 New `data-sanitization-log-providers` workspace package with subpath exports
 for Pino (`/pino`), Winston (`/winston`), and Bunyan (`/bunyan`). Each adapter
@@ -205,15 +205,15 @@ JSON through `objectReplacer` and handles all value types correctly.
 
 Three approaches are documented in `docs/plans/018-pattern-and-matcher-additions.md`:
 
-- **Option A** — Extend `jsonMatcher` regex with a second alternative for
+- **Option A:** Extend `jsonMatcher` regex with a second alternative for
   unquoted primitives. Cannot handle arrays or nested objects (balanced bracket
   counting is beyond a single-pass regex). Changes `$1`/`$2` capture group
   semantics for the new alternative.
-- **Option B** — Auto-detect JSON in `stringReplacer` and route through
+- **Option B:** Auto-detect JSON in `stringReplacer` and route through
   `objectReplacer` unconditionally (effectively making `parseJsonStrings: true`
   the default). Handles all value types; changes behavior for all string inputs
   and has a parse-cost for non-JSON strings.
-- **Option C** — Accept the limitation and document `parseJsonStrings: true`
+- **Option C:** Accept the limitation and document `parseJsonStrings: true`
   as the correct path for JSON strings. Remove the current "Group B" tests
   that document the gap; they would instead become "known out-of-scope" notes.
 
@@ -221,7 +221,7 @@ Tests in `test/matchers.test.ts` and `test/replacers.test.ts` already document
 the current behavior; the comment in `replacers.test.ts` flags this as a v2
 decision point.
 
-### `parseJsonStrings: true` as the Default — completed in #322
+### `parseJsonStrings: true` as the Default (completed in #322)
 
 Valid JSON object and array strings are now always sanitized via `objectReplacer`
 by default (full type coverage, including numeric and boolean sensitive values),
@@ -235,8 +235,8 @@ Current behavior: non-plain objects (custom prototypes) pass through untouched.
 
 | Type              | Difficulty | Value  | Breaking Change       | Notes                                                |
 | ----------------- | ---------- | ------ | --------------------- | ---------------------------------------------------- |
-| Map               | —          | —      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
-| Set               | —          | —      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
+| Map               | -          | -      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
+| Set               | -          | -      | No (additive, opt-in) | Implemented; enabled via `sanitizeCollections: true` |
 | Date              | None       | None   | No                    | Already preserved correctly; no work needed          |
 | TypedArrays       | None       | None   | No                    | Already preserved correctly; no work needed          |
 | Class instances   | High       | Medium | Yes (without opt-in)  | v2 candidate; needs opt-in flag and prototype safety |
@@ -259,9 +259,9 @@ Concrete evidence of user impact should drive timing. Signals to watch for:
 ### Convenience Preset Helper
 
 The four named pattern groups (`credentialPatterns`, `headerPatterns`, `piiPatterns`,
-`phiPatterns`) are already exported. A future addition could export a pre-composed helper —
+`phiPatterns`) are already exported. A future addition could export a pre-composed helper,
 for example a `buildPreset` function or a `sensitiveDataPatterns` constant that combines
-groups — to reduce configuration mistakes for common use cases (PII opt-in, strict privacy
+groups, to reduce configuration mistakes for common use cases (PII opt-in, strict privacy
 removal). Collect signals before adding API surface: watch for repeated questions about how
 to combine pattern groups or requests for a single "include everything" option.
 

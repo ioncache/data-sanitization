@@ -1,4 +1,4 @@
-# 013 — Yarn Workspace Monorepo Migration
+# 013: Yarn Workspace Monorepo Migration
 
 > **For agentic workers:** Use `superpowers:using-git-worktrees` to create an
 > isolated worktree before starting, then `superpowers:executing-plans` to
@@ -18,8 +18,8 @@ alongside the core. The existing `data-sanitization` package moves to
 `scripts/release.mjs` release workflow is replaced by
 [Changesets](https://github.com/changesets/changesets), which handles
 independent per-package versioning and publishing. Conventional commit
-enforcement (commitlint + husky) remains unchanged. All tooling — TypeScript,
-vitest, oxlint, oxfmt, markdownlint — continues to run from the repo root.
+enforcement (commitlint + husky) remains unchanged. All tooling (TypeScript,
+vitest, oxlint, oxfmt, markdownlint) continues to run from the repo root.
 
 Closes #308.
 
@@ -30,7 +30,7 @@ Closes #308.
 
 ## Steps
 
-### Phase 1 — Move package source into `packages/`
+### Phase 1: Move package source into `packages/`
 
 1. Create the package directory and move source trees using `git mv` to
    preserve history:
@@ -51,11 +51,11 @@ Closes #308.
    git mv scripts/update-coverage-gist.mjs packages/data-sanitization/scripts/update-coverage-gist.mjs
    ```
 
-   Note: `tsconfig.json` is NOT moved — it becomes the shared base config.
-   `README.md` is NOT moved — it stays at root (GitHub landing page). A symlink
+   Note: `tsconfig.json` is NOT moved; it becomes the shared base config.
+   `README.md` is NOT moved; it stays at root (GitHub landing page). A symlink
    is created at `packages/data-sanitization/README.md → ../../README.md` so
    GitHub renders it in the package folder and npm includes it on publish.
-   `scripts/release.mjs` is NOT moved — it will be deleted in Phase 3.
+   `scripts/release.mjs` is NOT moved; it will be deleted in Phase 3.
    `scripts/shell_lint.sh` stays at root (referenced by `lint-staged.config.mjs`).
 
 2. Create `packages/data-sanitization/package.json`:
@@ -147,7 +147,7 @@ Closes #308.
    }
    ```
 
-5. Update `packages/data-sanitization/vitest.config.ts` — the `resolve.alias`
+5. Update `packages/data-sanitization/vitest.config.ts`: the `resolve.alias`
    path no longer refers to the repo root, it refers to the package root
    (which is the same relative structure, so no change needed). Verify it
    still reads:
@@ -160,11 +160,11 @@ Closes #308.
 
    No change required if `import.meta.dirname` resolves to the package dir.
 
-### Phase 2 — Restructure root `package.json` and `tsconfig.json`
+### Phase 2: Restructure root `package.json` and `tsconfig.json`
 
 6. Replace the root `tsconfig.json` with a base config that packages extend.
    Remove `include` (packages set their own), `noEmit`, `outDir`, and
-   `incremental` — those are package-specific:
+   `incremental`; those are package-specific:
 
    ```json
    {
@@ -246,10 +246,10 @@ Closes #308.
    ```
 
    Note: `conventional-changelog`, `conventional-changelog-conventionalcommits`,
-   and `conventional-commits-filter` are intentionally removed — they were only
+   and `conventional-commits-filter` are intentionally removed; they were only
    used by `scripts/release.mjs` which is being replaced by Changesets.
 
-### Phase 3 — Set up Changesets
+### Phase 3: Set up Changesets
 
 8. Install `@changesets/cli` (already declared in devDeps in step 7):
 
@@ -291,15 +291,15 @@ Closes #308.
    [our documentation](https://github.com/changesets/changesets/blob/main/docs/common-questions.md)
    ```
 
-10. Delete the old release script — Changesets replaces it entirely:
+10. Delete the old release script; Changesets replaces it entirely:
 
     ```bash
     git rm scripts/release.mjs
     ```
 
-### Phase 4 — Update tooling configs
+### Phase 4: Update tooling configs
 
-11. Update `.oxlintrc.json` — change `dist/**` and `coverage/**` ignore
+11. Update `.oxlintrc.json`: change `dist/**` and `coverage/**` ignore
     patterns to `**/dist/**` and `**/coverage/**` so nested package build
     and coverage output is also excluded:
 
@@ -327,7 +327,7 @@ Closes #308.
 
     ## Packages
 
-    - [`data-sanitization`](packages/data-sanitization) — core sanitization library
+    - [`data-sanitization`](packages/data-sanitization): core sanitization library
       ([npm](https://www.npmjs.com/package/data-sanitization))
 
     ## Contributing
@@ -335,7 +335,7 @@ Closes #308.
     See [CONTRIBUTING.md](CONTRIBUTING.md).
     ```
 
-13. Update `CLAUDE.md` — the Architecture section references `src/` paths and
+13. Update `CLAUDE.md`: the Architecture section references `src/` paths and
     `test/`. Update every path to include `packages/data-sanitization/`:
     - `src/matchers.ts` → `packages/data-sanitization/src/matchers.ts`
     - `src/replacers.ts` → `packages/data-sanitization/src/replacers.ts`
@@ -356,7 +356,7 @@ Closes #308.
     yarn workspace data-sanitization vitest run test/matchers.test.ts
     ```
 
-14. Update `docs/development.md` — review for any paths or commands that
+14. Update `docs/development.md`: review for any paths or commands that
     reference root-level `src/`, `test/`, or `scripts/release.mjs` and
     update accordingly. Check the release workflow section in particular;
     replace the `yarn release` documentation with the Changesets workflow:
@@ -370,7 +370,7 @@ Closes #308.
     yarn changeset:publish   # publishes to npm, creates git tags
     ```
 
-### Phase 5 — Update GitHub Actions
+### Phase 5: Update GitHub Actions
 
 15. Update `.github/workflows/ci.yml`. Three things change:
 
@@ -411,7 +411,7 @@ Closes #308.
     `yarn test:coverage`) continue to work unchanged from the root since
     the root package.json delegates these to the workspace package.
 
-### Phase 6 — Validate
+### Phase 6: Validate
 
 16. Run `yarn install` from repo root. Confirm it completes without errors
     and that `packages/data-sanitization` is recognized as a workspace
@@ -478,10 +478,10 @@ Closes #308.
     git checkout .changeset
     ```
 
-### Phase 7 — Commit
+### Phase 7: Commit
 
 22. Stage and commit all changes as one commit (this is a structural
-    migration with no behaviour change — a single commit is appropriate):
+    migration with no behaviour change; a single commit is appropriate):
 
     ```bash
     git add -A
@@ -500,12 +500,12 @@ Closes #308.
     ```bash
     git push -u origin feat/monorepo-migration
     gh pr create --title "chore: migrate to Yarn workspace monorepo with Changesets (#308)" \
-      --body "Closes #308. Structural migration only — no API or publish changes."
+      --body "Closes #308. Structural migration only; no API or publish changes."
     ```
 
 ## Relevant Files
 
-**Moved (git mv — history preserved):**
+**Moved (git mv, history preserved):**
 
 - `src/` → `packages/data-sanitization/src/`
 - `test/` → `packages/data-sanitization/test/`
@@ -524,12 +524,12 @@ Closes #308.
 - `packages/data-sanitization/tsconfig.json`
 - `.changeset/config.json`
 - `.changeset/README.md`
-- `README.md` (root — new minimal monorepo overview)
+- `README.md` (root, new minimal monorepo overview)
 
 **Updated:**
 
-- `tsconfig.json` (root — stripped to base config)
-- `package.json` (root — workspace root, Changesets scripts, removed conventional-changelog deps)
+- `tsconfig.json` (root, stripped to base config)
+- `package.json` (root, workspace root, Changesets scripts, removed conventional-changelog deps)
 - `.oxlintrc.json` (ignore patterns updated to `**/dist/**`, `**/coverage/**`)
 - `.github/workflows/ci.yml` (coverage file paths, gist script invocation)
 - `CLAUDE.md` (path references updated)
@@ -569,4 +569,4 @@ The git history preserves the old implementation if it's ever needed.
 
 **`shell_lint.sh` stays at root.** It's referenced directly by path in
 `lint-staged.config.mjs` as `'*.sh': './scripts/shell_lint.sh'`. It's not
-package-specific tooling — it lints shell scripts anywhere in the repo.
+package-specific tooling; it lints shell scripts anywhere in the repo.

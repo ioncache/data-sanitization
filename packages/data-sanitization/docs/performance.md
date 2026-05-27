@@ -13,7 +13,7 @@ Node.js 22). Run the suite yourself with `yarn bench`.
 String-value scanning (`scanStringValues: true`, the default) checks every
 non-sensitive string field for embedded patterns using a fast OR pre-filter
 before running the full regex suite. The pre-filter cost is low even when no
-pattern matches, but it is not zero — the overhead scales with the length and
+pattern matches, but it is not zero; the overhead scales with the length and
 quantity of non-sensitive string values in the input.
 
 The chart below shows the throughput reduction from enabling scanning relative
@@ -29,19 +29,19 @@ xychart-beta
 
 Key observations:
 
-- **Log objects with long strings** pay the most — a stack trace containing
+- **Log objects with long strings** pay the most: a stack trace containing
   embedded credentials incurs ~88% overhead from the full regex suite running
   on a long string. A clean stack trace (pre-filter fast-exit) still incurs
   ~18% from the pre-filter scan alone.
-- **10KB non-sensitive string values** incur ~68% overhead — the pre-filter
+- **10KB non-sensitive string values** incur ~68% overhead; the pre-filter
   must scan the full length even when it exits immediately with no match.
-- **Array-of-strings fields** (e.g. 100 log lines) pay ~47% — per-item
+- **Array-of-strings fields** (e.g. 100 log lines) pay ~47%; per-item
   pre-filter cost accumulates across all array elements.
-- **Small shallow objects** pay ~18% overhead — visible but
+- **Small shallow objects** pay ~18% overhead, visible but
   sub-millisecond (~0.002 ms/call).
-- **Large flat objects** pay ~9–10% — scanning 45–49 non-sensitive fields
+- **Large flat objects** pay ~9–10%; scanning 45–49 non-sensitive fields
   costs less per field than scanning fewer long fields.
-- **Arrays** pay only ~1–5% — the per-item pre-filter cost is negligible
+- **Arrays** pay only ~1–5%; the per-item pre-filter cost is negligible
   compared to the work of traversing each item.
 
 ## Array scaling
@@ -60,7 +60,7 @@ xychart-beta
 ```
 
 The two lines are scan enabled (lower) and scan disabled (upper). They are
-nearly indistinguishable — the ~1–5% gap is smaller than benchmark noise at this
+nearly indistinguishable; the ~1–5% gap is smaller than benchmark noise at this
 scale. The slight drop at 100k and 1M items reflects GC pressure from the
 large input array, not algorithmic degradation.
 
@@ -96,8 +96,8 @@ Rough throughput on a modern laptop (Apple M-series, Node.js 22):
     <tr>
       <td>4 sensitive keys (all)</td>
       <td>~494,000</td><td>~0.002</td>
-      <td>—</td><td>—</td>
-      <td>—</td>
+      <td>-</td><td>-</td>
+      <td>-</td>
     </tr>
     <tr>
       <td>Deeply nested (5 levels)</td>
@@ -129,8 +129,8 @@ Rough throughput on a modern laptop (Apple M-series, Node.js 22):
       <td>Many embedded matches (21 fields)</td>
       <td>20 string values all containing a pattern</td>
       <td>~14,000</td><td>~0.072</td>
-      <td>—</td><td>—</td>
-      <td>—</td>
+      <td>-</td><td>-</td>
+      <td>-</td>
     </tr>
     <tr>
       <td rowspan="2">Large flat object (50 fields)</td>
@@ -166,7 +166,7 @@ Rough throughput on a modern laptop (Apple M-series, Node.js 22):
       <td>~6%</td>
     </tr>
     <tr>
-      <td rowspan="4">Array — simple items<br>(3 fields: 1 sensitive)</td>
+      <td rowspan="4">Array: simple items<br>(3 fields: 1 sensitive)</td>
       <td>1,000 items</td>
       <td>~2,161</td><td>~0.46</td>
       <td>~2,272</td><td>~0.44</td>
@@ -191,7 +191,7 @@ Rough throughput on a modern laptop (Apple M-series, Node.js 22):
       <td>~4%</td>
     </tr>
     <tr>
-      <td rowspan="4">Array — complex items<br>(10 fields: 5 sensitive)</td>
+      <td rowspan="4">Array: complex items<br>(10 fields: 5 sensitive)</td>
       <td>1,000 items</td>
       <td>~590</td><td>~1.69</td>
       <td>~565</td><td>~1.77</td>
@@ -294,7 +294,7 @@ masking for both objects and strings.
   </tbody>
 </table>
 
-For objects, removal and masking are nearly equivalent — both write a result
+For objects, removal and masking are nearly equivalent; both write a result
 object with the same traversal cost. For strings, removal cost is comparable
 to masking; the exact relative overhead varies with input and is within
 benchmark noise at typical payload sizes.
@@ -306,7 +306,7 @@ The option only affects the object traversal path.
 
 | Workload                                        | ops/s    | ms/call | remove ops/s |
 | ----------------------------------------------- | -------- | ------- | ------------ |
-| Long JSON string (50 sensitive key/value pairs) | ~6,989   | ~0.143  | —            |
+| Long JSON string (50 sensitive key/value pairs) | ~6,989   | ~0.143  | -            |
 | Form-encoded string (1 sensitive field)         | ~102,000 | ~0.010  | ~84,000      |
 | Escaped JSON string (1 sensitive field)         | ~91,000  | ~0.011  | ~69,000      |
 
@@ -317,7 +317,7 @@ or arrays are parsed and sanitized via the object path rather than the regex
 path. The parse-and-re-serialize overhead is offset by the fact that the object
 traversal is faster than running each pattern against every matcher across the
 full string. The key correctness advantage is that numeric-typed sensitive
-fields (e.g. `{"password":12345}`) are masked with `numericMask` — the default
+fields (e.g. `{"password":12345}`) are masked with `numericMask`; the default
 regex path cannot detect or replace bare numeric values in strings.
 
 <table>
@@ -359,7 +359,7 @@ The large input case also demonstrates the correctness benefit: with
 ## parseJsonStrings and scanStringValues interaction
 
 Both options interact on JSON string input. `scanStringValues` has no effect
-when `parseJsonStrings` is disabled — string input goes through the regex path,
+when `parseJsonStrings` is disabled; string input goes through the regex path,
 which does not use `scanStringValues`. When `parseJsonStrings` is enabled, string
 input is parsed to an object first; `scanStringValues` then applies normally on
 the object path.
@@ -378,7 +378,7 @@ xychart-beta
     line [43000, 181000]
 ```
 
-The lines start at the same point — `scanStringValues` makes no difference on
+The lines start at the same point; `scanStringValues` makes no difference on
 the regex path. They diverge when `parseJsonStrings` is on and the object path
 is active. The embedded-credential field and stack trace add `scanStringValues`
 overhead on the object path, explaining the ~2× gap between the two
@@ -411,8 +411,8 @@ by the full option fingerprint (matchers + patterns + `removeMatches` flag).
 The cache holds at most **10 entries**; when full, the least-recently-used
 entry is evicted to make room for the new one.
 
-In steady-state usage — a fixed configuration, possibly with a static list of
-`customPatterns` — the cache stays at 1–3 entries and this is not a concern.
+In steady-state usage with a fixed configuration, possibly with a static list of
+`customPatterns`, the cache stays at 1–3 entries and this is not a concern.
 
 If `customPatterns` vary per call (e.g. injected from user input or request
 data), entries will cycle through the cache and every call will pay the
@@ -424,13 +424,13 @@ options object once (or a small set of them) and reuse it across calls. Or set
 ### Cookie and form-encoded matcher and multiline strings
 
 The built-in `cookieAndFormEncodedMatcher` uses `[^\r\n&;]*` to match a field
-value — stopping at `&`, `;`, `\r`, or `\n`. This means content on lines after
+value, stopping at `&`, `;`, `\r`, or `\n`. This means content on lines after
 a matched value is preserved, and the two separator styles (URL form-encoded
 `&` and HTTP Cookie `;`) do not bleed into each other:
 
 ```text
-Input:  "Error: auth failed — api_key=hunter2\n    at foo (bar.js:10)"
-Output: "Error: auth failed — api_key=**********\n    at foo (bar.js:10)"
+Input:  "Error: auth failed - api_key=hunter2\n    at foo (bar.js:10)"
+Output: "Error: auth failed - api_key=**********\n    at foo (bar.js:10)"
 ```
 
 Stack traces and other multiline fields are safe to scan.

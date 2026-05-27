@@ -62,7 +62,7 @@ Comments should be actionable and specific to what changed.
 Other instruction files (`code-complexity`, `comments`, `jsdoc-tsdoc`,
 `plan-writing`, `security`, `unit-tests`) are primarily for coding agents
 implementing changes. Use them as guidelines during reviews, but apply standards
-only to new or modified code — don't flag pre-existing issues unless the change
+only to new or modified code; don't flag pre-existing issues unless the change
 makes them worse.
 
 ## Handling Slight Regressions (Suggestion vs Requirement)

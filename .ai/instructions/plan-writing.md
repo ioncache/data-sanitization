@@ -51,7 +51,7 @@ How to confirm the implementation is correct and complete.
 ### Decisions
 
 Key choices made during planning and the rationale behind them. This is the
-most important section for future reference — capture the why, not just the
+most important section for future reference; capture the why, not just the
 what.
 
 ## Style
@@ -73,5 +73,5 @@ completes an item in `docs/ROADMAP.md`:
      completed sub-items, leave the rest open).
 3. If the user confirms, commit the roadmap update as a new commit on the same
    branch so it lands in the PR before merge. Use the real PR number in the
-   section heading (e.g. `— completed in [#298](...)`).
+   section heading (e.g. `(completed in [#298](...))`).
 4. If the work does not correspond to any roadmap item, skip this step.

@@ -41,7 +41,7 @@ sanitizeData(input);
 - Zero runtime dependencies, with compiled JS and full TypeScript declarations
 - Sanitizes nested structures at any depth, preserving types and class instances
 - Matches sensitive field names across any data shape without requiring exact path declarations
-- Detects circular references and throws without leaking input — never silently returns partial data
+- Detects circular references and throws without leaking input; never silently returns partial data
 - Sanitization errors never expose the original input payload
 - Drop-in adapters for pino and winston via [`data-sanitization-log-providers`](https://www.npmjs.com/package/data-sanitization-log-providers)
 
@@ -50,7 +50,7 @@ sanitizeData(input);
 Tools like [fast-redact](https://github.com/davidmarkclements/fast-redact) and
 [pino's built-in redaction](https://getpino.io/#/docs/redaction) are excellent choices when
 you control your data shape. They require you to declare the exact paths to
-redact upfront — `user.password`, `req.headers.authorization` — and compile
+redact upfront (`user.password`, `req.headers.authorization`) and compile
 those paths into a specialized function at initialization, achieving near-zero
 overhead.
 
@@ -62,7 +62,7 @@ don't control.
 
 `data-sanitization` takes a pattern-based approach instead. A single
 `'password'` entry matches `password`, `db_password`, `resetPasswordToken`,
-and any other key containing that substring — at any depth, in any structure,
+and any other key containing that substring, at any depth, in any structure,
 without path declarations. The cost is a small per-call overhead versus
 path-based tools; the benefit is that it works on data whose shape you don't
 fully know.
@@ -87,7 +87,7 @@ It will miss sensitive data when:
 Masking also leaks that a field is present and sensitive. If minimizing that signal matters, use
 `removeMatches: true` rather than the default mask.
 
-Use `data-sanitization` to catch accidental leakage in logs and request payloads — not as a
+Use `data-sanitization` to catch accidental leakage in logs and request payloads, not as a
 substitute for access controls, network security, or data-handling policies.
 
 ## Log provider integrations
@@ -176,7 +176,7 @@ import sanitizeData from 'data-sanitization';
 const { sanitizeData } = require('data-sanitization');
 ```
 
-Utility helpers for log middleware are available on a separate subpath —
+Utility helpers for log middleware are available on a separate subpath;
 see [docs/utils.md](docs/utils.md).
 
 ```typescript
@@ -246,7 +246,7 @@ Non-JSON strings fall back to text-based pattern matching automatically.
 If the string cannot be parsed as JSON, `sanitizeData` silently falls back to
 text-based pattern matching. If you need strict behavior (fail or redact on
 parse failure), [open an issue](https://github.com/ioncache/data-sanitization/issues/306)
-— this is tracked for a future release.
+This is tracked for a future release.
 
 ### Remove fields instead of masking
 
@@ -260,8 +260,8 @@ sanitizeData(
 
 ### Sanitize PII and PHI with custom patterns
 
-Use the exported `piiPatterns` and `phiPatterns` constants — or build your own
-list — and pass them via `customPatterns`.
+Use the exported `piiPatterns` and `phiPatterns` constants, or build your own
+list, and pass them via `customPatterns`.
 
 ```typescript
 import { sanitizeData, piiPatterns, phiPatterns } from 'data-sanitization';
@@ -348,7 +348,7 @@ sanitizeData(data, {
 ### Sanitize Maps and Sets
 
 Enable `sanitizeCollections: true` to traverse `Map` and `Set` instances.
-Each collection is sanitized and returned as a new instance — the original
+Each collection is sanitized and returned as a new instance; the original
 is never mutated.
 
 ```typescript
@@ -369,7 +369,7 @@ sanitizeData({ tags }, { sanitizeCollections: true });
 ```
 
 > [!TIP]
-> `Map` and `Set` are not JSON-serializable by default — `JSON.stringify` turns
+> `Map` and `Set` are not JSON-serializable by default; `JSON.stringify` turns
 > them into `{}` and `[]`. To include them in structured logs, spread them first:
 >
 > ```typescript
@@ -422,12 +422,12 @@ these patterns match as substrings.
 
 Two additional pattern groups are exported but not included by default:
 
-- **`piiPatterns`** — Personally Identifiable Information: names, contact
+- **`piiPatterns`**: Personally Identifiable Information: names, contact
   details, government IDs, and digital identifiers. Ambiguous single-word
   terms such as `address`, `city`, `state`, and `zip` use exact matching to
   avoid false positives (e.g. `email_address` is not masked when only `address`
   is in `piiPatterns`).
-- **`phiPatterns`** — Protected Health Information under HIPAA: medical record
+- **`phiPatterns`**: Protected Health Information under HIPAA: medical record
   identifiers, healthcare dates, clinical data, and biometrics.
 
 Use them via `customPatterns`:
@@ -455,7 +455,7 @@ sanitizeData(data, { customPatterns: [{ match: 'token', strict: true }] });
 ```
 
 Use exact matching when a pattern is a common English word that would produce
-false positives as a substring — for example, `state` would otherwise mask
+false positives as a substring; for example, `state` would otherwise mask
 `statement` or `stateCode`.
 
 > **`ignorePatterns` and exact matching:** `ignorePatterns` is a `string[]`
@@ -531,7 +531,7 @@ sanitizeData(data, { ignorePatterns: ['token'] });
 // => { tokenizer_config: 'bert-base-uncased', api_key: '**********', username: 'mark' }
 ```
 
-Note that `ignorePatterns` suppresses the entire substring pattern — any field
+Note that `ignorePatterns` suppresses the entire substring pattern; any field
 whose name matches the pattern will pass through unmasked. If you have a field
 named `token` alongside `tokenizer_config`, both will be unmasked when `token`
 is ignored. Use `useDefaultPatterns: false` with explicit `customPatterns` for

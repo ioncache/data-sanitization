@@ -1,13 +1,13 @@
 # Plans
 
-This folder contains pre-implementation plan documents — one per non-trivial
+This folder contains pre-implementation plan documents, one per non-trivial
 change. Plans are written before work begins and committed alongside the
 implementation.
 
 ## Why plans?
 
-1. **Future recall** — a durable record of what was done and why
-2. **Code review** — a reference artifact for human and AI reviewers
+1. **Future recall**: a durable record of what was done and why
+2. **Code review**: a reference artifact for human and AI reviewers
 
 ## Naming convention
 

@@ -2,19 +2,19 @@
 
 ## Core Principles
 
-1. **Never expose data in errors** — Error messages must not contain the
+1. **Never expose data in errors.** Error messages must not contain the
    original input payload. Use type labels or error categories only.
-2. **Validate inputs at library boundaries** — Check that inputs match expected
+2. **Validate inputs at library boundaries.** Check that inputs match expected
    types before processing. Fail fast with a typed error.
-3. **Guard against ReDoS** — Regex patterns that process untrusted input must
+3. **Guard against ReDoS.** Regex patterns that process untrusted input must
    avoid catastrophic backtracking. Test patterns against worst-case inputs.
-4. **Handle circular references safely** — When recursing into objects, track
+4. **Handle circular references safely.** When recursing into objects, track
    visited nodes to prevent infinite loops and stack overflows.
-5. **Validate custom patterns** — User-provided pattern strings are untrusted
+5. **Validate custom patterns.** User-provided pattern strings are untrusted
    input. Validate or escape before passing to `RegExp`.
-6. **No hardcoded credentials** — Never commit tokens, keys, or secrets to
+6. **No hardcoded credentials.** Never commit tokens, keys, or secrets to
    source. Read secrets from environment variables.
-7. **Minimal dependency surface** — Keep dependencies minimal. Audit for known
+7. **Minimal dependency surface.** Keep dependencies minimal. Audit for known
    vulnerabilities regularly.
 
 ## Data Safety in Errors

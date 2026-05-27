@@ -73,8 +73,8 @@ PR titles follow conventional commit format with the issue number in scope:
 
 Example: `chore(272): add plan documentation system`
 
-The PR body uses three sections — **Overview**, **Details**, and **Related
-Tickets and/or Pull Requests** — with issue/PR links under the tickets section
+The PR body uses three sections (**Overview**, **Details**, and **Related
+Tickets and/or Pull Requests**) with issue/PR links under the tickets section
 (e.g. `Closes #N`, `Fixes #N`, `Relates to #N`).
 
 ## Commit Policy
@@ -97,7 +97,7 @@ commits per workspace package, suggests a semver bump, previews release notes,
 and creates the git tag and GitHub release. npm publishing is a separate manual
 step done after the script finishes.
 
-### Step 1 — Validate
+### Step 1: Validate
 
 ```bash
 yarn format:check
@@ -106,7 +106,7 @@ yarn build
 yarn test:coverage
 ```
 
-### Step 2 — Run the release script
+### Step 2: Run the release script
 
 ```bash
 yarn release
@@ -114,14 +114,14 @@ yarn release
 
 The script is interactive:
 
-1. **Summary** — shows each package, how many commits since its last release,
+1. **Summary**: shows each package, how many commits since its last release,
    how many are user-facing, and the suggested semver bump.
-2. **Select packages** — checkbox to choose which packages to release
+2. **Select packages**: checkbox to choose which packages to release
    (pre-checked for packages that have user-facing changes).
-3. **Bump type** — for each selected package, choose `patch`, `minor`, or
+3. **Bump type**: for each selected package, choose `patch`, `minor`, or
    `major` (the suggestion is pre-selected).
-4. **Preview** — shows the release notes that will be published to GitHub.
-5. **Confirm** — proceed or abort.
+4. **Preview**: shows the release notes that will be published to GitHub.
+5. **Confirm**: proceed or abort.
 
 On confirmation the script:
 
@@ -131,7 +131,7 @@ On confirmation the script:
 - Creates a GitHub release with the generated release notes
 - Pushes the commit and tag to `origin main`
 
-### Step 3 — Publish to npm (manual)
+### Step 3: Publish to npm (manual)
 
 The script prints the publish command at the end. Run it to publish each
 released package:

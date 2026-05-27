@@ -25,9 +25,9 @@ Create branch `feat/parser-first-json` from `main`.
 
 ## Steps
 
-1. `docs/plans/011-parser-first-json.md` — add this plan.
+1. `docs/plans/011-parser-first-json.md`: add this plan.
 
-2. `src/types.ts` — add `parseJsonStrings?: boolean` to
+2. `src/types.ts`: add `parseJsonStrings?: boolean` to
    `DataSanitizationReplacerOptions` with a TSDoc comment below `scanStringValues`:
 
    ```typescript
@@ -47,12 +47,12 @@ Create branch `feat/parser-first-json` from `main`.
    parseJsonStrings?: boolean;
    ```
 
-3. `test/replacers.test.ts` — add a `describe('parseJsonStrings option')` block
+3. `test/replacers.test.ts`: add a `describe('parseJsonStrings option')` block
    inside the existing `describe('stringReplacer')` block. Write all tests before
    touching the implementation. They should fail (the option is parsed but
    currently ignored). Cover:
    - **Default is false / numeric fields unmasked without the option:**
-     `stringReplacer('{"password":12345,"username":"mark"}')` — `password` is
+     `stringReplacer('{"password":12345,"username":"mark"}')`: `password` is
      still `12345` in the parsed result (current behavior baseline).
 
    - **Numeric sensitive field is masked:**
@@ -98,10 +98,10 @@ Create branch `feat/parser-first-json` from `main`.
      assert `JSON.parse` does not throw, sensitive keys are masked, safe keys
      are unchanged.
 
-   Run `yarn vitest run test/replacers.test.ts` — all new tests should fail
+   Run `yarn vitest run test/replacers.test.ts`: all new tests should fail
    (option not yet implemented), existing tests should pass.
 
-4. `src/replacers.ts` — add `parseJsonStrings = false` to the destructuring in
+4. `src/replacers.ts`: add `parseJsonStrings = false` to the destructuring in
    `stringReplacer`, and insert the parse-first branch immediately after the
    `typeof data !== 'string'` guard:
 
@@ -127,7 +127,7 @@ Create branch `feat/parser-first-json` from `main`.
          return JSON.stringify(objectReplacer(parsed, options));
        }
      } catch {
-       // not valid JSON or not an object/array — fall through to regex path
+       // not valid JSON or not an object/array; fall through to regex path
      }
    }
    ```
@@ -136,20 +136,20 @@ Create branch `feat/parser-first-json` from `main`.
    the function body only executes at call time, after the module has fully
    evaluated. No import or reordering needed.
 
-   Run `yarn vitest run test/replacers.test.ts` — all tests should now pass.
+   Run `yarn vitest run test/replacers.test.ts`: all tests should now pass.
    Run `yarn test` to confirm no regressions across the full suite.
 
-5. `bench/sanitize-data.bench.ts` — add two new `describe` groups at the end of
+5. `bench/sanitize-data.bench.ts`: add two new `describe` groups at the end of
    the file, before the closing comment (if any). Each group pairs a
    `parseJsonStrings: false` (default) bench against a `parseJsonStrings: true`
    bench on the same input so the overhead difference is visible side-by-side.
 
-   **Group 1 — small JSON string (overhead case):** A 5-field object, 1 sensitive
+   **Group 1: small JSON string (overhead case):** A 5-field object, 1 sensitive
    string key. This is the case where parse+stringify overhead is expected to
    dominate and `parseJsonStrings: true` should be slower:
 
    ```typescript
-   describe('sanitizeData — JSON string, small (parseJsonStrings)', () => {
+   describe('sanitizeData: JSON string, small (parseJsonStrings)', () => {
      const input = JSON.stringify({
        api_key: SENSITIVE_STRING_VALUE,
        email: 'user@example.com',
@@ -167,14 +167,14 @@ Create branch `feat/parser-first-json` from `main`.
    });
    ```
 
-   **Group 2 — large JSON string (throughput case):** A 50-field object with 5
+   **Group 2: large JSON string (throughput case):** A 50-field object with 5
    sensitive string keys and 5 sensitive numeric keys. This is the case where
    avoiding 15 regex passes on a long string should make `parseJsonStrings: true`
    competitive or faster, and it also demonstrates correct masking of numeric
    fields which the default path cannot do:
 
    ```typescript
-   describe('sanitizeData — JSON string, large (parseJsonStrings)', () => {
+   describe('sanitizeData: JSON string, large (parseJsonStrings)', () => {
      const input = JSON.stringify(
        Object.fromEntries([
          ...Array.from({ length: 40 }, (_, i) => [`field_${i}`, `value ${i}`]),
@@ -198,7 +198,7 @@ Create branch `feat/parser-first-json` from `main`.
    Run `yarn bench` and record both results in `docs/performance.md` under a new
    "Parser-first JSON strings" section (see step 7).
 
-6. `src/index.ts` — update the TSDoc on `sanitizeData` to add a
+6. `src/index.ts`: update the TSDoc on `sanitizeData` to add a
    `parseJsonStrings` example below the existing `scanStringValues` example:
 
    ```typescript
@@ -212,7 +212,7 @@ Create branch `feat/parser-first-json` from `main`.
    that when `parseJsonStrings` is enabled, valid JSON object/array strings are
    sanitized via `objectReplacer` and re-serialized.
 
-7. `docs/performance.md` — add a "Parser-first JSON strings" section after the
+7. `docs/performance.md`: add a "Parser-first JSON strings" section after the
    existing "String workloads" section. Include:
    - A brief explanation of the tradeoff (parse+stringify overhead vs. fewer regex
      passes; correctness for numeric fields)
@@ -221,7 +221,7 @@ Create branch `feat/parser-first-json` from `main`.
    - A note that the large input case also masks numeric fields correctly, which
      the default path cannot do regardless of performance
 
-8. `README.md` — two changes:
+8. `README.md`: two changes:
    - Add a `parseJsonStrings` row to the Options table directly below
      `scanStringValues`:
      `| \`parseJsonStrings\` | \`boolean\` | \`false\` | Parse string input as JSON and sanitize via the object path when valid. Note: re-serializes with \`JSON.stringify\`, which does not preserve original whitespace or indentation. |`
@@ -237,22 +237,22 @@ Create branch `feat/parser-first-json` from `main`.
 
 ## Relevant Files
 
-- `docs/plans/011-parser-first-json.md` — this plan (new).
-- `src/types.ts` — add `parseJsonStrings` option.
-- `src/replacers.ts` — add parse-first branch in `stringReplacer`.
-- `src/index.ts` — TSDoc update on `sanitizeData`.
-- `test/replacers.test.ts` — new `parseJsonStrings` test block in `stringReplacer` suite.
-- `bench/sanitize-data.bench.ts` — two new benchmark describe groups.
-- `docs/performance.md` — parser-first section with benchmark results.
-- `README.md` — options table row and usage example.
+- `docs/plans/011-parser-first-json.md`: this plan (new).
+- `src/types.ts`: add `parseJsonStrings` option.
+- `src/replacers.ts`: add parse-first branch in `stringReplacer`.
+- `src/index.ts`: TSDoc update on `sanitizeData`.
+- `test/replacers.test.ts`: new `parseJsonStrings` test block in `stringReplacer` suite.
+- `bench/sanitize-data.bench.ts`: two new benchmark describe groups.
+- `docs/performance.md`: parser-first section with benchmark results.
+- `README.md`: options table row and usage example.
 
 ## Verification
 
-1. `yarn test` — 100% pass, no regressions.
-2. `yarn test:coverage` — coverage stays at 100%.
-3. `yarn lint` — no violations.
-4. `yarn format:check` — clean.
-5. `yarn build` — compiled output includes `parseJsonStrings` in the type declarations.
+1. `yarn test`: 100% pass, no regressions.
+2. `yarn test:coverage`: coverage stays at 100%.
+3. `yarn lint`: no violations.
+4. `yarn format:check`: clean.
+5. `yarn build`: compiled output includes `parseJsonStrings` in the type declarations.
 6. Manual spot-check: `sanitizeData('{"password":12345}', { parseJsonStrings: true })`
    returns `'{"password":9999999999}'`; without the option returns the original
    string with the number still present (current regex path cannot mask it).
@@ -261,35 +261,35 @@ Create branch `feat/parser-first-json` from `main`.
 
 ## Decisions
 
-**Opt-in (`parseJsonStrings: false` default)** — `JSON.stringify` does not
+**Opt-in (`parseJsonStrings: false` default):** `JSON.stringify` does not
 preserve whitespace or key order. Callers passing pre-formatted JSON logs would
 see their formatting silently altered, which is a breaking change for existing
 users. Defaulting to `false` keeps the current behavior stable and lets callers
 choose the tradeoff explicitly.
 
-**Fall through to regex when JSON parses to a primitive** — A JSON string like
+**Fall through to regex when JSON parses to a primitive:** A JSON string like
 `'"hello"'` or `'42'` parses successfully but contains no key-value structure to
 sanitize. Running `objectReplacer` on a primitive returns it unchanged; serializing
 back to a string via `JSON.stringify` would produce `'"hello"'` again. Falling
 through to regex is correct behavior and avoids a no-op round-trip.
 
-**`objectReplacer` called with the full `options` object** — This means
+**`objectReplacer` called with the full `options` object:** This means
 `numericMask`, `customPatterns`, `customMatchers`, `removeMatches`,
 `scanStringValues`, and all other options apply consistently. No option
 translation layer is needed.
 
-**`parseJsonStrings` has no effect on object input** — `objectReplacer` ignores
+**`parseJsonStrings` has no effect on object input:** `objectReplacer` ignores
 the option (it doesn't destructure it). The option is meaningless on the object
 path and silently ignored, which is the correct behavior.
 
-**No explicit `JSON.stringify` error handling in `stringReplacer`** — If
+**No explicit `JSON.stringify` error handling in `stringReplacer`:** If
 `objectReplacer` somehow produced an unserializable result, the `JSON.stringify`
 call would throw. That error bubbles up to `sanitizeData`'s existing catch block,
 which converts it to a `DataSanitizationError` with safe metadata. No additional
 handling is needed in `stringReplacer`.
 
-**Forward reference to `objectReplacer` is safe** — `stringReplacer` and
+**Forward reference to `objectReplacer` is safe:** `stringReplacer` and
 `objectReplacer` are both `const` function expressions in the same module.
 `stringReplacer`'s function body references `objectReplacer` by closure, but the
-body only executes when the function is called — by which point `objectReplacer`
+body only executes when the function is called, by which point `objectReplacer`
 has been assigned. No hoisting issue exists.

@@ -24,6 +24,6 @@ build commands.
 
 - PR titles use conventional commit format:
   `<type>(<issue-number>): <description>`
-  — e.g. `feat(42): add custom sanitizer option`
-- Keep coverage at 100% — `yarn test:coverage` enforces this.
+  (e.g. `feat(42): add custom sanitizer option`)
+- Keep coverage at 100%; `yarn test:coverage` enforces this.
 - Update README and TSDoc if the public API changes.

@@ -1,4 +1,4 @@
-# Plan 019 — Change `parseJsonStrings` Default to `true`
+# Plan 019: Change `parseJsonStrings` Default to `true`
 
 ## Overview
 
@@ -28,7 +28,7 @@ Non-JSON strings continue to fall back to the regex path automatically.
 
 ## Tasks
 
-### Task 1 — Update `replacers.ts` default
+### Task 1: Update `replacers.ts` default
 
 **File:** `packages/data-sanitization/src/replacers.ts`
 
@@ -39,14 +39,14 @@ Change the default destructuring value:
 +  parseJsonStrings = true,
 ```
 
-No other logic changes are needed — the branch that checks `if (parseJsonStrings)` already handles the object/array parse-and-sanitize path, and the regex fallback path continues to handle non-JSON strings.
+No other logic changes are needed; the branch that checks `if (parseJsonStrings)` already handles the object/array parse-and-sanitize path, and the regex fallback path continues to handle non-JSON strings.
 
 **Verification:** `yarn workspace data-sanitization test test/replacers.test.ts`
-(will fail before test updates — that is expected)
+(will fail before test updates; that is expected)
 
 ---
 
-### Task 2 — Update `types.ts` JSDoc
+### Task 2: Update `types.ts` JSDoc
 
 **File:** `packages/data-sanitization/src/types.ts`
 
@@ -59,7 +59,7 @@ In the `parseJsonStrings` property doc block, change the default note:
 
 ---
 
-### Task 3 — Rework `test/replacers.test.ts` paired tests
+### Task 3: Rework `test/replacers.test.ts` paired tests
 
 **File:** `packages/data-sanitization/test/replacers.test.ts`
 
@@ -98,7 +98,7 @@ The first test only asserts valid JSON + non-sensitive field preserved. With the
 new default, `password: ""` → masked via objectReplacer. The first test still
 passes (valid JSON, username preserved). Strengthen it to also assert
 `result.password === DEFAULT_PATTERN_MASK` when adding `parseJsonStrings: false`
-— wait, with `parseJsonStrings: false` the regex path DOES handle empty strings
+Note: with `parseJsonStrings: false` the regex path DOES handle empty strings
 (it matches `"password":""`). So:
 
 - With `parseJsonStrings: false`: regex path masks empty string → `DEFAULT_PATTERN_MASK`
@@ -127,7 +127,7 @@ Replace the comment block at the start of the describe (lines 540–544) with:
 
 ---
 
-### Task 4 — Update README
+### Task 4: Update README
 
 **File:** `packages/data-sanitization/README.md`
 
@@ -145,7 +145,7 @@ Replace the comment block at the start of the describe (lines 540–544) with:
 
 ---
 
-### Task 5 — Update ROADMAP
+### Task 5: Update ROADMAP
 
 **File:** `docs/ROADMAP.md`
 
@@ -154,7 +154,7 @@ linking this PR.
 
 ---
 
-### Task 6 — Run full test suite and verify coverage
+### Task 6: Run full test suite and verify coverage
 
 ```bash
 yarn workspace data-sanitization test
@@ -165,7 +165,7 @@ All tests must pass and coverage must be 100%.
 
 ---
 
-### Task 7 — Commit
+### Task 7: Commit
 
 ```
 feat!: change parseJsonStrings default to true

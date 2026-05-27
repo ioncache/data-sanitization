@@ -3,7 +3,7 @@
 ## Approach
 
 Create a `.ai/` directory as a single source of truth for all AI customization
-content — instructions, skills, and prompts. Both GitHub Copilot and Claude Code
+content (instructions, skills, and prompts). Both GitHub Copilot and Claude Code
 currently maintain separate copies of the same rules (instruction files for
 Copilot, inline text in CLAUDE.md for Claude). This plan migrates all shared
 content into `.ai/`, strips the bodies from the existing Copilot files so they
@@ -24,7 +24,7 @@ The systems use different names for the same concepts:
 
 ## Thin Wrapper Formats
 
-**Copilot instruction** — keep frontmatter, replace body:
+**Copilot instruction**: keep frontmatter, replace body:
 
 ```markdown
 ---
@@ -34,7 +34,7 @@ applyTo: '**'
 #file:../../.ai/instructions/<name>.md
 ```
 
-**Copilot skill** — keep frontmatter, replace body:
+**Copilot skill**: keep frontmatter, replace body:
 
 ```markdown
 ---
@@ -45,7 +45,7 @@ description: '...'
 #file:../../../.ai/skills/<name>.md
 ```
 
-**Copilot prompt** — keep frontmatter, replace body:
+**Copilot prompt**: keep frontmatter, replace body:
 
 ```markdown
 ---
@@ -55,19 +55,19 @@ description: '...'
 #file:../../.ai/prompts/<name>.md
 ```
 
-**Claude skill** (`.claude/skills/<name>.md`) — no frontmatter:
+**Claude skill** (`.claude/skills/<name>.md`): no frontmatter:
 
 ```text
 @.ai/skills/<name>.md
 ```
 
-**Claude prompt** (`.claude/skills/<name>.md`) — no frontmatter:
+**Claude prompt** (`.claude/skills/<name>.md`): no frontmatter:
 
 ```text
 @.ai/prompts/<name>.md
 ```
 
-**CLAUDE.md Conventions section** — replace inline bullets with `@imports`:
+**CLAUDE.md Conventions section**: replace inline bullets with `@imports`:
 
 ```markdown
 ## Conventions
@@ -82,7 +82,7 @@ Note: `code-review` is excluded from CLAUDE.md (its header states it is for
 Copilot review only, not coding assistants). `plan-writing` is excluded because
 `docs/development.md` already covers the plan workflow for Claude.
 
-**Cross-references within `.ai/` files** — when a shared file must reference
+**Cross-references within `.ai/` files**: when a shared file must reference
 another shared file, include both syntaxes:
 
 ```markdown
@@ -94,7 +94,7 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
 
 ## Steps
 
-### Phase 1 — Create the shared layer
+### Phase 1: Create the shared layer
 
 1. Create `.ai/instructions/` and `.ai/skills/` directories.
 
@@ -120,7 +120,7 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
    `ai-add-*` skills are candidates for future extraction into a Claude plugin
    or Copilot user-level skills (`~/.copilot/skills/`).
 
-### Phase 2 — Update Copilot thin wrappers
+### Phase 2: Update Copilot thin wrappers
 
 5. For each `.github/instructions/*.instructions.md`, replace the body with a
    `#file:` reference to the corresponding `.ai/instructions/<name>.md`. Keep
@@ -129,7 +129,7 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
 6. Replace the body of `.github/skills/plan-writing/SKILL.md` with a `#file:`
    reference to `.ai/skills/plan-writing.md`. Keep frontmatter unchanged.
 
-### Phase 3 — Create Claude thin wrappers
+### Phase 3: Create Claude thin wrappers
 
 7. Create `.claude/skills/` directory.
 
@@ -143,7 +143,7 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
    inline bullet points with `@import` lines for `code-complexity.md`,
    `comments.md`, `jsdoc.md`, and `unit-tests.md`.
 
-### Phase 4 — Maintenance skills
+### Phase 4: Maintenance skills
 
 10. Create `.ai/skills/ai-add-instruction.md`. This skill:
     - Asks for a name (kebab-case) and `applyTo` glob
@@ -177,48 +177,48 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
 
 ## Relevant Files
 
-**New — shared layer:**
+**New: shared layer:**
 
-- `.ai/README.md` — explains the folder structure
-- `.ai/instructions/code-complexity.md` — new (content from Copilot wrapper)
-- `.ai/instructions/code-review.md` — new
-- `.ai/instructions/comments.md` — new
-- `.ai/instructions/jsdoc.md` — new
-- `.ai/instructions/plan-writing.md` — new
-- `.ai/instructions/security.md` — new
-- `.ai/instructions/unit-tests.md` — new
-- `.ai/skills/plan-writing.md` — new (content from Copilot wrapper)
-- `.ai/skills/ai-add-instruction.md` — new maintenance skill
-- `.ai/skills/ai-add-prompt.md` — new maintenance skill
-- `.ai/skills/ai-add-skill.md` — new maintenance skill
+- `.ai/README.md`: explains the folder structure
+- `.ai/instructions/code-complexity.md`: new (content from Copilot wrapper)
+- `.ai/instructions/code-review.md`: new
+- `.ai/instructions/comments.md`: new
+- `.ai/instructions/jsdoc.md`: new
+- `.ai/instructions/plan-writing.md`: new
+- `.ai/instructions/security.md`: new
+- `.ai/instructions/unit-tests.md`: new
+- `.ai/skills/plan-writing.md`: new (content from Copilot wrapper)
+- `.ai/skills/ai-add-instruction.md`: new maintenance skill
+- `.ai/skills/ai-add-prompt.md`: new maintenance skill
+- `.ai/skills/ai-add-skill.md`: new maintenance skill
 
-**Updated — Copilot thin wrappers:**
+**Updated: Copilot thin wrappers:**
 
-- `.github/instructions/code-complexity.instructions.md` — updated (body replaced)
-- `.github/instructions/code-review.instructions.md` — updated (body replaced)
-- `.github/instructions/comments.instructions.md` — updated (body replaced)
-- `.github/instructions/jsdoc.instructions.md` (or `jsdoc-tsdoc.instructions.md`) — updated (body replaced)
-- `.github/instructions/plan-writing.instructions.md` — updated (body replaced)
-- `.github/instructions/security.instructions.md` — updated (body replaced)
-- `.github/instructions/unit-tests.instructions.md` — updated (body replaced)
-- `.github/skills/plan-writing/SKILL.md` — updated (body replaced)
+- `.github/instructions/code-complexity.instructions.md`: updated (body replaced)
+- `.github/instructions/code-review.instructions.md`: updated (body replaced)
+- `.github/instructions/comments.instructions.md`: updated (body replaced)
+- `.github/instructions/jsdoc.instructions.md` (or `jsdoc-tsdoc.instructions.md`): updated (body replaced)
+- `.github/instructions/plan-writing.instructions.md`: updated (body replaced)
+- `.github/instructions/security.instructions.md`: updated (body replaced)
+- `.github/instructions/unit-tests.instructions.md`: updated (body replaced)
+- `.github/skills/plan-writing/SKILL.md`: updated (body replaced)
 
-**New — Copilot thin wrappers for maintenance skills:**
+**New: Copilot thin wrappers for maintenance skills:**
 
-- `.github/skills/ai-add-instruction/SKILL.md` — new
-- `.github/skills/ai-add-prompt/SKILL.md` — new
-- `.github/skills/ai-add-skill/SKILL.md` — new
+- `.github/skills/ai-add-instruction/SKILL.md`: new
+- `.github/skills/ai-add-prompt/SKILL.md`: new
+- `.github/skills/ai-add-skill/SKILL.md`: new
 
-**Updated — Claude:**
+**Updated: Claude:**
 
-- `CLAUDE.md` — Conventions section updated to use `@imports`
+- `CLAUDE.md`: Conventions section updated to use `@imports`
 
-**New — Claude thin wrappers:**
+**New: Claude thin wrappers:**
 
-- `.claude/skills/plan-writing.md` — new
-- `.claude/skills/ai-add-instruction.md` — new
-- `.claude/skills/ai-add-prompt.md` — new
-- `.claude/skills/ai-add-skill.md` — new
+- `.claude/skills/plan-writing.md`: new
+- `.claude/skills/ai-add-instruction.md`: new
+- `.claude/skills/ai-add-prompt.md`: new
+- `.claude/skills/ai-add-skill.md`: new
 
 ## Verification
 
@@ -236,35 +236,35 @@ Follow the standards in `.ai/instructions/plan-writing.md`.
 
 ## Decisions
 
-**`.ai/` over `ai/` or `ai_customizations/`** — The repo already uses dotfile
+**`.ai/` over `ai/` or `ai_customizations/`:** The repo already uses dotfile
 directories for tooling configuration (`.github/`, `.claude/`). `.ai/` follows
 the same convention: it is tooling configuration, not source code. The short
 name avoids verbose path prefixes in every thin wrapper file.
 
-**Maintenance skills live in `.ai/skills/`** — The alternative was `.claude/skills/`
+**Maintenance skills live in `.ai/skills/`:** The alternative was `.claude/skills/`
 only, but that would require Claude to be set up to manage Copilot wrappers, and
 vice versa. Placing them in `.ai/` makes them invocable from either system.
 They are intentionally colocated with other skills rather than in a separate
 `meta/` subfolder to keep the structure flat and consistent.
 
-**`code-review` excluded from Claude @imports** — The instruction file
+**`code-review` excluded from Claude @imports:** The instruction file
 explicitly states it is intended for Copilot code review agents, not coding
 assistants. Importing it into CLAUDE.md would cause Claude to apply review-only
 constraints (e.g. "only comment on modified code") when writing code, which is
 not the intended behavior.
 
-**`plan-writing` excluded from Claude @imports** — CLAUDE.md already delegates
+**`plan-writing` excluded from Claude @imports:** CLAUDE.md already delegates
 plan workflow context to `docs/development.md`. The plan-writing instruction
 covers the same ground and importing it would duplicate guidance already visible
 to Claude.
 
-**Copilot prompts/Claude commands both map to `.claude/skills/`** — Claude Code
+**Copilot prompts/Claude commands both map to `.claude/skills/`:** Claude Code
 has merged commands into skills (`.claude/skills/` is the current recommended
 path). The distinction between Copilot prompts and Copilot skills is preserved
 in the `.ai/` folder (separate `prompts/` and `skills/` subfolders) for semantic
 clarity, but both collapse to `.claude/skills/` on the Claude side.
 
-**Future extraction** — The `ai-add-*` maintenance skills are intended to
+**Future extraction:** The `ai-add-*` maintenance skills are intended to
 eventually be extracted into a Claude plugin and into Copilot user-level skills
 (`~/.copilot/skills/`). Keeping them in `.ai/skills/` for now means either AI
 system can invoke them, and extraction is a simple move-and-remove operation.

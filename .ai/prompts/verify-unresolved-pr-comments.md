@@ -14,7 +14,7 @@ For each unresolved comment, evaluate it against the current PR diff, changed
 files, or patch content provided by the available tool or API, and the project
 guidelines:
 
-- Read the relevant section of the diff carefully — do not rely on the comment
+- Read the relevant section of the diff carefully; do not rely on the comment
   description alone.
 - Apply the project's code-review instructions rules: only flag new/changed
   code, never pre-existing issues.
@@ -32,12 +32,12 @@ Rules for each column:
 - **Severity**: High / Medium / Low based on impact (High = correctness bug or
   security; Medium = reliability, reproducibility, or operational risk; Low =
   cosmetic or edge-case tooling)
-- **Fix?**: ✅ Fix or 🚫 No fix — If the suggestion is valid and targets new
+- **Fix?**: ✅ Fix or 🚫 No fix. If the suggestion is valid and targets new
   code introduced in this PR, the answer is always ✅ Fix. "🚫 No fix" is only
   for comments that are invalid, target pre-existing code unchanged by the PR,
   or recommend defense-in-depth for impossible scenarios. Do not defer valid
-  issues on new code — fix them now.
-- **Suggestion Valid?**: ✅ Yes / ⚠️ Partially / ❌ No — with one-line reason if
+  issues on new code; fix them now.
+- **Suggestion Valid?**: ✅ Yes / ⚠️ Partially / ❌ No, with one-line reason if
   Partially or No
 - **Required Action**: If fixing, state the minimal change. If not fixing, write
   the exact response to post in the PR thread.

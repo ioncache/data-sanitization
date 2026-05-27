@@ -18,22 +18,22 @@ appropriate syntax for each AI system:
 
 ## Workflow
 
-1. **Determine the next plan number** — list `docs/plans/` and find the
+1. **Determine the next plan number**: list `docs/plans/` and find the
    highest existing `NNN` prefix; increment by one (pad to three digits)
 
-2. **Gather context** — read relevant source files, existing plans, and any
+2. **Gather context**: read relevant source files, existing plans, and any
    linked issues to understand scope before writing
 
-3. **Draft the plan** — create `docs/plans/NNN-description.md` using
+3. **Draft the plan**: create `docs/plans/NNN-description.md` using
    `docs/plans/TEMPLATE.md` as the skeleton; fill every required section
 
-4. **Decisions first** — if the user has already discussed trade-offs in the
+4. **Decisions first**: if the user has already discussed trade-offs in the
    conversation, capture them in the Decisions section before they are lost
 
-5. **Confirm before saving** — present the draft to the user for review if the
+5. **Confirm before saving**: present the draft to the user for review if the
    scope is large or ambiguous; save directly for straightforward plans
 
-6. **After opening the PR** — once the PR exists and the number is known,
+6. **After opening the PR**: once the PR exists and the number is known,
    check `docs/ROADMAP.md` for items the work fully or partially completes.
    If found, ask the user whether to mark the item done or partially done,
    then commit the roadmap update on the same branch before merge. See the

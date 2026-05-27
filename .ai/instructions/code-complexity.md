@@ -9,10 +9,10 @@
 
 ## Hard Limits
 
-- **Max 3 parameters** — use object parameter for >3 params or boolean flags
-- **Max 3 nesting levels** — use early returns and guard clauses
-- **Target <30 lines per function** — longer OK if cohesive and clear
-- **Target cyclomatic complexity <15** — higher OK if logic is simple and
+- **Max 3 parameters:** use object parameter for >3 params or boolean flags
+- **Max 3 nesting levels:** use early returns and guard clauses
+- **Target <30 lines per function:** longer OK if cohesive and clear
+- **Target cyclomatic complexity <15:** higher OK if logic is simple and
   related
 
 ## Examples and Patterns

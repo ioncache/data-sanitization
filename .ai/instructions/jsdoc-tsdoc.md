@@ -2,22 +2,22 @@
 
 JavaScript files (`.js`, `.mjs`) use **JSDoc** with explicit `{Type}`
 annotations because JavaScript has no type system. TypeScript files (`.ts`,
-`.tsx`) use **TSDoc** — types already live in the signatures, so type
+`.tsx`) use **TSDoc**; types already live in the signatures, so type
 annotations are omitted from doc tags.
 
 ## Core Principles (Both)
 
-1. **Every exported function must have a doc comment** — No exceptions.
-2. **Include function description** — Clear explanation of what it does.
-3. **Add `@example` for functions with I/O** — Show actual usage patterns.
-4. **Add `@throws` for explicit `throw` statements only** — Document every
+1. **Every exported function must have a doc comment.** No exceptions.
+2. **Include function description.** Clear explanation of what it does.
+3. **Add `@example` for functions with I/O.** Show actual usage patterns.
+4. **Add `@throws` for explicit `throw` statements only.** Document every
    explicit `throw` statement with its specific error condition. Do not document
    implicit runtime errors (e.g. built-in `TypeError` from calling a method on
    the wrong type) or errors from called functions.
 
 ---
 
-## JSDoc — JavaScript Files (`.js`, `.mjs`)
+## JSDoc: JavaScript Files (`.js`, `.mjs`)
 
 ### Type Definition Rules
 
@@ -105,10 +105,10 @@ function createUser({ name, active }) {}
 
 ---
 
-## TSDoc — TypeScript Files (`.ts`, `.tsx`)
+## TSDoc: TypeScript Files (`.ts`, `.tsx`)
 
 Types live in the TypeScript signature. Do **not** include `{Type}` in `@param`
-or `@returns` — TypeScript already provides that information.
+or `@returns`; TypeScript already provides that information.
 
 ### Complete Function Documentation
 
@@ -187,20 +187,20 @@ These patterns must **never** appear in doc comments:
 **Do not document the absence of throws:**
 
 ```typescript
-// BAD — documenting that nothing happens is noise
+// BAD: documenting that nothing happens is noise
 @throws Does not throw.
 
-// GOOD — omit @throws entirely when the function does not throw
+// GOOD: omit @throws entirely when the function does not throw
 ```
 
 **Do not add `@returns` to constructors:**
 
 ```typescript
-// BAD — constructors have no meaningful return value to document
+// BAD: constructors have no meaningful return value to document
 constructor(message: string) {}
 // @returns A MyClass instance.
 
-// GOOD — omit @returns on constructors entirely
+// GOOD: omit @returns on constructors entirely
 ```
 
 **`@returns` must describe the value, not restate the type:**
@@ -217,10 +217,10 @@ constructor(message: string) {}
 **Do not document implicit or built-in throws:**
 
 ```typescript
-// BAD — TypeError from .replace() is implicit; there is no throw statement
+// BAD: TypeError from .replace() is implicit; there is no throw statement
 const escape = (s: string): string => s.replace(/x/g, '');
 // @throws {TypeError} If s is not a string.
 
-// GOOD — only document errors your code explicitly throws
+// GOOD: only document errors your code explicitly throws
 // (no @throws needed here)
 ```

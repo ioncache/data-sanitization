@@ -98,7 +98,7 @@ describe('sanitizeData', () => {
   describe('when configured with custom options', () => { ... });
 });
 
-// Bad — vague or technical
+// Bad: vague or technical
 describe('masking', () => { ... });       // no unit context
 describe('options', () => { ... });       // not a scenario
 describe('parseJsonStrings option', () => { ... }); // names the option, not the scenario
@@ -107,19 +107,19 @@ describe('parseJsonStrings option', () => { ... }); // names the option, not the
 ### `it()` strings
 
 Write from the **caller's perspective**. Describe what the system does in
-observable terms — what comes out, what changes, what error is thrown — not
+observable terms (what comes out, what changes, what error is thrown), not
 what the code does internally.
 
 **Ask:** "What does the caller care about?" not "What does the code do?"
 
 ```javascript
-// Good — describes output the caller observes
+// Good: describes output the caller observes
 it('should mask sensitive fields in a JSON string', () => {});
 it('should leave class instances unchanged', () => {});
 it('should throw an error when given a number', () => {});
 it('should apply a caller-supplied mask string', () => {});
 
-// Bad — describes internal mechanics
+// Bad: describes internal mechanics
 it('should call stringReplacer on the input', () => {}); // internal function
 it('should iterate the WeakSet for circular refs', () => {}); // implementation detail
 it('should construct a global case-insensitive regex', () => {}); // mechanism, not outcome
@@ -144,13 +144,13 @@ it('should set name and details on custom error', () => {}); // describes object
 
 Use in every non-trivial test:
 
-- `// Arrange` — setup/given
-- `// Act` — when
-- `// Assert` — then
+- `// Arrange`: setup/given
+- `// Act`: when
+- `// Assert`: then
 
 Use only when cleanup is actually performed:
 
-- `// Revert` — cleanup local test state, mocks, timers, files, or other side
+- `// Revert`: cleanup local test state, mocks, timers, files, or other side
   effects not handled by `afterEach`
 
 Simple tests with obvious steps may omit these.

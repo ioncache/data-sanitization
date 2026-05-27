@@ -48,12 +48,12 @@ non-plain object instances.
 
 ## Relevant Files
 
-- `src/types.ts` — updated; adds `sanitizeCollections` option
-- `src/replacers.ts` — updated; adds Map and Set branches in `sanitizeValue`
-- `test/replacers.test.ts` — updated; adds Map and Set sanitization tests
-- `bench/sanitize-data.bench.ts` — updated; adds Map and Set benchmark cases
-- `README.md` — updated; adds option to table, usage section, and How it works note
-- `docs/ROADMAP.md` — updated; marks Map/Set as implemented
+- `src/types.ts`: updated; adds `sanitizeCollections` option
+- `src/replacers.ts`: updated; adds Map and Set branches in `sanitizeValue`
+- `test/replacers.test.ts`: updated; adds Map and Set sanitization tests
+- `bench/sanitize-data.bench.ts`: updated; adds Map and Set benchmark cases
+- `README.md`: updated; adds option to table, usage section, and How it works note
+- `docs/ROADMAP.md`: updated; marks Map/Set as implemented
 
 ## Verification
 
@@ -62,7 +62,7 @@ pass.
 
 ## Decisions
 
-**Option B — new copy rather than in-place mutation:** Mutating the caller's
+**Option B: new copy rather than in-place mutation.** Mutating the caller's
 original `Map` or `Set` would be a surprising side-effect and could corrupt
 data the caller still holds a reference to. Returning a new sanitized copy is
 consistent with how `objectReplacer` already handles plain objects and arrays.
@@ -73,7 +73,7 @@ breaking change for callers whose Maps or Sets contain data that would be
 altered. An opt-in flag lets callers adopt the feature without risk.
 
 **String Map keys are used for matching but not sanitized:** Plain object
-property names are never sanitized today — only their values are. Map string
+property names are never sanitized today; only their values are. Map string
 keys follow the same rule for consistency. Keys that are objects, however, are
 recursed into and sanitized because they carry real structured data that could
 contain sensitive fields.

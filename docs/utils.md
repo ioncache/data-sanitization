@@ -1,7 +1,7 @@
 # `data-sanitization/utils`
 
 Helper functions for log middleware. Import from the `data-sanitization/utils`
-subpath — they are not included in the main `data-sanitization` export.
+subpath; they are not included in the main `data-sanitization` export.
 
 ```typescript
 import {
@@ -39,10 +39,10 @@ payload and the output of `sanitizeData`.
 
 - Object keys use **dot notation**: `user.email`
 - Array indices use **bracket notation**: `tokens[0]`, `users[0].email`
-- Keys present in `original` but absent in `sanitized` are included — this
+- Keys present in `original` but absent in `sanitized` are included; this
   covers the `removeMatches: true` case where fields are deleted rather than
   masked.
-- Keys present in `sanitized` but not in `original` are ignored — the diff
+- Keys present in `sanitized` but not in `original` are ignored; the diff
   is one-directional, walking `original`'s keys.
 
 ### Examples
@@ -98,7 +98,7 @@ is needed.
 The warning entry:
 
 - Carries all non-changed fields from the **sanitized** log object (safe
-  values only — the changed fields are excluded from the warning body since
+  values only; the changed fields are excluded from the warning body since
   they appear in the `fields` array).
 - Overrides `level` to `40` (warn) and `msg` to
   `"sensitive data found in log entry"`.
@@ -115,7 +115,7 @@ Returns `null` when:
 
 By default, all non-changed fields from the sanitized object carry over into
 the warning. Pass `allowedFields` to restrict the warning to a specific set
-of context fields — useful in log-provider integrations where you want only
+of context fields, useful in log-provider integrations where you want only
 correlation metadata (e.g. `time`, `pid`, `hostname`) and nothing else.
 
 ### Usage examples
@@ -139,11 +139,11 @@ buildSanitizedWarning(original, sanitized, {
 ```
 
 ```typescript
-// Returns null — nothing changed
+// Returns null: nothing changed
 buildSanitizedWarning(sanitized, sanitized);
 // => null
 
-// Returns null — not valid JSON
+// Returns null: not valid JSON
 buildSanitizedWarning('plain text log line', sanitized);
 // => null
 ```
@@ -157,7 +157,7 @@ import { buildSanitizedWarning } from 'data-sanitization/utils';
 function sanitizeLogLine(raw: string): string {
   const sanitized = sanitizeData(raw, { parseJsonStrings: true }) as string;
 
-  // No change — emit as-is
+  // No change: emit as-is
   if (sanitized === raw) return raw;
 
   const warning = buildSanitizedWarning(raw, sanitized);
