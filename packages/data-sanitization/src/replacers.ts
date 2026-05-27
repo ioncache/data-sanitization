@@ -7,19 +7,31 @@ import {
 import defaultMatchers, { escapePattern } from './matchers';
 
 /**
- * Builds the active pattern list from defaults and any caller-supplied patterns.
+ * Builds the active pattern list from defaults and any caller-supplied patterns,
+ * minus any patterns listed in `ignorePatterns`.
  *
  * @param useDefaultPatterns - Whether to include the built-in default patterns.
  * @param customPatterns - Additional patterns to append to the active list.
+ * @param ignorePatterns - Patterns to remove from the assembled list.
  * @returns Combined array of field-name patterns to match against.
  */
 const buildPatterns = (
   useDefaultPatterns: boolean,
   customPatterns?: string[],
-): string[] => [
-  ...(useDefaultPatterns ? DEFAULT_FIELD_NAME_PATTERNS : []),
-  ...(customPatterns ?? []),
-];
+  ignorePatterns?: string[],
+): string[] => {
+  const patterns = [
+    ...(useDefaultPatterns ? DEFAULT_FIELD_NAME_PATTERNS : []),
+    ...(customPatterns ?? []),
+  ];
+
+  if (!ignorePatterns?.length) {
+    return patterns;
+  }
+
+  const ignored = new Set(ignorePatterns.map((p) => p.toLowerCase()));
+  return patterns.filter((p) => !ignored.has(p.toLowerCase()));
+};
 
 /**
  * Builds the active matcher list from defaults and any caller-supplied matchers.
@@ -140,6 +152,7 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
     customMatchers,
     customPatterns,
+    ignorePatterns,
     parseJsonStrings = false,
     patternMask,
     removeMatches = false,
@@ -164,7 +177,11 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   }
 
   const mask = patternMask ?? DEFAULT_PATTERN_MASK;
-  const patterns = buildPatterns(useDefaultPatterns, customPatterns);
+  const patterns = buildPatterns(
+    useDefaultPatterns,
+    customPatterns,
+    ignorePatterns,
+  );
   const matchers = buildMatchers(useDefaultMatchers, customMatchers);
 
   const replacement = removeMatches ? '' : '$1' + mask + '$2';
@@ -202,6 +219,7 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const {
     customMatchers,
     customPatterns,
+    ignorePatterns,
     numericMask,
     patternMask,
     removeMatches = false,
@@ -217,7 +235,11 @@ const objectReplacer: DataSanitizationReplacer = (data, options = {}) => {
 
   const mask = patternMask ?? DEFAULT_PATTERN_MASK;
   const matchers = buildMatchers(useDefaultMatchers, customMatchers);
-  const patterns = buildPatterns(useDefaultPatterns, customPatterns);
+  const patterns = buildPatterns(
+    useDefaultPatterns,
+    customPatterns,
+    ignorePatterns,
+  );
   const keyMatchers = patterns.map(
     (pattern) => new RegExp(`\\w*${escapePattern(pattern)}\\w*`, 'i'),
   );
