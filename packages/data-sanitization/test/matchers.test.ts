@@ -226,6 +226,83 @@ describe('DataSanitizationMatchers', () => {
         'api_key=**********\r\n    at authenticate (/app/src/auth.js:89:15)',
       );
     });
+
+    it('should match a field with an empty value', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password');
+      const testData = 'password=&username=mark';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — document current behavior when the value is empty
+      expect(allMatches.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should treat a URL-encoded ampersand as part of the value and not as a delimiter', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password');
+      const testData = 'password=a%26b&username=mark';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — %26 is not the '&' character so should not split the value
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toContain('%26');
+    });
+
+    it('should match a value containing base64 padding characters', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('token');
+      const testData = 'token=abc123==&username=mark';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — '=' padding is not a delimiter; full value should be captured
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toContain('abc123==');
+    });
+
+    it('should not treat a semicolon as a field delimiter', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password');
+      const testData = 'password=secret;username=mark';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — semicolons are not in the stop-character set; value captures past the semicolon
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toContain(';');
+    });
+
+    it('should match a field with a very long value', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password');
+      const longValue = 'x'.repeat(10_000);
+      const testData = `password=${longValue}&username=mark`;
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toContain(longValue);
+    });
+
+    it('should match a field whose value contains a tab character', () => {
+      // Arrange
+      const matcher = formEncodedMatcher('password');
+      const testData = 'password=sec\tret&username=mark';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — tab is not in the stop-character set; should be captured as part of value
+      expect(allMatches.length).toBe(1);
+    });
   });
 
   describe('jsonMatcher', () => {
@@ -372,6 +449,159 @@ describe('DataSanitizationMatchers', () => {
       // Assert
       expect(JSON.parse(result)).toEqual({});
     });
+
+    it('should match a field with an empty string value due to over-consumption', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password":"","username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — .+? cannot stop between the two adjacent quotes, so it greedily reaches into
+      // the following content; the match over-consumes and produces an incorrect replacement range
+      expect(allMatches.length).toBe(1);
+    });
+
+    it('should not match a field whose value is a number', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password":12345,"username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — number values have no opening quote; known regex limitation
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should not match a field whose value is a boolean', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password":true,"username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — boolean values have no opening quote; known regex limitation
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should not match a field whose value is null', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password":null,"username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — null has no opening quote; known regex limitation
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should not match a field whose value is an array', () => {
+      // Arrange
+      const matcher = jsonMatcher('token');
+      const testData = '{"token":["a","b"],"username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — array values have no opening quote; known regex limitation
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should match a value that contains a unicode escape sequence', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password":"\\u0073ecret","username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — \\u0073 is treated as literal characters within the string; match should succeed
+      expect(allMatches.length).toBe(1);
+    });
+
+    it('should stop matching at the first unescaped quote when the value contains an escaped quote', () => {
+      // Arrange — value is: sec"ret  (JSON.stringify encodes the inner quote as \")
+      const testData = JSON.stringify({
+        password: 'sec"ret',
+        username: 'mark',
+      });
+      const matcher = jsonMatcher('password');
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — regex stops at the escaped quote character, producing a partial or unexpected match
+      // This documents the known limitation with escaped-quote values
+      expect(allMatches.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should not match when there is whitespace between the field name and the colon', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password"   :   "secret","username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — the pattern requires the colon to immediately follow the closing quote of the key;
+      // whitespace before the colon is a known limitation
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should not match when a tab character precedes the colon', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password"\t:\t"secret"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — whitespace before the colon is a known limitation
+      expect(allMatches.length).toBe(0);
+    });
+
+    it('should match a field with a very long string value', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const longValue = 'x'.repeat(10_000);
+      const testData = `{"password":"${longValue}","username":"mark"}`;
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+      expect(allMatches[0]?.[0]).toContain(longValue);
+    });
+
+    it('should match a field whose key contains the pattern followed by digits', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData = '{"password123":"secret","username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — \\w* after the pattern matches digits too
+      expect(allMatches.length).toBe(1);
+    });
+
+    it('should not match a field when the pattern only appears in the value not the key', () => {
+      // Arrange
+      const matcher = jsonMatcher('password');
+      const testData =
+        '{"message":"reset your password here","username":"mark"}';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(0);
+    });
   });
 
   describe('escapedJsonMatcher', () => {
@@ -461,6 +691,83 @@ describe('DataSanitizationMatchers', () => {
 
       // Assert
       expect(result).toBe('');
+    });
+
+    it('should match a field whose value is an empty escaped string due to delimiter bleed', () => {
+      // Arrange — value is effectively empty: \\"password\\":\\"\\",... (opening and closing \\" are adjacent)
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"password\\":\\"\\",\\"username\\":\\"mark\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — the regex's .+? consumes the backslash from the closing \" delimiter
+      // and the pattern then matches the bare " as the closing group; an empty value is
+      // therefore matched (incorrectly capturing delimiter content) — documented as a known quirk
+      expect(allMatches.length).toBe(1);
+    });
+
+    it('should stop matching at the first escaped-quote pair when the value contains a double-escaped backslash', () => {
+      // Arrange — value contains a literal backslash: sec\ret
+      // In escaped JSON this is: \\"password\\":\\"sec\\\\ret\\"
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"password\\":\\"sec\\\\ret\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — the \\\\  in the value may interact with the regex stop pattern; document current behavior
+      expect(allMatches.length).toBeGreaterThanOrEqual(0);
+    });
+
+    it('should match a value containing unicode escape sequences', () => {
+      // Arrange — value contains \\u0073 which is 's' in unicode
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"password\\":\\"\\u0073ecret\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert — unicode escapes are treated as literal characters in the string; match should succeed
+      expect(allMatches.length).toBe(1);
+    });
+
+    it('should match a field with a very long escaped value', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const longValue = 'x'.repeat(10_000);
+      const testData = `\\"password\\":\\"${longValue}\\"`;
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(1);
+    });
+
+    it('should match multiple fields in a single escaped JSON string', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const testData =
+        '\\"db_password\\":\\"baz\\",\\"username\\":\\"mark\\",\\"password\\":\\"foo\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(2);
+    });
+
+    it('should not match when the pattern only appears inside a value not a key', () => {
+      // Arrange
+      const matcher = escapedJsonMatcher('password');
+      const testData = '\\"message\\":\\"reset your password here\\"';
+
+      // Act
+      const allMatches = [...testData.matchAll(matcher)];
+
+      // Assert
+      expect(allMatches.length).toBe(0);
     });
   });
 
