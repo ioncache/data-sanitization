@@ -38,7 +38,7 @@ const formEncodedMatcher: DataSanitizationMatcher = (
   remove = false,
 ) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `\\w*${escaped}\\w*`;
+  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
   const fieldPrefix = `${fieldName}[=:]`;
   const fieldValue = '[^\\r\\n&]*';
 
@@ -75,7 +75,7 @@ const formEncodedMatcher: DataSanitizationMatcher = (
  */
 const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `\\w*${escaped}\\w*`;
+  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
 
   if (remove) {
     const fieldPrefix = `"${fieldName}"\\s*:\\s*"`;
@@ -115,7 +115,7 @@ const escapedJsonMatcher: DataSanitizationMatcher = (
   remove = false,
 ) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `\\w*${escaped}\\w*`;
+  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
   const fieldPrefix = `\\\\"${fieldName}\\\\"\\s*:\\s*\\\\"`;
 
   if (remove) {
