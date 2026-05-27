@@ -463,6 +463,11 @@ describe('DataSanitizationMatchers', () => {
       expect(allMatches.length).toBe(0);
     });
 
+    // NOTE: The four tests below document desired behavior that jsonMatcher cannot
+    // currently deliver. The masking regex requires a quoted string value ("..."),
+    // so boolean, null, number, array, and object values are never matched on the
+    // regex path. These tests are intentionally failing to surface this limitation.
+    // Resolution options are tracked in docs/plans/018-pattern-and-matcher-additions.md.
     it('should match a field whose value is a number', () => {
       // Arrange
       const matcher = jsonMatcher('password');

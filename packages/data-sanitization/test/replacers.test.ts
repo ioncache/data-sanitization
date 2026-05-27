@@ -537,6 +537,12 @@ describe('DataSanitizationReplacers', () => {
     });
 
     describe('with edge case string inputs', () => {
+      // NOTE: Several tests in this block document desired behavior that the regex
+      // path cannot currently deliver. The jsonMatcher masking regex requires a
+      // quoted string value ("..."), so boolean, null, number, array, and object
+      // values are never matched. The 'when JSON string parsing is enabled' variants
+      // of these tests pass today via objectReplacer. Whether to extend the regex
+      // path for non-string values is deferred to docs/plans/018-pattern-and-matcher-additions.md.
       it('should mask a sensitive field whose value is a boolean', () => {
         // Arrange
         const testData = '{"password":true,"username":"mark"}';
