@@ -1,0 +1,51 @@
+name: CI (root)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'yarn.lock'
+      - '.yarnrc.yml'
+      - 'tsconfig.json'
+      - '.markdownlint.json'
+      - '.markdownlintignore'
+      - 'lint-staged.config.mjs'
+      - '*.md'
+      - 'docs/**'
+      - '.github/**'
+      - '!.github/workflows/ci-data-sanitization.yml'
+      - '!.github/workflows/ci-data-sanitization-log-providers.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'package.json'
+      - 'yarn.lock'
+      - '.yarnrc.yml'
+      - 'tsconfig.json'
+      - '.markdownlint.json'
+      - '.markdownlintignore'
+      - 'lint-staged.config.mjs'
+      - '*.md'
+      - 'docs/**'
+      - '.github/**'
+      - '!.github/workflows/ci-data-sanitization.yml'
+      - '!.github/workflows/ci-data-sanitization-log-providers.yml'
+
+jobs:
+  ci-root:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          persist-credentials: false
+      - run: corepack enable
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22
+          cache: yarn
+      - run: yarn install --immutable
+      - run: yarn format:check
+      - run: yarn lint:ci

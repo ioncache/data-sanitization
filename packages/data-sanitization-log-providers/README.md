@@ -1,6 +1,15 @@
 # data-sanitization-log-providers
 
 Pre-built log provider adapters for [`data-sanitization`](https://github.com/ioncache/data-sanitization).
+
+<!-- markdownlint-disable MD013 -->
+
+[![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization-log-providers.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization-log-providers.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/data-sanitization-log-providers-coverage-badge-config.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
+[![npm](https://img.shields.io/npm/v/data-sanitization-log-providers.svg?style=flat)](https://www.npmjs.com/package/data-sanitization-log-providers)
+
+<!-- markdownlint-enable MD013 -->
+
 Each adapter wires `sanitizeData` into the logger's native hook or transport API so you don't
 have to write the glue yourself.
 
