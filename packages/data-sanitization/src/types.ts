@@ -79,6 +79,22 @@ interface DataSanitizationReplacerOptions {
    * Whether to use the built-in default patterns. Default: true
    */
   useDefaultPatterns?: boolean;
+  /**
+   * Patterns to exclude from the active pattern set. Any pattern listed here
+   * is removed after the full set is assembled (defaults plus `customPatterns`)
+   * and before regexes are built. Matching is case-insensitive and uses the
+   * same substring logic as `customPatterns`.
+   *
+   * Use this to prevent false positives where a built-in pattern matches field
+   * names that are not sensitive in your application.
+   *
+   * Default: []
+   *
+   * @example
+   * // Prevent 'token' from matching 'tokenizer_config'
+   * sanitizeData(data, { ignorePatterns: ['token'] })
+   */
+  ignorePatterns?: string[];
 }
 
 /**

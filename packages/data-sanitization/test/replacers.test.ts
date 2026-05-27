@@ -1739,4 +1739,164 @@ describe('DataSanitizationReplacers', () => {
       });
     });
   });
+
+  describe('ignorePatterns option', () => {
+    describe('with object input', () => {
+      it('should not mask a field whose default pattern is ignored', () => {
+        // Arrange
+        const testData = { tokenizer_config: 'bert-base', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: ['token'],
+        }) as typeof testData;
+
+        // Assert
+        expect(result.tokenizer_config).toBe('bert-base');
+        expect(result.username).toBe('mark');
+      });
+
+      it('should still mask other default-pattern fields when one pattern is ignored', () => {
+        // Arrange
+        const testData = {
+          password: 'secret',
+          tokenizer_config: 'bert-base',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: ['token'],
+        }) as typeof testData;
+
+        // Assert
+        expect(result.tokenizer_config).toBe('bert-base');
+        expect(result.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.username).toBe('mark');
+      });
+
+      it('should not mask a field whose custom pattern is ignored', () => {
+        // Arrange
+        const testData = { internal_ref: 'ABC123', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          customPatterns: ['internal_ref'],
+          ignorePatterns: ['internal_ref'],
+        }) as typeof testData;
+
+        // Assert
+        expect(result.internal_ref).toBe('ABC123');
+        expect(result.username).toBe('mark');
+      });
+
+      it('should suppress multiple patterns when multiple are ignored', () => {
+        // Arrange
+        const testData = {
+          api_key: 'key123',
+          secret: 'shh',
+          username: 'mark',
+        };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: ['api_key', 'secret'],
+        }) as typeof testData;
+
+        // Assert
+        expect(result.api_key).toBe('key123');
+        expect(result.secret).toBe('shh');
+        expect(result.username).toBe('mark');
+      });
+
+      it('should have no effect when ignorePatterns is an empty array', () => {
+        // Arrange
+        const testData = { password: 'secret', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: [],
+        }) as typeof testData;
+
+        // Assert
+        expect(result.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.username).toBe('mark');
+      });
+
+      it('should remove a field whose default pattern is not ignored when removeMatches is true', () => {
+        // Arrange
+        const testData = { password: 'secret', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: ['token'],
+          removeMatches: true,
+        }) as Record<string, unknown>;
+
+        // Assert
+        expect(result).not.toHaveProperty('password');
+        expect(result.username).toBe('mark');
+      });
+
+      it('should not remove a field whose pattern is in ignorePatterns when removeMatches is true', () => {
+        // Arrange
+        const testData = { token: 'abc', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: ['token'],
+          removeMatches: true,
+        }) as typeof testData;
+
+        // Assert
+        expect(result.token).toBe('abc');
+        expect(result.username).toBe('mark');
+      });
+
+      it('should match ignorePatterns case-insensitively', () => {
+        // Arrange
+        const testData = { password: 'secret', username: 'mark' };
+
+        // Act
+        const result = objectReplacer(testData, {
+          ignorePatterns: ['PASSWORD'],
+        }) as typeof testData;
+
+        // Assert
+        expect(result.password).toBe('secret');
+        expect(result.username).toBe('mark');
+      });
+    });
+
+    describe('with string input', () => {
+      it('should not mask a field whose default pattern is ignored', () => {
+        // Arrange
+        const testData = 'tokenizer_config=bert-base&username=mark';
+
+        // Act
+        const result = stringReplacer(testData, {
+          ignorePatterns: ['token'],
+        });
+
+        // Assert
+        expect(result).toBe('tokenizer_config=bert-base&username=mark');
+      });
+
+      it('should still mask other default-pattern fields when one pattern is ignored', () => {
+        // Arrange
+        const testData =
+          'tokenizer_config=bert-base&password=secret&username=mark';
+
+        // Act
+        const result = stringReplacer(testData, {
+          ignorePatterns: ['token'],
+        });
+
+        // Assert
+        expect(result).toContain('tokenizer_config=bert-base');
+        expect(result).toContain(`password=${DEFAULT_PATTERN_MASK}`);
+        expect(result).toContain('username=mark');
+      });
+    });
+  });
 });

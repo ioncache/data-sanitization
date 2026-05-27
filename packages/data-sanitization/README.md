@@ -355,6 +355,7 @@ sanitizeData({ tags }, { sanitizeCollections: true });
 | `customMatchers`      | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
 | `useDefaultPatterns`  | `boolean`                   | `true`       | Set to `false` to use only your custom patterns, ignoring the built-in defaults.                                                                                                   |
 | `useDefaultMatchers`  | `boolean`                   | `true`       | Set to `false` to use only your custom matchers, ignoring the built-in defaults.                                                                                                   |
+| `ignorePatterns`      | `string[]`                  | `[]`         | Patterns to exclude from the active set. Applied after defaults and `customPatterns` are merged. Use to prevent false positives from built-in substring matching.                  |
 
 ## Default patterns
 
@@ -415,6 +416,32 @@ sanitizeData(data, {
 });
 // => { username: 'mark', ssn: '[REDACTED]', credit_card: '[REDACTED]' }
 ```
+
+Use `ignorePatterns` to prevent a built-in pattern from matching field names
+that are not sensitive in your application. The default `token` pattern, for
+example, would also match `tokenizer_config`:
+
+```typescript
+const data = {
+  tokenizer_config: 'bert-base-uncased',
+  api_key: 'sk-abc123',
+  username: 'mark',
+};
+
+// Without ignorePatterns: tokenizer_config is incorrectly masked
+sanitizeData(data);
+// => { tokenizer_config: '**********', api_key: '**********', username: 'mark' }
+
+// With ignorePatterns: token pattern suppressed, other patterns still active
+sanitizeData(data, { ignorePatterns: ['token'] });
+// => { tokenizer_config: 'bert-base-uncased', api_key: '**********', username: 'mark' }
+```
+
+Note that `ignorePatterns` suppresses the entire substring pattern — any field
+whose name matches the pattern will pass through unmasked. If you have a field
+named `token` alongside `tokenizer_config`, both will be unmasked when `token`
+is ignored. Use `useDefaultPatterns: false` with explicit `customPatterns` for
+fine-grained per-field control.
 
 Number-typed sensitive values are masked with `numericMask` to preserve the
 field's type:
