@@ -16,42 +16,55 @@ const escapePattern = (pattern: string): string =>
   pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
 /**
- * Matches field names in url form encoded data, or other types of
- * data similarly character delimited
+ * Matches field names in cookie header strings (`key=value; key=value`) and
+ * URL form-encoded strings (`key=value&key=value`). Values stop at `&`, `;`,
+ * `\r`, or `\n`, so neither format's separator is consumed as part of a value.
  *
  * @example
- * // Masking
- * formEncodedMatcher('password')
+ * // Form-encoded masking
+ * cookieAndFormEncodedMatcher('password')
  * // 'password=secret&user=alice' → 'password=**********&user=alice'
  *
  * @example
+ * // Cookie masking
+ * cookieAndFormEncodedMatcher('token')
+ * // 'session_token=abc; user=alice' → 'session_token=**********; user=alice'
+ *
+ * @example
  * // Removal
- * formEncodedMatcher('password', true)
+ * cookieAndFormEncodedMatcher('password', true)
  * // 'password=secret&user=alice' → 'user=alice'
  *
- * @param pattern - Pattern in url form encoded like data used to match against field names.
+ * @param pattern - Pattern used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
- * @returns A global, case-insensitive regular expression for matching form-like fields.
+ * @param strict - When true, matches only the exact field name rather than as a substring.
+ * @returns A global, case-insensitive regular expression for matching cookie and form-encoded fields.
  */
-const formEncodedMatcher: DataSanitizationMatcher = (
+const cookieAndFormEncodedMatcher: DataSanitizationMatcher = (
   pattern,
   remove = false,
+  strict = false,
 ) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
+  // Strict mode uses a negative lookbehind to reject substring matches (e.g.
+  // 'token' must not match inside 'session_token'). Non-strict mode wraps the
+  // pattern with [\w-]* on both sides to intentionally match substrings.
+  const fieldName = strict
+    ? `(?<![\\w-])${escaped}`
+    : `[\\w-]*${escaped}[\\w-]*`;
   const fieldPrefix = `${fieldName}[=:]`;
-  const fieldValue = '[^\\r\\n&]*';
+  const fieldValue = '[^\\r\\n&;]*';
 
   if (remove) {
-    const removeLeadingField = `&${fieldPrefix}${fieldValue}`;
-    const removeField = `${fieldPrefix}${fieldValue}&?`;
+    const removeLeadingField = `(?:&|;\\s*)${fieldPrefix}${fieldValue}`;
+    const removeField = `${fieldPrefix}${fieldValue}(?:&|;\\s*)?`;
 
     return new RegExp(`${removeLeadingField}|${removeField}`, MATCHER_FLAGS);
   }
 
   // Zero-width lookahead so neither \r nor \n is consumed; content on
   // subsequent lines is preserved in the output.
-  const maskField = `(${fieldPrefix})${fieldValue}(&|(?=\\r?\\n|$))`;
+  const maskField = `(${fieldPrefix})${fieldValue}(&|;\\s*|(?=\\r?\\n|$))`;
 
   return new RegExp(maskField, MATCHER_FLAGS);
 };
@@ -71,11 +84,16 @@ const formEncodedMatcher: DataSanitizationMatcher = (
  *
  * @param pattern - Pattern in json-like data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
+ * @param strict - When true, matches only the exact field name rather than as a substring.
  * @returns A global, case-insensitive regular expression for matching JSON-like fields.
  */
-const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
+const jsonMatcher: DataSanitizationMatcher = (
+  pattern,
+  remove = false,
+  strict = false,
+) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
+  const fieldName = strict ? escaped : `[\\w-]*${escaped}[\\w-]*`;
 
   if (remove) {
     const fieldPrefix = `"${fieldName}"\\s*:\\s*"`;
@@ -108,14 +126,16 @@ const jsonMatcher: DataSanitizationMatcher = (pattern, remove = false) => {
  *
  * @param pattern - Pattern in escaped json data used to match against field names.
  * @param remove - Whether to create a matcher for removing matched fields instead of masking values.
+ * @param strict - When true, matches only the exact field name rather than as a substring.
  * @returns A global, case-insensitive regular expression for matching escaped JSON fields.
  */
 const escapedJsonMatcher: DataSanitizationMatcher = (
   pattern,
   remove = false,
+  strict = false,
 ) => {
   const escaped = escapePattern(pattern);
-  const fieldName = `[\\w-]*${escaped}[\\w-]*`;
+  const fieldName = strict ? escaped : `[\\w-]*${escaped}[\\w-]*`;
   const fieldPrefix = `\\\\"${fieldName}\\\\"\\s*:\\s*\\\\"`;
 
   if (remove) {
@@ -131,13 +151,17 @@ const escapedJsonMatcher: DataSanitizationMatcher = (
   return new RegExp(maskField, MATCHER_FLAGS);
 };
 
-const defaultMatchers = [formEncodedMatcher, jsonMatcher, escapedJsonMatcher];
+const defaultMatchers = [
+  cookieAndFormEncodedMatcher,
+  jsonMatcher,
+  escapedJsonMatcher,
+];
 
 export {
+  cookieAndFormEncodedMatcher,
   defaultMatchers,
   escapedJsonMatcher,
   escapePattern,
-  formEncodedMatcher,
   jsonMatcher,
 };
 

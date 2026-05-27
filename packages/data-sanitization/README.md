@@ -246,25 +246,11 @@ sanitizeData(
 
 ### Sanitize PII and PHI with custom patterns
 
-Use `customPatterns` to mask fields that are sensitive for your domain, such as
-PII or PHI fields.
+Use the exported `piiPatterns` and `phiPatterns` constants — or build your own
+list — and pass them via `customPatterns`.
 
 ```typescript
-import { sanitizeData } from 'data-sanitization';
-
-const sensitivePatterns = [
-  'address',
-  'date_of_birth',
-  'email',
-  'emergency_contact',
-  'full_name',
-  'health_card',
-  'ip_address',
-  'medications',
-  'phone',
-  'postal_code',
-  'ssn',
-];
+import { sanitizeData, piiPatterns, phiPatterns } from 'data-sanitization';
 
 const patient = {
   accountId: 'acct_123',
@@ -277,7 +263,7 @@ const patient = {
 };
 
 sanitizeData(patient, {
-  customPatterns: sensitivePatterns,
+  customPatterns: [...piiPatterns, ...phiPatterns],
   useDefaultPatterns: false,
 });
 // => {
@@ -296,7 +282,7 @@ masking them.
 
 ```typescript
 sanitizeData(patient, {
-  customPatterns: sensitivePatterns,
+  customPatterns: [...piiPatterns, ...phiPatterns],
   removeMatches: true,
   useDefaultPatterns: false,
 });
@@ -351,7 +337,7 @@ sanitizeData({ tags }, { sanitizeCollections: true });
 | `sanitizeCollections` | `boolean`                   | `false`      | Sanitize `Map` and `Set` instances by traversing their entries and returning a new sanitized copy. When false, these pass through unchanged like other non-plain object instances. |
 | `scanStringValues`    | `boolean`                   | `true`       | Scan string values on non-sensitive keys for embedded patterns. Applies to object input and to string input when `parseJsonStrings` is enabled; has no effect on raw string input. |
 | `parseJsonStrings`    | `boolean`                   | `false`      | Parse valid JSON string inputs as structured data and sanitize by field name. Re-serializes with `JSON.stringify`, discarding original whitespace.                                 |
-| `customPatterns`      | `string[]`                  | `[]`         | Additional field name patterns to match                                                                                                                                            |
+| `customPatterns`      | `PatternEntry[]`            | `[]`         | Additional field name patterns to match. Each entry is a pattern string (substring match) or `{ match: string; strict?: boolean }` for an exact match.                             |
 | `customMatchers`      | `DataSanitizationMatcher[]` | `[]`         | Additional regex matchers for custom string formats                                                                                                                                |
 | `useDefaultPatterns`  | `boolean`                   | `true`       | Set to `false` to use only your custom patterns, ignoring the built-in defaults.                                                                                                   |
 | `useDefaultMatchers`  | `boolean`                   | `true`       | Set to `false` to use only your custom matchers, ignoring the built-in defaults.                                                                                                   |
@@ -359,8 +345,10 @@ sanitizeData({ tags }, { sanitizeCollections: true });
 
 ## Default patterns
 
-The following field name patterns are matched by default using a
-case-insensitive substring match:
+The following field name patterns are matched by default. All use
+case-insensitive substring matching unless noted as exact.
+
+**Credentials** (`credentialPatterns`):
 
 - `apikey`
 - `api_key`
@@ -368,8 +356,56 @@ case-insensitive substring match:
 - `secret`
 - `token`
 
-A field named `db_password` or `client_secret_key` would also match because
+**HTTP authentication headers** (`headerPatterns`):
+
+- `authorization`
+- `api-key`
+
+A field named `db_password` or `x-authorization` would also match because
 these patterns match as substrings.
+
+Two additional pattern groups are exported but not included by default:
+
+- **`piiPatterns`** — Personally Identifiable Information: names, contact
+  details, government IDs, and digital identifiers. Ambiguous single-word
+  terms such as `address`, `city`, `state`, and `zip` use exact matching to
+  avoid false positives (e.g. `email_address` is not masked when only `address`
+  is in `piiPatterns`).
+- **`phiPatterns`** — Protected Health Information under HIPAA: medical record
+  identifiers, healthcare dates, clinical data, and biometrics.
+
+Use them via `customPatterns`:
+
+```typescript
+import { sanitizeData, piiPatterns, phiPatterns } from 'data-sanitization';
+
+sanitizeData(patient, {
+  customPatterns: [...piiPatterns, ...phiPatterns],
+});
+```
+
+### Exact vs. substring matching
+
+Each pattern in `customPatterns` is a `PatternEntry`: either a plain string
+(substring match) or an object with `strict: true` for an exact field-name
+match.
+
+```typescript
+// Substring: matches 'token', 'access_token', 'session_token', ...
+sanitizeData(data, { customPatterns: ['token'] });
+
+// Exact: matches only 'token', not 'access_token'
+sanitizeData(data, { customPatterns: [{ match: 'token', strict: true }] });
+```
+
+Use exact matching when a pattern is a common English word that would produce
+false positives as a substring — for example, `state` would otherwise mask
+`statement` or `stateCode`.
+
+> **`ignorePatterns` and exact matching:** `ignorePatterns` is a `string[]`
+> matched against the `match` string of each active pattern. To suppress an
+> exact-match entry such as `{ match: 'state', strict: true }`, pass
+> `ignorePatterns: ['state']`.
 
 ## Default matchers
 
@@ -379,8 +415,10 @@ Three matchers are included by default:
   JSON-like strings
 - **Escaped JSON matcher**: matches `\"fieldName\":\"value\"` patterns in
   JSON embedded inside JSON string values
-- **Form-encoded matcher**: matches `fieldName=value` and `fieldName:value`
-  patterns in URL-encoded and similarly delimited strings
+- **Cookie and form-encoded matcher**: matches `fieldName=value` and
+  `fieldName:value` patterns in URL form-encoded strings and HTTP Cookie
+  headers. Values stop at `&`, `;`, `\r`, or `\n` so neither format's
+  separator is consumed as part of a value.
 
 ## Custom patterns and matchers
 

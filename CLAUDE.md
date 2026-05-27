@@ -29,14 +29,16 @@ a single function, `sanitizeData`, exported from `packages/data-sanitization/src
 **Key modules:**
 
 - `packages/data-sanitization/src/matchers.ts` — Three built-in `DataSanitizationMatcher`
-  factories (`jsonMatcher`, `escapedJsonMatcher`, `formEncodedMatcher`). Each takes a pattern string
-  and optional `remove` flag and returns a `RegExp`. Custom matchers must produce a global,
-  case-insensitive regex using capture groups `$1`/`$2` for value replacement.
+  factories (`cookieAndFormEncodedMatcher`, `jsonMatcher`, `escapedJsonMatcher`). Each takes a
+  pattern string, optional `remove` flag, and optional `strict` flag and returns a `RegExp`. Custom
+  matchers must produce a global, case-insensitive regex using capture groups `$1`/`$2` for value
+  replacement.
 - `packages/data-sanitization/src/replacers.ts` — `stringReplacer` and `objectReplacer`. String
   replacer iterates all (pattern × matcher) combinations. Object replacer builds `RegExp` key
   matchers once, then recurses with a `WeakSet` to detect circular references.
-- `packages/data-sanitization/src/constants.ts` — Default field-name patterns (`apikey`,
-  `api_key`, `password`, `secret`, `token`) and default mask (`**********`).
+- `packages/data-sanitization/src/constants.ts` — Pattern groups: `credentialPatterns`,
+  `headerPatterns`, `piiPatterns`, `phiPatterns`, and `defaultPatterns` (credentials + headers).
+  Also exports `DEFAULT_PATTERN_MASK` and `DEFAULT_NUMERIC_MASK`.
 - `packages/data-sanitization/src/types.ts` — All exported TypeScript types
   (`DataSanitizationMatcher`, `DataSanitizationReplacer`, `DataSanitizationReplacerOptions`, etc.).
 - `packages/data-sanitization/src/errors.ts` — `DataSanitizationError` with a `details` property;
