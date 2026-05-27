@@ -139,20 +139,20 @@ These items extend the library into companion packages and shared utilities.
 They involve structural changes to the repository but do not affect the
 existing `data-sanitization` public API.
 
-### Utility Helpers (`/utils` subpath export) — tracked in [#307](https://github.com/ioncache/data-sanitization/issues/307)
+### Utility Helpers (`/utils` subpath export) — completed in [#313](https://github.com/ioncache/data-sanitization/pull/313)
 
 Export `diffSanitizedFields` and `buildSanitizedWarning` as named exports from
 a `data-sanitization/utils` subpath. These helpers are useful in log middleware
 implementations regardless of logger and are currently only available to
 applications that inline them.
 
-- `diffSanitizedFields(original, sanitized)` — recursively diffs two parsed log
-  objects and returns dot-notation paths for any keys whose values changed
-- `buildSanitizedWarning(originalStr, sanitizedStr)` — builds a structured
-  warning log entry identifying which fields were sanitized, suitable for
-  prepending to the sanitized log line
+- [x] `diffSanitizedFields(original, sanitized)` — recursively diffs two parsed
+      log objects and returns dot-notation paths for any keys whose values changed
+- [x] `buildSanitizedWarning(originalStr, sanitizedStr)` — builds a structured
+      warning log entry identifying which fields were sanitized, suitable for
+      prepending to the sanitized log line
 
-### Monorepo Migration — tracked in [#308](https://github.com/ioncache/data-sanitization/issues/308)
+### Monorepo Migration — completed in [#310](https://github.com/ioncache/data-sanitization/pull/310)
 
 Migrate the repository to a Yarn workspace monorepo to support companion
 packages. Replace the current `conventional-changelog`-based release script
@@ -160,7 +160,7 @@ with [Changesets](https://github.com/changesets/changesets) for independent
 per-package versioning. Conventional commit discipline and commitlint
 enforcement remain unchanged.
 
-### Log Provider Adapters (`data-sanitization-log-providers`) — tracked in [#309](https://github.com/ioncache/data-sanitization/issues/309)
+### Log Provider Adapters (`data-sanitization-log-providers`) — completed in [#314](https://github.com/ioncache/data-sanitization/pull/314)
 
 New `data-sanitization-log-providers` workspace package with subpath exports
 for Pino (`/pino`), Winston (`/winston`), and Bunyan (`/bunyan`). Each adapter
