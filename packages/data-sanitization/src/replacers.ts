@@ -168,10 +168,9 @@ const stringReplacer: DataSanitizationReplacer = (data, options = {}) => {
   const matchers = buildMatchers(useDefaultMatchers, customMatchers);
 
   const replacement = removeMatches ? '' : '$1' + mask + '$2';
-  for (const pattern of patterns) {
-    for (const matcher of matchers) {
-      data = data.replace(matcher(pattern, removeMatches), replacement);
-    }
+  const { regexes } = buildStringScanRegexes(matchers, patterns, removeMatches);
+  for (const regex of regexes) {
+    data = data.replace(regex, replacement);
   }
 
   return data;

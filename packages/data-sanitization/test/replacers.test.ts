@@ -282,6 +282,36 @@ describe('DataSanitizationReplacers', () => {
         expect(replacedData).toContain('username=mark');
       });
 
+      it('should reuse compiled custom matcher regexes for repeated string sanitization', () => {
+        // Arrange
+        let matcherCalls = 0;
+        const matcher = (pattern: string): RegExp => {
+          matcherCalls++;
+          return new RegExp(`(${pattern}=)[^&\n]+(&|$)`, 'gi');
+        };
+        const options = {
+          customMatchers: [matcher],
+          customPatterns: ['cache_key'],
+          useDefaultMatchers: false,
+          useDefaultPatterns: false,
+        };
+
+        // Act
+        const first = stringReplacer(
+          'cache_key=first&username=mark',
+          options,
+        ) as string;
+        const second = stringReplacer(
+          'cache_key=second&username=mark',
+          options,
+        ) as string;
+
+        // Assert
+        expect(first).toBe(`cache_key=${DEFAULT_PATTERN_MASK}&username=mark`);
+        expect(second).toBe(`cache_key=${DEFAULT_PATTERN_MASK}&username=mark`);
+        expect(matcherCalls).toBe(1);
+      });
+
       it('should skip default patterns when useDefaultPatterns is false', () => {
         // Arrange
         const testData = '{"password":"foo","username":"bar"}';

@@ -83,7 +83,7 @@ describe('pino-hook', () => {
       expect(warning).not.toHaveProperty('hostname');
     });
 
-    it('should emit no warning when allowedFields is empty and field changed', () => {
+    it('should emit a warning with only fields metadata when allowedFields is empty', () => {
       // Arrange
       const hook = createSanitizeLogLine({ allowedFields: [] });
 
@@ -91,7 +91,7 @@ describe('pino-hook', () => {
       const result = hook(dirty);
       const lines = result.split('\n').filter(Boolean);
 
-      // Assert — warning is still emitted (fields array always present), just has no extra fields
+      // Assert
       expect(lines).toHaveLength(2);
       const warning = JSON.parse(lines[0]) as Record<string, unknown>;
       expect(warning.fields).toEqual(['password']);

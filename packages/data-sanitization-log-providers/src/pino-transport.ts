@@ -1,17 +1,17 @@
 import { once } from 'node:events';
 import build from 'pino-abstract-transport';
-
-const writeLine = async (line: string): Promise<void> => {
-  if (!process.stdout.write(line + '\n')) {
-    await once(process.stdout, 'drain');
-  }
-};
 import {
   buildErrorPlaceholder,
   PINO_DEFAULT_ALLOWED_FIELDS,
   sanitizeLine,
 } from './shared.js';
 import type { PinoTransportOptions } from './types.js';
+
+const writeLine = async (line: string): Promise<void> => {
+  if (!process.stdout.write(line + '\n')) {
+    await once(process.stdout, 'drain');
+  }
+};
 
 /**
  * Pino `pino-abstract-transport` worker module.
