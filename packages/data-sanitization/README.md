@@ -71,6 +71,14 @@ If you control your data shape exactly and need maximum throughput, reach for
 [fast-redact](https://github.com/davidmarkclements/fast-redact). If you need to sanitize data you don't fully control,
 `data-sanitization` is the right tool.
 
+> [!NOTE]
+> **Best-effort by design.** `data-sanitization` is a defensive layer that reduces accidental
+> leakage — it is not a compliance guarantee. Pattern-based sanitization will miss sensitive values
+> when key names don't match the configured patterns, values appear in unsupported formats (such as
+> numeric fields in unparsed JSON strings), or content is embedded in ways no configured matcher
+> recognizes. Use it to catch what might otherwise slip through, not as a substitute for access
+> controls or data-handling policies.
+
 ## Log provider integrations
 
 [`data-sanitization-log-providers`](https://www.npmjs.com/package/data-sanitization-log-providers)
