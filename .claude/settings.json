@@ -4,7 +4,11 @@
       "Bash(yarn test:coverage)",
       "Bash(yarn workspaces *)",
       "WebFetch(domain:www.githubstatus.com)",
-      "WebFetch(domain:api.github.com)"
+      "WebFetch(domain:api.github.com)",
+      "Bash(yarn workspace *)"
+    ],
+    "additionalDirectories": [
+      "/home/ioncache/projects/personal/data-sanitization.worktrees"
     ]
   },
   "enabledPlugins": {
