@@ -4,7 +4,7 @@
 
 <!-- markdownlint-disable MD013 -->
 
-[![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci.yml)
+[![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/data-sanitization-coverage-badge-config.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
 [![npm](https://img.shields.io/npm/v/data-sanitization.svg?style=flat)](https://www.npmjs.com/package/data-sanitization)
 [![Bundle size](https://img.shields.io/bundlejs/size/data-sanitization?style=flat)](https://bundlejs.com/?q=data-sanitization)
