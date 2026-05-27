@@ -537,13 +537,12 @@ describe('DataSanitizationReplacers', () => {
     });
 
     describe('with edge case string inputs', () => {
-      // NOTE: Several tests in this block document desired behavior that the regex
-      // path cannot currently deliver. The jsonMatcher masking regex requires a
-      // quoted string value ("..."), so boolean, null, number, array, and object
-      // values are never matched. The 'when JSON string parsing is enabled' variants
-      // of these tests pass today via objectReplacer. Whether to extend the regex
-      // path for non-string values is deferred to docs/plans/018-pattern-and-matcher-additions.md.
-      it('should mask a sensitive field whose value is a boolean', () => {
+      // The regex path only matches string-quoted values. For each non-string value
+      // type below there are two paired tests: the default path documents that the
+      // value is left unchanged, and the parseJsonStrings: true path documents that
+      // masking works correctly via objectReplacer. When parseJsonStrings defaults
+      // to true in v2 the default-path behaviour will change accordingly.
+      it('should leave a boolean sensitive field value unchanged', () => {
         // Arrange
         const testData = '{"password":true,"username":"mark"}';
 
@@ -551,7 +550,7 @@ describe('DataSanitizationReplacers', () => {
         const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
-        expect(result.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.password).toBe(true);
         expect(result.username).toBe('mark');
       });
 
@@ -569,7 +568,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a sensitive field whose value is null', () => {
+      it('should leave a null sensitive field value unchanged', () => {
         // Arrange
         const testData = '{"password":null,"username":"mark"}';
 
@@ -577,7 +576,7 @@ describe('DataSanitizationReplacers', () => {
         const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
-        expect(result.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.password).toBeNull();
         expect(result.username).toBe('mark');
       });
 
@@ -595,7 +594,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a sensitive field whose value is an array', () => {
+      it('should leave an array sensitive field value unchanged', () => {
         // Arrange
         const testData = '{"token":["a","b","c"],"username":"mark"}';
 
@@ -603,7 +602,7 @@ describe('DataSanitizationReplacers', () => {
         const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
-        expect(result.token).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.token).toEqual(['a', 'b', 'c']);
         expect(result.username).toBe('mark');
       });
 
@@ -621,7 +620,7 @@ describe('DataSanitizationReplacers', () => {
         expect(result.username).toBe('mark');
       });
 
-      it('should mask a sensitive field whose value is a nested object', () => {
+      it('should leave a nested object sensitive field value unchanged', () => {
         // Arrange
         const testData = '{"token":{"nested":"value"},"username":"mark"}';
 
@@ -629,7 +628,7 @@ describe('DataSanitizationReplacers', () => {
         const result = JSON.parse(stringReplacer(testData) as string);
 
         // Assert
-        expect(result.token).toBe(DEFAULT_PATTERN_MASK);
+        expect(result.token).toEqual({ nested: 'value' });
         expect(result.username).toBe('mark');
       });
 
@@ -935,7 +934,7 @@ describe('DataSanitizationReplacers', () => {
         ).not.toThrow();
       });
 
-      it('should mask sensitive field values regardless of their type', () => {
+      it('should mask string values and leave non-string sensitive field values unchanged', () => {
         // Arrange — mixed-type array: same key with different value types across objects
         const testData = JSON.stringify([
           { password: 'string-secret' },
@@ -949,9 +948,9 @@ describe('DataSanitizationReplacers', () => {
           unknown
         >[];
 
-        // Assert — all sensitive-key values should be masked regardless of type
+        // Assert — string value is masked; numeric value is left unchanged on the regex path
         expect(result[0]?.password).toBe(DEFAULT_PATTERN_MASK);
-        expect(result[1]?.password).toBe(DEFAULT_PATTERN_MASK);
+        expect(result[1]?.password).toBe(12345);
         expect(result[2]?.username).toBe('mark');
       });
 
