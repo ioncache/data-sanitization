@@ -67,7 +67,7 @@
     "@types/node": "^25.9.0",
     "@vitest/coverage-v8": "^4.1.6",
     "markdownlint-cli2": "^0.22.1",
-    "oxfmt": "^0.51.0",
+    "oxfmt": "^0.53.0",
     "oxlint": "^1.68.0",
     "query-string": "^9.3.1",
     "typescript": "^6.0.3",
