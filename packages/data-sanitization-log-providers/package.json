@@ -61,7 +61,7 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.0",
-    "@vitest/coverage-v8": "^4.1.6",
+    "@vitest/coverage-v8": "^4.1.8",
     "data-sanitization": "workspace:*",
     "markdownlint-cli2": "^0.22.1",
     "oxfmt": "^0.53.0",
