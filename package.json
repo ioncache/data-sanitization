@@ -36,7 +36,7 @@
     "@vitest/coverage-v8": "^4.1.9",
     "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
-    "lint-staged": "^17.0.7",
+    "lint-staged": "^17.0.8",
     "markdownlint-cli2": "^0.22.1",
     "oxfmt": "^0.54.0",
     "oxlint": "^1.69.0",
