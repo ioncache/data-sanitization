@@ -28,8 +28,8 @@
     "test:watch": "yarn workspace data-sanitization test:watch"
   },
   "devDependencies": {
-    "@commitlint/cli": "^21.0.2",
-    "@commitlint/config-conventional": "^21.0.2",
+    "@commitlint/cli": "^21.1.0",
+    "@commitlint/config-conventional": "^21.1.0",
     "@inquirer/prompts": "^8.5.2",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^26.0.1",
@@ -40,7 +40,7 @@
     "markdownlint-cli2": "^0.22.1",
     "oxfmt": "^0.56.0",
     "oxlint": "^1.71.0",
-    "query-string": "^9.4.0",
+    "query-string": "^9.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
     "vitest": "^4.1.9",
