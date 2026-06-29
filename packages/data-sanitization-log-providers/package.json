@@ -60,7 +60,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^25.9.3",
+    "@types/node": "^26.0.1",
     "@vitest/coverage-v8": "^4.1.9",
     "data-sanitization": "workspace:*",
     "markdownlint-cli2": "^0.22.1",
