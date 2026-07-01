@@ -60,10 +60,10 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^26.0.1",
+    "@types/node": "^26.1.0",
     "@vitest/coverage-v8": "^4.1.9",
     "data-sanitization": "workspace:*",
-    "markdownlint-cli2": "^0.22.1",
+    "markdownlint-cli2": "^0.23.0",
     "oxfmt": "^0.56.0",
     "oxlint": "^1.71.0",
     "pino": "^10.3.1",
