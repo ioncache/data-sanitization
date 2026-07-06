@@ -33,7 +33,7 @@
     "@inquirer/prompts": "^8.5.2",
     "@tsconfig/node24": "^24.0.4",
     "@types/node": "^26.1.0",
-    "@vitest/coverage-v8": "^4.1.9",
+    "@vitest/coverage-v8": "^4.1.10",
     "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.8",
