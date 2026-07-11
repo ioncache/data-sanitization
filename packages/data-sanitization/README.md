@@ -2,7 +2,7 @@
 
 > Sensitive data (credentials, PII, PHI, and other private information) ends up in logs more often than it should.
 
-<!-- markdownlint-disable MD013 -->
+<!-- johndownlint-disable MD013 -->
 
 [![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/data-sanitization-coverage-badge-config.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
@@ -12,7 +12,7 @@
 
 [npm](https://www.npmjs.com/package/data-sanitization) &nbsp;•&nbsp; [Changelog](https://github.com/ioncache/data-sanitization/releases) &nbsp;•&nbsp; [GitHub](https://github.com/ioncache/data-sanitization)
 
-<!-- markdownlint-enable MD013 -->
+<!-- johndownlint-enable MD013 -->
 
 ---
 
@@ -27,13 +27,13 @@ defaults with your own patterns for PII, PHI, or any domain-specific fields.
 
 ```ts
 const input = {
-  username: 'mark',
+  username: 'john',
   password: 'super-secret',
   api_key: 'sk_live_abc123',
 };
 
 sanitizeData(input);
-// => { username: 'mark', password: '**********', api_key: '**********' }
+// => { username: 'john', password: '**********', api_key: '**********' }
 ```
 
 ## Highlights
@@ -47,7 +47,7 @@ sanitizeData(input);
 
 ## Why not fast-redact or pino-redact?
 
-Tools like [fast-redact](https://github.com/davidmarkclements/fast-redact) and
+Tools like [fast-redact](https://github.com/davidjohnclements/fast-redact) and
 [pino's built-in redaction](https://getpino.io/#/docs/redaction) are excellent choices when
 you control your data shape. They require you to declare the exact paths to
 redact upfront (`user.password`, `req.headers.authorization`) and compile
@@ -68,7 +68,7 @@ path-based tools; the benefit is that it works on data whose shape you don't
 fully know.
 
 If you control your data shape exactly and need maximum throughput, reach for
-[fast-redact](https://github.com/davidmarkclements/fast-redact). If you need to sanitize data you don't fully control,
+[fast-redact](https://github.com/davidjohnclements/fast-redact). If you need to sanitize data you don't fully control,
 `data-sanitization` is the right tool.
 
 ## Scope and limitations
@@ -96,7 +96,7 @@ substitute for access controls, network security, or data-handling policies.
 is a companion package with pre-built adapters that wire `data-sanitization` directly into your
 logging pipeline:
 
-<!-- markdownlint-disable MD013 -->
+<!-- johndownlint-disable MD013 -->
 
 | Adapter               | Import path                                      | How it works                                                                            |
 | --------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -104,7 +104,7 @@ logging pipeline:
 | **Pino transport**    | `data-sanitization-log-providers/pino-transport` | A `pino-abstract-transport` stream you can pass to `pino({ transport: ... })`           |
 | **Winston transport** | `data-sanitization-log-providers/winston`        | A `winston-transport` subclass that sanitizes each log entry before forwarding it       |
 
-<!-- markdownlint-enable MD013 -->
+<!-- johndownlint-enable MD013 -->
 
 Install the companion package alongside your logger:
 
@@ -194,13 +194,13 @@ import {
 import { sanitizeData } from 'data-sanitization';
 
 const input = {
-  username: 'mark',
+  username: 'john',
   password: 'super-secret',
   api_key: 'sk_live_abc123',
 };
 
 const result = sanitizeData(input);
-// => { username: 'mark', password: '**********', api_key: '**********' }
+// => { username: 'john', password: '**********', api_key: '**********' }
 ```
 
 ### Sanitize a string
@@ -210,11 +210,11 @@ sanitizing serialized data before logging. For example, a raw request body,
 a form-encoded payload, or a JSON string you have not yet parsed:
 
 ```typescript
-sanitizeData('{"password":"secret","username":"mark"}');
-// => '{"password":"**********","username":"mark"}'
+sanitizeData('{"password":"secret","username":"john"}');
+// => '{"password":"**********","username":"john"}'
 
-sanitizeData('password=secret&username=mark');
-// => 'password=**********&username=mark'
+sanitizeData('password=secret&username=john');
+// => 'password=**********&username=john'
 ```
 
 ### Parse JSON strings
@@ -224,8 +224,8 @@ the same way an object would be. This correctly handles all value types,
 including numeric-valued sensitive fields:
 
 ```typescript
-sanitizeData('{"password":12345,"username":"mark"}');
-// => '{"password":9999999999,"username":"mark"}'
+sanitizeData('{"password":12345,"username":"john"}');
+// => '{"password":9999999999,"username":"john"}'
 ```
 
 Non-JSON strings fall back to text-based pattern matching automatically.
@@ -237,10 +237,10 @@ Non-JSON strings fall back to text-based pattern matching automatically.
 > the input is never JSON:
 >
 > ```typescript
-> sanitizeData('{"password":12345,"username":"mark"}', {
+> sanitizeData('{"password":12345,"username":"john"}', {
 >   parseJsonStrings: false,
 > });
-> // => '{"password":12345,"username":"mark"}' (numeric value not masked on regex path)
+> // => '{"password":12345,"username":"john"}' (numeric value not masked on regex path)
 > ```
 
 If the string cannot be parsed as JSON, `sanitizeData` silently falls back to
@@ -252,10 +252,10 @@ This is tracked for a future release.
 
 ```typescript
 sanitizeData(
-  { password: 'secret', token: 'abc', username: 'mark' },
+  { password: 'secret', token: 'abc', username: 'john' },
   { removeMatches: true },
 );
-// => { username: 'mark' }
+// => { username: 'john' }
 ```
 
 ### Sanitize PII and PHI with custom patterns
@@ -311,8 +311,8 @@ No configuration needed. Out of the box, `sanitizeData` covers common credential
 authentication headers:
 
 ```typescript
-sanitizeData({ password: 'secret', token: 'abc', username: 'mark' });
-// => { password: '**********', token: '**********', username: 'mark' }
+sanitizeData({ password: 'secret', token: 'abc', username: 'john' });
+// => { password: '**********', token: '**********', username: 'john' }
 ```
 
 #### Add PII patterns
@@ -354,11 +354,11 @@ is never mutated.
 ```typescript
 const session = new Map([
   ['token', 'abc123'],
-  ['username', 'mark'],
+  ['username', 'john'],
 ]);
 
 sanitizeData({ session }, { sanitizeCollections: true });
-// => { session: Map { 'token' => '**********', 'username' => 'mark' } }
+// => { session: Map { 'token' => '**********', 'username' => 'john' } }
 ```
 
 ```typescript
@@ -485,7 +485,7 @@ Use `customPatterns` to add field names on top of the defaults, or use
 import { sanitizeData } from 'data-sanitization';
 
 const data = {
-  username: 'mark',
+  username: 'john',
   ssn: '123-45-6789',
   credit_card: '4111111111111111',
 };
@@ -494,21 +494,21 @@ const data = {
 sanitizeData(data, {
   customPatterns: ['ssn', 'credit_card'],
 });
-// => { username: 'mark', ssn: '**********', credit_card: '**********' }
+// => { username: 'john', ssn: '**********', credit_card: '**********' }
 
 // Use only specific patterns, ignoring the defaults
 sanitizeData(data, {
   customPatterns: ['ssn'],
   useDefaultPatterns: false,
 });
-// => { username: 'mark', ssn: '**********', credit_card: '4111111111111111' }
+// => { username: 'john', ssn: '**********', credit_card: '4111111111111111' }
 
 // Use a different mask string
 sanitizeData(data, {
   customPatterns: ['ssn', 'credit_card'],
   patternMask: '[REDACTED]',
 });
-// => { username: 'mark', ssn: '[REDACTED]', credit_card: '[REDACTED]' }
+// => { username: 'john', ssn: '[REDACTED]', credit_card: '[REDACTED]' }
 ```
 
 Use `ignorePatterns` to prevent a built-in pattern from matching field names
@@ -519,16 +519,16 @@ example, would also match `tokenizer_config`:
 const data = {
   tokenizer_config: 'bert-base-uncased',
   api_key: 'sk-abc123',
-  username: 'mark',
+  username: 'john',
 };
 
 // Without ignorePatterns: tokenizer_config is incorrectly masked
 sanitizeData(data);
-// => { tokenizer_config: '**********', api_key: '**********', username: 'mark' }
+// => { tokenizer_config: '**********', api_key: '**********', username: 'john' }
 
 // With ignorePatterns: token pattern suppressed, other patterns still active
 sanitizeData(data, { ignorePatterns: ['token'] });
-// => { tokenizer_config: 'bert-base-uncased', api_key: '**********', username: 'mark' }
+// => { tokenizer_config: 'bert-base-uncased', api_key: '**********', username: 'john' }
 ```
 
 Note that `ignorePatterns` suppresses the entire substring pattern; any field
@@ -541,11 +541,11 @@ Number-typed sensitive values are masked with `numericMask` to preserve the
 field's type:
 
 ```typescript
-sanitizeData({ password: 12345, username: 'mark' });
-// => { password: 9999999999, username: 'mark' }
+sanitizeData({ password: 12345, username: 'john' });
+// => { password: 9999999999, username: 'john' }
 
-sanitizeData({ password: 12345, username: 'mark' }, { numericMask: 0 });
-// => { password: 0, username: 'mark' }
+sanitizeData({ password: 12345, username: 'john' }, { numericMask: 0 });
+// => { password: 0, username: 'john' }
 ```
 
 For custom data formats, provide a `DataSanitizationMatcher`, a function that
@@ -559,12 +559,12 @@ import type { DataSanitizationMatcher } from 'data-sanitization';
 const headerMatcher: DataSanitizationMatcher = (pattern) =>
   new RegExp(`(${pattern}:\\s*).+?(\\n|$)`, 'gi');
 
-sanitizeData('authorization: Bearer abc123\nuser: mark', {
+sanitizeData('authorization: Bearer abc123\nuser: john', {
   customMatchers: [headerMatcher],
   customPatterns: ['authorization'],
   useDefaultMatchers: false,
 });
-// => 'authorization: **********\nuser: mark'
+// => 'authorization: **********\nuser: john'
 ```
 
 ## Error handling
@@ -686,8 +686,8 @@ the string-scanning cache and avoids the fingerprinting overhead on every call.
 When options must genuinely vary per call, each call pays the first-call
 compilation cost (~32× slower than a cached call).
 
-For full benchmark tables, charts, and scaling analysis see
-[docs/performance.md](docs/performance.md). To run the benchmarks:
+For full benchjohn tables, charts, and scaling analysis see
+[docs/performance.md](docs/performance.md). To run the benchjohns:
 
 ```bash
 yarn bench
