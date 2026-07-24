@@ -45,7 +45,7 @@ jobs:
         with:
           persist-credentials: false
       - run: corepack enable
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: yarn
@@ -61,7 +61,7 @@ jobs:
       - run: yarn workspace data-sanitization-log-providers test:coverage
       - name: Report coverage
         if: matrix.node-version == 24
-        uses: davelosert/vitest-coverage-report-action@3c054a2d2e2ca45446417ad5d6d5eb33092af8f1 # v2
+        uses: davelosert/vitest-coverage-report-action@8b157684c6a6b259b97d45e72b44242865c0f6a5 # v2
         with:
           json-summary-path: coverage/coverage-summary.json
           json-final-path: coverage/coverage-final.json
@@ -72,7 +72,7 @@ jobs:
         run: echo "percentage=$(jq '.total.lines.pct' packages/data-sanitization-log-providers/coverage/coverage-summary.json)" >> "$GITHUB_OUTPUT"
       - name: Update coverage badge
         if: matrix.node-version == 24 && github.event_name == 'push'
-        uses: schneegans/dynamic-badges-action@0e50b8bad39e7e1afd3e4e9c2b7dd145fad07501 # v1.8.0
+        uses: schneegans/dynamic-badges-action@28b0fa8bdeb46170ac397105ece0c1fe58f68910 # v1.9.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
           gistID: ${{ vars.COVERAGE_GIST_ID }}

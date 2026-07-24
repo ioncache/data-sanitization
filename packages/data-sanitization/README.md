@@ -2,7 +2,7 @@
 
 > Sensitive data (credentials, PII, PHI, and other private information) ends up in logs more often than it should.
 
-<!-- johndownlint-disable MD013 -->
+<!-- markdownlint-disable MD013 -->
 
 [![Node CI](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization.yml/badge.svg)](https://github.com/ioncache/data-sanitization/actions/workflows/ci-data-sanitization.yml)
 [![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e/raw/data-sanitization-coverage-badge-config.json&style=flat)](https://gist.github.com/ioncache/e2afdd1c4942b8c99362ceb3853a331e)
@@ -12,7 +12,7 @@
 
 [npm](https://www.npmjs.com/package/data-sanitization) &nbsp;•&nbsp; [Changelog](https://github.com/ioncache/data-sanitization/releases) &nbsp;•&nbsp; [GitHub](https://github.com/ioncache/data-sanitization)
 
-<!-- johndownlint-enable MD013 -->
+<!-- markdownlint-enable MD013 -->
 
 ---
 
@@ -96,7 +96,7 @@ substitute for access controls, network security, or data-handling policies.
 is a companion package with pre-built adapters that wire `data-sanitization` directly into your
 logging pipeline:
 
-<!-- johndownlint-disable MD013 -->
+<!-- markdownlint-disable MD013 -->
 
 | Adapter               | Import path                                      | How it works                                                                            |
 | --------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------- |
@@ -104,7 +104,7 @@ logging pipeline:
 | **Pino transport**    | `data-sanitization-log-providers/pino-transport` | A `pino-abstract-transport` stream you can pass to `pino({ transport: ... })`           |
 | **Winston transport** | `data-sanitization-log-providers/winston`        | A `winston-transport` subclass that sanitizes each log entry before forwarding it       |
 
-<!-- johndownlint-enable MD013 -->
+<!-- markdownlint-enable MD013 -->
 
 Install the companion package alongside your logger:
 
