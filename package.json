@@ -39,7 +39,7 @@
     "lint-staged": "^17.0.8",
     "markdownlint-cli2": "^0.23.0",
     "oxfmt": "^0.57.0",
-    "oxlint": "^1.75.0",
+    "oxlint": "^1.80.0",
     "query-string": "^9.4.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
