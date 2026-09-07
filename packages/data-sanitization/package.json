@@ -64,15 +64,15 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^26.1.0",
+    "@types/node": "^26.4.1",
     "@vitest/coverage-v8": "^4.1.10",
-    "markdownlint-cli2": "^0.23.0",
+    "markdownlint-cli2": "^0.23.2",
     "oxfmt": "^0.66.0",
     "oxlint": "^1.81.0",
-    "query-string": "^9.4.1",
+    "query-string": "^9.5.1",
     "typescript": "^6.0.3",
     "vitest": "^4.1.10",
-    "yargs": "^18.0.0"
+    "yargs": "^18.1.0"
   },
   "engines": {
     "node": ">=20"
