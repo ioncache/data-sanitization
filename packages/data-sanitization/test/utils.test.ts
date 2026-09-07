@@ -214,6 +214,18 @@ describe('DataSanitizationUtils', () => {
       expect(result).toEqual([]);
     });
 
+    it('should return an empty array when both root values are primitive', () => {
+      // Arrange
+      const original = 'before' as unknown as object;
+      const sanitized = 'after' as unknown as object;
+
+      // Act
+      const result = diffSanitizedFields(original, sanitized);
+
+      // Assert
+      expect(result).toEqual([]);
+    });
+
     it('should not include keys only present in sanitized', () => {
       // Arrange
       const original = { msg: 'hi' };
