@@ -37,7 +37,7 @@ const diffSanitizedFields = (original: object, sanitized: object): string[] => {
     const bIsObj = typeof b === 'object' && b !== null;
 
     if (!aIsObj || !bIsObj) {
-      /* istanbul ignore next -- path is always non-empty at a nested call site;
+      /* v8 ignore next -- path is always non-empty at a nested call site;
          reaching here with path='' requires a null/primitive root, which violates
          the public API contract */
       if (path) {

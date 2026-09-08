@@ -33,7 +33,7 @@
     "@inquirer/prompts": "^8.7.1",
     "@tsconfig/node24": "^24.0.5",
     "@types/node": "^26.4.1",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/coverage-v8": "^5.0.0",
     "github-actionlint": "^1.7.12",
     "husky": "^9.1.7",
     "lint-staged": "^17.4.1",
@@ -43,7 +43,8 @@
     "query-string": "^9.5.1",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10",
+    "vite": "^7.3.5",
+    "vitest": "^5.0.0",
     "yaml-lint": "^1.7.0",
     "yargs": "^18.1.0"
   },
