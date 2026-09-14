@@ -64,7 +64,7 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^26.4.1",
+    "@types/node": "^26.5.1",
     "@vitest/coverage-v8": "^5.0.0",
     "markdownlint-cli2": "^0.23.2",
     "oxfmt": "^0.66.0",
