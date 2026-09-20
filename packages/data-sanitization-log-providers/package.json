@@ -60,17 +60,17 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^26.4.1",
-    "@vitest/coverage-v8": "^5.0.0",
+    "@types/node": "^26.6.1",
+    "@vitest/coverage-v8": "^5.0.1",
     "data-sanitization": "workspace:*",
     "markdownlint-cli2": "^0.23.2",
-    "oxfmt": "^0.66.0",
-    "oxlint": "^1.82.0",
+    "oxfmt": "^0.68.0",
+    "oxlint": "^1.83.0",
     "pino": "^10.3.1",
     "pino-abstract-transport": "^3.0.0",
     "typescript": "^6.0.3",
     "vite": "^7.3.5",
-    "vitest": "^5.0.0",
+    "vitest": "^5.0.1",
     "winston": "^3.19.0",
     "winston-transport": "^4.9.0"
   },
