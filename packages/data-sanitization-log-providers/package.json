@@ -65,7 +65,7 @@
     "data-sanitization": "workspace:*",
     "markdownlint-cli2": "^0.23.2",
     "oxfmt": "^0.68.0",
-    "oxlint": "^1.83.0",
+    "oxlint": "^1.85.0",
     "pino": "^10.3.1",
     "pino-abstract-transport": "^3.0.0",
     "typescript": "^6.0.3",
