@@ -60,16 +60,16 @@
     "test:watch": "vitest"
   },
   "devDependencies": {
-    "@types/node": "^26.6.1",
-    "@vitest/coverage-v8": "^5.0.1",
+    "@types/node": "^26.6.6",
+    "@vitest/coverage-v8": "^5.1.0",
     "data-sanitization": "workspace:*",
-    "markdownlint-cli2": "^0.23.2",
+    "markdownlint-cli2": "^0.24.0",
     "oxfmt": "^0.77.0",
     "oxlint": "^1.85.0",
-    "pino": "^10.3.1",
+    "pino": "^10.4.0",
     "pino-abstract-transport": "^3.0.0",
     "typescript": "^6.0.3",
-    "vite": "^8.3.3",
+    "vite": "^8.3.6",
     "vitest": "^5.0.2",
     "winston": "^3.19.0",
     "winston-transport": "^4.9.0"
